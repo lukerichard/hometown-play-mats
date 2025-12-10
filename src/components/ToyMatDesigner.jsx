@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import MatSidebar from './MatSidebar';
 import MatMapView from './MatMapView';
+import MatPreview from './MatPreview';
 
 const ToyMatDesigner = () => {
   // Mat configuration state
@@ -19,6 +20,10 @@ const ToyMatDesigner = () => {
 
   // Map reference for image capture
   const [mapInstance, setMapInstance] = useState(null);
+
+  // Preview state
+  const [showPreview, setShowPreview] = useState(false);
+  const [previewImage, setPreviewImage] = useState(null);
 
   // Mat sizes in meters
   const matSizes = {
@@ -139,68 +144,103 @@ const ToyMatDesigner = () => {
     setRotation((prev) => (prev + 45) % 360);
   };
 
-  // Handle generate mat - capture map and prepare for AI
+  // Calculate selection box dimensions (same as in MatMapView)
+  const getSelectionBoxDimensions = () => {
+    const DPI = 96;
+    const SCALE = 2;
+    const dimensions = {
+      small: { widthInches: 2, heightInches: 1 },
+      medium: { widthInches: 2, heightInches: 1.5 },
+      large: { widthInches: 3, heightInches: 2 }
+    };
+
+    const sizeKey = matSizes[matSize].name.toLowerCase();
+    const size = dimensions[sizeKey] || dimensions.small;
+
+    return {
+      width: size.widthInches * DPI * SCALE,
+      height: size.heightInches * DPI * SCALE
+    };
+  };
+
+  // Handle generate mat - capture selection box area and show preview
   const handleGenerateMat = () => {
     if (!mapInstance) {
       alert('Map is still loading. Please wait a moment and try again.');
       return;
     }
 
-    const size = matSizes[matSize];
-    const color = colorSchemes[colorScheme];
+    try {
+      // Get the full map canvas
+      const canvas = mapInstance.getCanvas();
 
-    // Create configuration object for AI
-    const config = {
-      mat: {
-        size: matSize,
-        dimensions: size.dimensions,
-        widthMeters: size.width,
-        heightMeters: size.height,
-        rotation: rotation
-      },
-      colorScheme: {
-        name: color.name,
-        primary: color.color
-      },
-      location: {
-        latitude: mapCenter[1],
-        longitude: mapCenter[0],
-        zoom: mapZoom,
-        address: address || 'Not specified'
-      },
-      timestamp: new Date().toISOString()
-    };
+      if (!canvas) {
+        console.error('Could not get map canvas');
+        alert('Error capturing map. Please try again.');
+        return;
+      }
 
-    // Capture map as image
-    const canvas = mapInstance.getCanvas();
-    const imageDataUrl = canvas.toDataURL('image/png');
+      console.log('Canvas dimensions:', canvas.width, canvas.height);
 
-    // Download configuration as JSON
-    const configBlob = new Blob([JSON.stringify(config, null, 2)], { type: 'application/json' });
-    const configUrl = URL.createObjectURL(configBlob);
-    const configLink = document.createElement('a');
-    configLink.href = configUrl;
-    configLink.download = `toymat-config-${Date.now()}.json`;
-    configLink.click();
-    URL.revokeObjectURL(configUrl);
+      const selectionBox = getSelectionBoxDimensions();
+      console.log('Selection box dimensions:', selectionBox.width, selectionBox.height);
 
-    // Download map image
-    const imageLink = document.createElement('a');
-    imageLink.href = imageDataUrl;
-    imageLink.download = `toymat-map-${Date.now()}.png`;
-    imageLink.click();
+      // Calculate center of canvas
+      const centerX = canvas.width / 2;
+      const centerY = canvas.height / 2;
 
-    alert(
-      `Mat configuration and map image downloaded!\n\n` +
-      `Size: ${size.name} - ${size.dimensions}\n` +
-      `Rotation: ${rotation}°\n` +
-      `Color Scheme: ${color.name}\n` +
-      `Location: ${mapCenter[1].toFixed(4)}, ${mapCenter[0].toFixed(4)}\n\n` +
-      `You can now use these files with your AI tool to generate the toy map version.`
-    );
+      // Calculate crop area (selection box area)
+      const cropX = centerX - (selectionBox.width / 2);
+      const cropY = centerY - (selectionBox.height / 2);
+
+      console.log('Crop position:', cropX, cropY);
+
+      // Create a new canvas to hold the cropped image
+      const croppedCanvas = document.createElement('canvas');
+      croppedCanvas.width = selectionBox.width;
+      croppedCanvas.height = selectionBox.height;
+      const ctx = croppedCanvas.getContext('2d');
+
+      if (!ctx) {
+        console.error('Could not get canvas context');
+        alert('Error creating preview. Please try again.');
+        return;
+      }
+
+      // Draw the cropped area onto the new canvas
+      ctx.drawImage(
+        canvas,
+        cropX, cropY, selectionBox.width, selectionBox.height,
+        0, 0, selectionBox.width, selectionBox.height
+      );
+
+      // Convert to data URL
+      const croppedImageUrl = croppedCanvas.toDataURL('image/png');
+
+      console.log('Image captured, length:', croppedImageUrl.length);
+
+      // Set preview image and show preview
+      setPreviewImage(croppedImageUrl);
+      setShowPreview(true);
+    } catch (error) {
+      console.error('Error capturing map:', error);
+      alert('Error capturing map. Please try again.');
+    }
+  };
+
+  // Handle back to edit
+  const handleBackToEdit = () => {
+    setShowPreview(false);
+  };
+
+  // Handle add to cart
+  const handleAddToCart = () => {
+    alert('Add to cart functionality coming soon! Your mat configuration has been saved.');
+    // TODO: Implement actual cart functionality
   };
 
   return (
+    <>
     <div style={{
       height: '100vh',
       background: '#f8fafb',
@@ -260,13 +300,13 @@ const ToyMatDesigner = () => {
           onGenerate={handleGenerateMat}
         />
 
-        <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '0' }}>
+        <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '0', position: 'relative', zIndex: 10 }}>
           {/* Search Bar */}
           <div style={{
             background: '#f8fafb',
             padding: '20px',
             position: 'relative',
-            zIndex: 100
+            zIndex: 10000
           }}>
             <div style={{ display: 'flex', gap: '12px' }}>
               <div style={{ flex: 1, position: 'relative' }}>
@@ -304,7 +344,7 @@ const ToyMatDesigner = () => {
                     border: '2px solid rgba(16, 185, 129, 0.2)',
                     borderRadius: '12px',
                     boxShadow: '0 10px 40px rgba(0, 0, 0, 0.15)',
-                    zIndex: 10000,
+                    zIndex: 99999,
                     maxHeight: '300px',
                     overflowY: 'auto'
                   }}>
@@ -399,6 +439,20 @@ const ToyMatDesigner = () => {
         }
       `}</style>
     </div>
+
+    {/* Modal Overlay */}
+    {showPreview && (
+      <MatPreview
+        previewImage={previewImage}
+        matSize={matSize}
+        colorScheme={colorScheme}
+        matSizes={matSizes}
+        colorSchemes={colorSchemes}
+        onBackToEdit={handleBackToEdit}
+        onAddToCart={handleAddToCart}
+      />
+    )}
+    </>
   );
 };
 

@@ -47,7 +47,8 @@ const MatMapView = ({ center, zoom, matSize, rotation, colorScheme, onMapReady }
         center: center,
         zoom: zoom,
         pitch: 0,
-        bearing: 0
+        bearing: 0,
+        preserveDrawingBuffer: true // Required for canvas image capture
       });
 
       mapRef.current.on('load', () => {
@@ -90,7 +91,8 @@ const MatMapView = ({ center, zoom, matSize, rotation, colorScheme, onMapReady }
     <div style={{
       flex: 1,
       position: 'relative',
-      overflow: 'hidden'
+      overflow: 'hidden',
+      zIndex: 1
     }}>
       {/* Map Container */}
       <div
