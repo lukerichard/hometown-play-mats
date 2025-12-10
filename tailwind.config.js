@@ -11,6 +11,12 @@ export default {
         'grass': '#4CAF50',
         'road': '#333333',
         'centerline': '#FFEB3B',
+        // New toy-themed colors
+        'toy-grass': '#70D058',
+        'toy-road': '#2D3436',
+        'toy-stripe': '#FFEAA7',
+        'toy-water': '#74B9FF',
+        'toy-accent': '#FF7675',
       },
     },
   },
