@@ -1,6 +1,17 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+/* ToyMaps - Tailwind v4 Import */
+@import "tailwindcss";
+
+/* ToyMaps Custom Theme (Hot Wheels Colors) */
+@theme {
+  --color-grass: #4CAF50;
+  --color-road: #333333;
+  --color-centerline: #FFEB3B;
+  --color-toy-grass: #70D058;
+  --color-toy-road: #2D3436;
+  --color-toy-stripe: #FFEAA7;
+  --color-toy-water: #74B9FF;
+  --color-toy-accent: #FF7675;
+}
 
 /* ToyMaps Custom Styles */
 html,
