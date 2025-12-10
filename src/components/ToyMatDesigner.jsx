@@ -13,6 +13,9 @@ const ToyMatDesigner = () => {
   // Address search state
   const [address, setAddress] = useState('');
   const [isSearching, setIsSearching] = useState(false);
+  const [suggestions, setSuggestions] = useState([]);
+  const [showSuggestions, setShowSuggestions] = useState(false);
+  const [searchTimeout, setSearchTimeout] = useState(null);
 
   // Map reference for image capture
   const [mapInstance, setMapInstance] = useState(null);
@@ -31,6 +34,65 @@ const ToyMatDesigner = () => {
     neon: { color: '#ec4899', name: 'Neon Vibrant' }
   };
 
+  // Fetch address suggestions as user types
+  const fetchSuggestions = async (query) => {
+    if (!query.trim() || query.length < 3) {
+      setSuggestions([]);
+      setShowSuggestions(false);
+      return;
+    }
+
+    try {
+      const token = import.meta.env.VITE_MAPBOX_TOKEN;
+      const response = await fetch(
+        `https://api.mapbox.com/geocoding/v5/mapbox.places/${encodeURIComponent(query)}.json?access_token=${token}&autocomplete=true&limit=5`
+      );
+
+      const data = await response.json();
+
+      if (data.features && data.features.length > 0) {
+        setSuggestions(data.features);
+        setShowSuggestions(true);
+      } else {
+        setSuggestions([]);
+        setShowSuggestions(false);
+      }
+    } catch (error) {
+      console.error('Autocomplete error:', error);
+      setSuggestions([]);
+      setShowSuggestions(false);
+    }
+  };
+
+  // Handle address input change with debouncing
+  const handleAddressChange = (e) => {
+    const value = e.target.value;
+    setAddress(value);
+
+    // Clear previous timeout
+    if (searchTimeout) {
+      clearTimeout(searchTimeout);
+    }
+
+    // Set new timeout for debouncing
+    const timeout = setTimeout(() => {
+      fetchSuggestions(value);
+    }, 300);
+
+    setSearchTimeout(timeout);
+  };
+
+  // Handle suggestion selection
+  const handleSelectSuggestion = (suggestion) => {
+    const [lng, lat] = suggestion.center;
+    setAddress(suggestion.place_name);
+    setMapCenter([lng, lat]);
+    setMapZoom(17);
+    setSuggestions([]);
+    setShowSuggestions(false);
+    console.log('Location selected:', suggestion.place_name);
+  };
+
   // Handle address search
   const handleSearchAddress = async () => {
     if (!address.trim()) {
@@ -39,6 +101,7 @@ const ToyMatDesigner = () => {
     }
 
     setIsSearching(true);
+    setShowSuggestions(false);
 
     try {
       const token = import.meta.env.VITE_MAPBOX_TOKEN;
@@ -141,10 +204,6 @@ const ToyMatDesigner = () => {
     <div style={{
       height: '100vh',
       background: '#f8fafb',
-      backgroundImage: `
-        radial-gradient(at 0% 0%, rgba(16, 185, 129, 0.08) 0px, transparent 50%),
-        radial-gradient(at 100% 100%, rgba(5, 150, 105, 0.08) 0px, transparent 50%)
-      `,
       overflow: 'hidden'
     }}>
       {/* Title Bar */}
@@ -184,8 +243,8 @@ const ToyMatDesigner = () => {
       <div style={{
         display: 'flex',
         height: 'calc(100vh - 82px)',
-        padding: '24px',
-        gap: '24px'
+        padding: '0',
+        gap: '0'
       }}>
         <MatSidebar
           matSize={matSize}
@@ -201,36 +260,82 @@ const ToyMatDesigner = () => {
           onGenerate={handleGenerateMat}
         />
 
-        <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '20px' }}>
+        <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '0' }}>
           {/* Search Bar */}
           <div style={{
-            background: 'rgba(255, 255, 255, 0.95)',
-            backdropFilter: 'blur(20px)',
-            border: '1px solid rgba(16, 185, 129, 0.15)',
-            borderRadius: '20px',
+            background: '#f8fafb',
             padding: '20px',
-            boxShadow: '0 4px 20px rgba(0, 0, 0, 0.04), inset 0 1px 0 rgba(255, 255, 255, 0.8)'
+            position: 'relative',
+            zIndex: 100
           }}>
             <div style={{ display: 'flex', gap: '12px' }}>
-              <input
-                type="text"
-                value={address}
-                onChange={(e) => setAddress(e.target.value)}
-                onKeyPress={(e) => e.key === 'Enter' && handleSearchAddress()}
-                placeholder="Enter your address (e.g., 1600 Pennsylvania Avenue, Washington, DC)"
-                style={{
-                  flex: 1,
-                  padding: '16px 20px',
-                  background: '#f8fafb',
-                  border: '2px solid rgba(16, 185, 129, 0.2)',
-                  borderRadius: '12px',
-                  fontSize: '16px',
-                  fontWeight: '500',
-                  color: '#1e293b',
-                  outline: 'none',
-                  fontFamily: 'Inter, sans-serif'
-                }}
-              />
+              <div style={{ flex: 1, position: 'relative' }}>
+                <input
+                  type="text"
+                  value={address}
+                  onChange={handleAddressChange}
+                  onKeyPress={(e) => e.key === 'Enter' && handleSearchAddress()}
+                  onFocus={() => suggestions.length > 0 && setShowSuggestions(true)}
+                  onBlur={() => setTimeout(() => setShowSuggestions(false), 200)}
+                  placeholder="Enter your address (e.g., 1600 Pennsylvania Avenue, Washington, DC)"
+                  style={{
+                    width: '100%',
+                    padding: '16px 20px',
+                    background: '#f8fafb',
+                    border: '2px solid rgba(16, 185, 129, 0.2)',
+                    borderRadius: '12px',
+                    fontSize: '16px',
+                    fontWeight: '500',
+                    color: '#1e293b',
+                    outline: 'none',
+                    fontFamily: 'Inter, sans-serif'
+                  }}
+                />
+
+                {/* Autocomplete Dropdown */}
+                {showSuggestions && suggestions.length > 0 && (
+                  <div style={{
+                    position: 'absolute',
+                    top: '100%',
+                    left: 0,
+                    right: 0,
+                    marginTop: '8px',
+                    background: 'white',
+                    border: '2px solid rgba(16, 185, 129, 0.2)',
+                    borderRadius: '12px',
+                    boxShadow: '0 10px 40px rgba(0, 0, 0, 0.15)',
+                    zIndex: 10000,
+                    maxHeight: '300px',
+                    overflowY: 'auto'
+                  }}>
+                    {suggestions.map((suggestion, index) => (
+                      <div
+                        key={suggestion.id || index}
+                        onClick={() => handleSelectSuggestion(suggestion)}
+                        style={{
+                          padding: '14px 20px',
+                          cursor: 'pointer',
+                          borderBottom: index < suggestions.length - 1 ? '1px solid rgba(16, 185, 129, 0.1)' : 'none',
+                          transition: 'background 0.2s',
+                          fontSize: '15px',
+                          color: '#1e293b',
+                          fontWeight: '500'
+                        }}
+                        onMouseEnter={(e) => e.currentTarget.style.background = 'rgba(16, 185, 129, 0.08)'}
+                        onMouseLeave={(e) => e.currentTarget.style.background = 'transparent'}
+                      >
+                        <div style={{ fontWeight: '600', marginBottom: '2px' }}>
+                          {suggestion.text}
+                        </div>
+                        <div style={{ fontSize: '13px', color: '#64748b' }}>
+                          {suggestion.place_name}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+
               <button
                 onClick={handleSearchAddress}
                 disabled={isSearching}
@@ -274,23 +379,23 @@ const ToyMatDesigner = () => {
         input[type="range"]::-webkit-slider-thumb {
           -webkit-appearance: none;
           appearance: none;
-          width: 20px;
-          height: 20px;
+          width: 16px;
+          height: 16px;
           border-radius: 50%;
           background: linear-gradient(135deg, #10b981 0%, #059669 100%);
           cursor: pointer;
-          border: 3px solid white;
-          box-shadow: 0 2px 8px rgba(16, 185, 129, 0.4);
+          border: 2px solid white;
+          box-shadow: 0 2px 6px rgba(16, 185, 129, 0.4);
         }
 
         input[type="range"]::-moz-range-thumb {
-          width: 20px;
-          height: 20px;
+          width: 16px;
+          height: 16px;
           border-radius: 50%;
           background: linear-gradient(135deg, #10b981 0%, #059669 100%);
           cursor: pointer;
-          border: 3px solid white;
-          box-shadow: 0 2px 8px rgba(16, 185, 129, 0.4);
+          border: 2px solid white;
+          box-shadow: 0 2px 6px rgba(16, 185, 129, 0.4);
         }
       `}</style>
     </div>
