@@ -1,9 +1,17 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
+import { useAuth } from '../hooks/useAuth';
+import { saveMat, updateMat } from '../utils/matStorage';
+import { addToCart } from '../utils/cartUtils';
 import MatSidebar from './MatSidebar';
 import MatMapView from './MatMapView';
 import MatPreview from './MatPreview';
 
 const ToyMatDesigner = () => {
+  const { currentUser } = useAuth();
+  const location = useLocation();
+  const navigate = useNavigate();
+
   // Mat configuration state
   const [matSize, setMatSize] = useState('small');
   const [rotation, setRotation] = useState(0);
@@ -24,6 +32,12 @@ const ToyMatDesigner = () => {
   // Preview state
   const [showPreview, setShowPreview] = useState(false);
   const [previewImage, setPreviewImage] = useState(null);
+
+  // Save state
+  const [matName, setMatName] = useState('');
+  const [savedMatId, setSavedMatId] = useState(null);
+  const [showSaveDialog, setShowSaveDialog] = useState(false);
+  const [saving, setSaving] = useState(false);
 
   // Mat sizes in meters
   const matSizes = {
@@ -228,15 +242,119 @@ const ToyMatDesigner = () => {
     }
   };
 
+  // Load mat from navigation state (when coming from SavedMats)
+  useEffect(() => {
+    if (location.state?.loadMat) {
+      const mat = location.state.loadMat;
+      setMatSize(mat.matSize || 'small');
+      setRotation(mat.rotation || 0);
+      setColorScheme(mat.colorScheme || 'classic');
+      setMapCenter(mat.mapCenter || [-79.7990, 43.3255]);
+      setMapZoom(mat.mapZoom || 15);
+      setAddress(mat.address || '');
+      setPreviewImage(mat.previewImageUrl || null);
+      setSavedMatId(mat.id || null);
+      setMatName(mat.name || '');
+
+      // Clear the navigation state
+      window.history.replaceState({}, document.title);
+    }
+  }, [location]);
+
+  // Handle save mat
+  const handleSaveMat = async () => {
+    // Check if user is logged in
+    if (!currentUser) {
+      const shouldSignup = confirm('You need an account to save mats. Create an account now?');
+      if (shouldSignup) {
+        navigate('/signup');
+      }
+      return;
+    }
+
+    if (!matName.trim()) {
+      alert('Please enter a name for your mat');
+      return;
+    }
+
+    if (!previewImage) {
+      alert('Please generate a preview first');
+      return;
+    }
+
+    setSaving(true);
+
+    try {
+      const matData = {
+        name: matName.trim(),
+        matSize,
+        colorScheme,
+        rotation,
+        mapCenter,
+        mapZoom,
+        address,
+        previewImageUrl: previewImage
+      };
+
+      if (savedMatId) {
+        // Update existing mat
+        await updateMat(savedMatId, matData);
+        alert('Mat updated successfully!');
+      } else {
+        // Save new mat
+        const newMatId = await saveMat(currentUser.uid, matData);
+        setSavedMatId(newMatId);
+        alert('Mat saved successfully!');
+      }
+
+      setShowSaveDialog(false);
+    } catch (error) {
+      console.error('Error saving mat:', error);
+      alert('Failed to save mat. Please try again.');
+    } finally {
+      setSaving(false);
+    }
+  };
+
   // Handle back to edit
   const handleBackToEdit = () => {
     setShowPreview(false);
   };
 
   // Handle add to cart
-  const handleAddToCart = () => {
-    alert('Add to cart functionality coming soon! Your mat configuration has been saved.');
-    // TODO: Implement actual cart functionality
+  const handleAddToCart = async () => {
+    // Check if user is logged in
+    if (!currentUser) {
+      const shouldSignup = confirm('You need an account to add items to cart. Create an account now?');
+      if (shouldSignup) {
+        navigate('/signup');
+      }
+      return;
+    }
+
+    // Check if mat is saved
+    if (!savedMatId) {
+      const shouldSave = confirm('You need to save this mat before adding to cart. Save now?');
+      if (shouldSave) {
+        setShowSaveDialog(true);
+      }
+      return;
+    }
+
+    try {
+      // Calculate price based on mat size
+      const pricePerUnit = matSize === 'small' ? 29.99 : matSize === 'medium' ? 39.99 : 49.99;
+
+      await addToCart(currentUser.uid, savedMatId, 1, pricePerUnit);
+
+      const viewCart = confirm('Added to cart! View your cart now?');
+      if (viewCart) {
+        navigate('/cart');
+      }
+    } catch (error) {
+      console.error('Error adding to cart:', error);
+      alert('Failed to add to cart. Please try again.');
+    }
   };
 
   return (
@@ -440,7 +558,7 @@ const ToyMatDesigner = () => {
       `}</style>
     </div>
 
-    {/* Modal Overlay */}
+    {/* Preview Modal */}
     {showPreview && (
       <MatPreview
         previewImage={previewImage}
@@ -448,9 +566,130 @@ const ToyMatDesigner = () => {
         colorScheme={colorScheme}
         matSizes={matSizes}
         colorSchemes={colorSchemes}
+        savedMatId={savedMatId}
+        matName={matName}
         onBackToEdit={handleBackToEdit}
         onAddToCart={handleAddToCart}
+        onSave={() => setShowSaveDialog(true)}
       />
+    )}
+
+    {/* Save Dialog Modal */}
+    {showSaveDialog && (
+      <>
+        <div
+          onClick={() => setShowSaveDialog(false)}
+          style={{
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            background: 'rgba(0, 0, 0, 0.7)',
+            zIndex: 9999,
+            backdropFilter: 'blur(4px)'
+          }}
+        />
+        <div style={{
+          position: 'fixed',
+          top: '50%',
+          left: '50%',
+          transform: 'translate(-50%, -50%)',
+          background: 'white',
+          borderRadius: '16px',
+          padding: '32px',
+          maxWidth: '450px',
+          width: '90%',
+          zIndex: 10000,
+          boxShadow: '0 20px 60px rgba(0, 0, 0, 0.3)'
+        }}>
+          <h3 style={{
+            fontSize: '24px',
+            fontWeight: '800',
+            color: '#1e293b',
+            marginBottom: '8px'
+          }}>
+            {savedMatId ? 'Update Mat' : 'Save Your Mat'}
+          </h3>
+          <p style={{
+            fontSize: '15px',
+            color: '#64748b',
+            marginBottom: '24px',
+            lineHeight: '1.6'
+          }}>
+            {savedMatId ? 'Update the name for your mat.' : 'Give your custom play mat a name so you can find it later.'}
+          </p>
+
+          <div style={{ marginBottom: '20px' }}>
+            <label style={{
+              display: 'block',
+              fontSize: '14px',
+              fontWeight: '700',
+              color: '#1e293b',
+              marginBottom: '8px'
+            }}>
+              Mat Name
+            </label>
+            <input
+              type="text"
+              value={matName}
+              onChange={(e) => setMatName(e.target.value)}
+              placeholder="e.g., My Neighborhood"
+              autoFocus
+              style={{
+                width: '100%',
+                padding: '14px 16px',
+                border: '2px solid rgba(16, 185, 129, 0.2)',
+                borderRadius: '10px',
+                fontSize: '15px',
+                fontFamily: 'Inter, sans-serif',
+                outline: 'none',
+                boxSizing: 'border-box'
+              }}
+              onFocus={(e) => e.currentTarget.style.borderColor = '#10b981'}
+              onBlur={(e) => e.currentTarget.style.borderColor = 'rgba(16, 185, 129, 0.2)'}
+            />
+          </div>
+
+          <div style={{ display: 'flex', gap: '12px' }}>
+            <button
+              onClick={() => setShowSaveDialog(false)}
+              disabled={saving}
+              style={{
+                flex: 1,
+                padding: '14px',
+                background: 'white',
+                border: '2px solid rgba(16, 185, 129, 0.2)',
+                borderRadius: '10px',
+                fontSize: '15px',
+                fontWeight: '700',
+                cursor: saving ? 'not-allowed' : 'pointer',
+                fontFamily: 'Inter, sans-serif'
+              }}
+            >
+              Cancel
+            </button>
+            <button
+              onClick={handleSaveMat}
+              disabled={saving}
+              style={{
+                flex: 1,
+                padding: '14px',
+                background: saving ? '#9ca3af' : 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
+                color: 'white',
+                border: 'none',
+                borderRadius: '10px',
+                fontSize: '15px',
+                fontWeight: '700',
+                cursor: saving ? 'not-allowed' : 'pointer',
+                fontFamily: 'Inter, sans-serif'
+              }}
+            >
+              {saving ? 'Saving...' : savedMatId ? 'Update' : 'Save'}
+            </button>
+          </div>
+        </div>
+      </>
     )}
     </>
   );

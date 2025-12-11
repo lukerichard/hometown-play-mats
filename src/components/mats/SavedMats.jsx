@@ -1,0 +1,206 @@
+import { Link } from 'react-router-dom';
+import { where, orderBy } from 'firebase/firestore';
+import { useAuth } from '../../hooks/useAuth';
+import { useFirestore } from '../../hooks/useFirestore';
+import SavedMatCard from './SavedMatCard';
+
+const SavedMats = () => {
+  const { currentUser } = useAuth();
+
+  // Real-time listener for user's saved mats
+  const { data: mats, loading, error } = useFirestore('savedMats', [
+    where('userId', '==', currentUser?.uid || ''),
+    orderBy('createdAt', 'desc')
+  ]);
+
+  if (loading) {
+    return (
+      <div style={{
+        minHeight: '100vh',
+        background: '#f8fafb',
+        padding: '100px 20px 40px',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center'
+      }}>
+        <div style={{ textAlign: 'center' }}>
+          <div style={{
+            width: '50px',
+            height: '50px',
+            border: '4px solid rgba(16, 185, 129, 0.2)',
+            borderTop: '4px solid #10b981',
+            borderRadius: '50%',
+            animation: 'spin 1s linear infinite',
+            margin: '0 auto 20px'
+          }} />
+          <p style={{
+            color: '#64748b',
+            fontSize: '16px',
+            fontWeight: '600'
+          }}>
+            Loading your mats...
+          </p>
+          <style>{`
+            @keyframes spin {
+              0% { transform: rotate(0deg); }
+              100% { transform: rotate(360deg); }
+            }
+          `}</style>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div style={{
+        minHeight: '100vh',
+        background: '#f8fafb',
+        padding: '100px 20px 40px'
+      }}>
+        <div style={{
+          maxWidth: '600px',
+          margin: '0 auto',
+          background: 'white',
+          padding: '32px',
+          borderRadius: '16px',
+          textAlign: 'center'
+        }}>
+          <p style={{ color: '#dc2626', fontSize: '16px', fontWeight: '600' }}>
+            Error loading mats: {error}
+          </p>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div style={{
+      minHeight: '100vh',
+      background: '#f8fafb',
+      padding: '100px 20px 40px'
+    }}>
+      <div style={{
+        maxWidth: '1200px',
+        margin: '0 auto'
+      }}>
+        {/* Header */}
+        <div style={{
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          marginBottom: '32px',
+          flexWrap: 'wrap',
+          gap: '16px'
+        }}>
+          <h1 style={{
+            fontSize: '32px',
+            fontWeight: '800',
+            color: '#1e293b',
+            margin: 0,
+            letterSpacing: '-0.5px'
+          }}>
+            Saved Mats
+          </h1>
+          <Link to="/">
+            <button style={{
+              padding: '12px 24px',
+              background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
+              color: 'white',
+              border: 'none',
+              borderRadius: '10px',
+              fontSize: '15px',
+              fontWeight: '700',
+              cursor: 'pointer',
+              fontFamily: 'Inter, sans-serif',
+              boxShadow: '0 4px 12px rgba(16, 185, 129, 0.3)',
+              transition: 'all 0.2s'
+            }}
+            onMouseEnter={(e) => e.currentTarget.style.transform = 'translateY(-2px)'}
+            onMouseLeave={(e) => e.currentTarget.style.transform = 'translateY(0)'}
+            >
+              + Create New Mat
+            </button>
+          </Link>
+        </div>
+
+        {/* Mats Grid or Empty State */}
+        {mats.length === 0 ? (
+          <div style={{
+            background: 'white',
+            borderRadius: '20px',
+            padding: '64px 32px',
+            textAlign: 'center',
+            boxShadow: '0 4px 20px rgba(0, 0, 0, 0.08)'
+          }}>
+            <div style={{
+              fontSize: '64px',
+              marginBottom: '16px'
+            }}>
+              🎨
+            </div>
+            <h2 style={{
+              fontSize: '24px',
+              fontWeight: '800',
+              color: '#1e293b',
+              marginBottom: '12px'
+            }}>
+              No saved mats yet
+            </h2>
+            <p style={{
+              fontSize: '16px',
+              color: '#64748b',
+              marginBottom: '32px',
+              maxWidth: '400px',
+              margin: '0 auto 32px'
+            }}>
+              Start designing your first custom play mat! Create unique maps for your toy cars.
+            </p>
+            <Link to="/">
+              <button style={{
+                padding: '16px 32px',
+                background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
+                color: 'white',
+                border: 'none',
+                borderRadius: '12px',
+                fontSize: '16px',
+                fontWeight: '800',
+                cursor: 'pointer',
+                fontFamily: 'Inter, sans-serif',
+                boxShadow: '0 4px 20px rgba(16, 185, 129, 0.3)',
+                transition: 'all 0.2s'
+              }}
+              onMouseEnter={(e) => e.currentTarget.style.transform = 'translateY(-2px)'}
+              onMouseLeave={(e) => e.currentTarget.style.transform = 'translateY(0)'}
+              >
+                Create Your First Mat
+              </button>
+            </Link>
+          </div>
+        ) : (
+          <>
+            <p style={{
+              fontSize: '16px',
+              color: '#64748b',
+              marginBottom: '24px',
+              fontWeight: '600'
+            }}>
+              {mats.length} {mats.length === 1 ? 'mat' : 'mats'} saved
+            </p>
+            <div style={{
+              display: 'grid',
+              gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))',
+              gap: '24px'
+            }}>
+              {mats.map((mat) => (
+                <SavedMatCard key={mat.id} mat={mat} />
+              ))}
+            </div>
+          </>
+        )}
+      </div>
+    </div>
+  );
+};
+
+export default SavedMats;

@@ -4,8 +4,11 @@ const MatPreview = ({
   colorScheme,
   matSizes,
   colorSchemes,
+  savedMatId,
+  matName,
   onBackToEdit,
-  onAddToCart
+  onAddToCart,
+  onSave
 }) => {
   return (
     <>
@@ -203,26 +206,51 @@ const MatPreview = ({
 
           {/* Action Buttons */}
           <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-            <button
-              onClick={onAddToCart}
-              style={{
-                width: '100%',
-                padding: '16px',
-                background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
-                color: 'white',
-                border: 'none',
-                borderRadius: '10px',
-                fontSize: '16px',
-                fontWeight: '800',
-                cursor: 'pointer',
-                transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-                fontFamily: 'Inter, sans-serif',
-                letterSpacing: '0.3px',
-                boxShadow: '0 4px 20px rgba(16, 185, 129, 0.3)'
-              }}
-            >
-              🛒 Add to Cart
-            </button>
+            {!savedMatId && (
+              <button
+                onClick={onSave}
+                style={{
+                  width: '100%',
+                  padding: '16px',
+                  background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
+                  color: 'white',
+                  border: 'none',
+                  borderRadius: '10px',
+                  fontSize: '16px',
+                  fontWeight: '800',
+                  cursor: 'pointer',
+                  transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                  fontFamily: 'Inter, sans-serif',
+                  letterSpacing: '0.3px',
+                  boxShadow: '0 4px 20px rgba(16, 185, 129, 0.3)'
+                }}
+              >
+                💾 Save Mat
+              </button>
+            )}
+
+            {savedMatId && (
+              <button
+                onClick={onAddToCart}
+                style={{
+                  width: '100%',
+                  padding: '16px',
+                  background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
+                  color: 'white',
+                  border: 'none',
+                  borderRadius: '10px',
+                  fontSize: '16px',
+                  fontWeight: '800',
+                  cursor: 'pointer',
+                  transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                  fontFamily: 'Inter, sans-serif',
+                  letterSpacing: '0.3px',
+                  boxShadow: '0 4px 20px rgba(16, 185, 129, 0.3)'
+                }}
+              >
+                🛒 Add to Cart
+              </button>
+            )}
 
             <button
               onClick={onBackToEdit}
