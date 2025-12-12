@@ -1,7 +1,7 @@
-/* ToyMaps - Tailwind v4 Import */
+/* Hometown Play Mats - Tailwind v4 Import */
 @import "tailwindcss";
 
-/* ToyMaps Custom Theme (Hot Wheels Colors) */
+/* Hometown Play Mats Custom Theme (Hot Wheels Colors) */
 @theme {
   --color-grass: #4CAF50;
   --color-road: #333333;
@@ -13,7 +13,7 @@
   --color-toy-accent: #FF7675;
 }
 
-/* ToyMaps Custom Styles */
+/* Hometown Play Mats Custom Styles */
 html,
 body {
   margin: 0;

@@ -1,3 +1,6 @@
+import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+
 const MatPreview = ({
   previewImage,
   matSize,
@@ -6,10 +9,14 @@ const MatPreview = ({
   colorSchemes,
   savedMatId,
   matName,
+  cartItem,
   onBackToEdit,
   onAddToCart,
+  onUpdateQuantity,
   onSave
 }) => {
+  const [isAdding, setIsAdding] = useState(false);
+  const navigate = useNavigate();
   return (
     <>
       {/* Backdrop */}
@@ -206,67 +213,247 @@ const MatPreview = ({
 
           {/* Action Buttons */}
           <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+            {/* Cart Controls */}
+            {cartItem ? (
+              <div style={{
+                background: 'rgba(16, 185, 129, 0.1)',
+                border: '2px solid rgba(16, 185, 129, 0.3)',
+                borderRadius: '12px',
+                padding: '16px'
+              }}>
+                <div style={{
+                  fontSize: '13px',
+                  fontWeight: '700',
+                  color: '#059669',
+                  marginBottom: '12px',
+                  textTransform: 'uppercase',
+                  letterSpacing: '0.5px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '6px'
+                }}>
+                  <span style={{ fontSize: '16px' }}>✓</span> In Cart
+                </div>
+                <div style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'space-between'
+                }}>
+                  <span style={{
+                    fontSize: '14px',
+                    fontWeight: '600',
+                    color: '#1e293b'
+                  }}>
+                    Quantity:
+                  </span>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                    <button
+                      onClick={() => onUpdateQuantity(cartItem.quantity - 1)}
+                      style={{
+                        width: '36px',
+                        height: '36px',
+                        background: 'white',
+                        border: '2px solid rgba(16, 185, 129, 0.3)',
+                        borderRadius: '8px',
+                        fontSize: '20px',
+                        fontWeight: '700',
+                        color: '#1e293b',
+                        cursor: 'pointer',
+                        transition: 'all 0.2s'
+                      }}
+                      onMouseEnter={(e) => {
+                        e.currentTarget.style.background = 'rgba(16, 185, 129, 0.1)';
+                        e.currentTarget.style.borderColor = '#10b981';
+                      }}
+                      onMouseLeave={(e) => {
+                        e.currentTarget.style.background = 'white';
+                        e.currentTarget.style.borderColor = 'rgba(16, 185, 129, 0.3)';
+                      }}
+                    >
+                      -
+                    </button>
+                    <span style={{
+                      fontSize: '20px',
+                      fontWeight: '800',
+                      color: '#10b981',
+                      minWidth: '40px',
+                      textAlign: 'center'
+                    }}>
+                      {cartItem.quantity}
+                    </span>
+                    <button
+                      onClick={() => onUpdateQuantity(cartItem.quantity + 1)}
+                      style={{
+                        width: '36px',
+                        height: '36px',
+                        background: 'white',
+                        border: '2px solid rgba(16, 185, 129, 0.3)',
+                        borderRadius: '8px',
+                        fontSize: '20px',
+                        fontWeight: '700',
+                        color: '#1e293b',
+                        cursor: 'pointer',
+                        transition: 'all 0.2s'
+                      }}
+                      onMouseEnter={(e) => {
+                        e.currentTarget.style.background = 'rgba(16, 185, 129, 0.1)';
+                        e.currentTarget.style.borderColor = '#10b981';
+                      }}
+                      onMouseLeave={(e) => {
+                        e.currentTarget.style.background = 'white';
+                        e.currentTarget.style.borderColor = 'rgba(16, 185, 129, 0.3)';
+                      }}
+                    >
+                      +
+                    </button>
+                  </div>
+                </div>
+              </div>
+            ) : (
+              <button
+                onClick={async () => {
+                  setIsAdding(true);
+                  await onAddToCart();
+                  setIsAdding(false);
+                }}
+                disabled={isAdding}
+                style={{
+                  width: '100%',
+                  padding: '18px',
+                  background: isAdding ? '#9ca3af' : 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
+                  color: 'white',
+                  border: 'none',
+                  borderRadius: '10px',
+                  fontSize: '18px',
+                  fontWeight: '800',
+                  cursor: isAdding ? 'not-allowed' : 'pointer',
+                  transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                  fontFamily: 'Inter, sans-serif',
+                  letterSpacing: '0.3px',
+                  boxShadow: '0 4px 20px rgba(16, 185, 129, 0.3)',
+                  transform: isAdding ? 'scale(0.98)' : 'scale(1)'
+                }}
+                onMouseEnter={(e) => !isAdding && (e.currentTarget.style.transform = 'translateY(-2px)')}
+                onMouseLeave={(e) => !isAdding && (e.currentTarget.style.transform = 'translateY(0)')}
+              >
+                {isAdding ? '✓ Added!' : '🛒 Add to Cart'}
+              </button>
+            )}
+
+            {/* Secondary Action - Save for Later */}
             {!savedMatId && (
               <button
                 onClick={onSave}
                 style={{
                   width: '100%',
-                  padding: '16px',
-                  background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
-                  color: 'white',
-                  border: 'none',
+                  padding: '12px',
+                  background: 'white',
+                  color: '#10b981',
+                  border: '2px solid rgba(16, 185, 129, 0.3)',
                   borderRadius: '10px',
-                  fontSize: '16px',
-                  fontWeight: '800',
+                  fontSize: '14px',
+                  fontWeight: '700',
                   cursor: 'pointer',
                   transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
                   fontFamily: 'Inter, sans-serif',
-                  letterSpacing: '0.3px',
-                  boxShadow: '0 4px 20px rgba(16, 185, 129, 0.3)'
+                  letterSpacing: '0.3px'
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.background = 'rgba(16, 185, 129, 0.1)';
+                  e.currentTarget.style.borderColor = '#10b981';
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.background = 'white';
+                  e.currentTarget.style.borderColor = 'rgba(16, 185, 129, 0.3)';
                 }}
               >
-                💾 Save Mat
+                💾 Save for Later
               </button>
             )}
 
+            {/* Update Mat Name Button - Shows when mat is already saved */}
             {savedMatId && (
               <button
-                onClick={onAddToCart}
+                onClick={onSave}
                 style={{
                   width: '100%',
-                  padding: '16px',
-                  background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
-                  color: 'white',
-                  border: 'none',
+                  padding: '12px',
+                  background: 'white',
+                  color: '#10b981',
+                  border: '2px solid rgba(16, 185, 129, 0.3)',
                   borderRadius: '10px',
-                  fontSize: '16px',
-                  fontWeight: '800',
+                  fontSize: '14px',
+                  fontWeight: '700',
                   cursor: 'pointer',
                   transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
                   fontFamily: 'Inter, sans-serif',
-                  letterSpacing: '0.3px',
-                  boxShadow: '0 4px 20px rgba(16, 185, 129, 0.3)'
+                  letterSpacing: '0.3px'
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.background = 'rgba(16, 185, 129, 0.1)';
+                  e.currentTarget.style.borderColor = '#10b981';
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.background = 'white';
+                  e.currentTarget.style.borderColor = 'rgba(16, 185, 129, 0.3)';
                 }}
               >
-                🛒 Add to Cart
+                ✏️ Rename Mat
               </button>
             )}
 
+            {/* View Cart Button */}
             <button
-              onClick={onBackToEdit}
+              onClick={() => navigate('/cart')}
               style={{
                 width: '100%',
-                padding: '16px',
+                padding: '12px',
                 background: 'white',
-                color: '#1e293b',
-                border: '2px solid rgba(16, 185, 129, 0.2)',
+                color: '#10b981',
+                border: '2px solid rgba(16, 185, 129, 0.3)',
                 borderRadius: '10px',
-                fontSize: '16px',
+                fontSize: '14px',
                 fontWeight: '700',
                 cursor: 'pointer',
                 transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
                 fontFamily: 'Inter, sans-serif',
                 letterSpacing: '0.3px'
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.background = 'rgba(16, 185, 129, 0.1)';
+                e.currentTarget.style.borderColor = '#10b981';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.background = 'white';
+                e.currentTarget.style.borderColor = 'rgba(16, 185, 129, 0.3)';
+              }}
+            >
+              🛒 View Cart
+            </button>
+
+            <button
+              onClick={onBackToEdit}
+              style={{
+                width: '100%',
+                padding: '12px',
+                background: 'white',
+                color: '#64748b',
+                border: '2px solid rgba(100, 116, 139, 0.2)',
+                borderRadius: '10px',
+                fontSize: '14px',
+                fontWeight: '700',
+                cursor: 'pointer',
+                transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                fontFamily: 'Inter, sans-serif',
+                letterSpacing: '0.3px'
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.background = 'rgba(100, 116, 139, 0.05)';
+                e.currentTarget.style.borderColor = '#64748b';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.background = 'white';
+                e.currentTarget.style.borderColor = 'rgba(100, 116, 139, 0.2)';
               }}
             >
               ← Back to Edit
@@ -284,8 +471,8 @@ const MatPreview = ({
               fontWeight: '500',
               lineHeight: '1.6'
             }}>
-              <strong>Next Steps:</strong><br />
-              Add to cart to customize colors and proceed to checkout. Your custom play mat will be printed and shipped to you!
+              <strong>Ready to order?</strong><br />
+              Add to cart to proceed to checkout, or save for later to come back and order anytime!
             </div>
           </div>
         </div>

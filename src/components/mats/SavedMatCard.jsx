@@ -1,11 +1,9 @@
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { deleteMat } from '../../utils/matStorage';
 
-const SavedMatCard = ({ mat }) => {
+const SavedMatCard = ({ mat, onViewMat, isInCart }) => {
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [deleting, setDeleting] = useState(false);
-  const navigate = useNavigate();
 
   const handleDelete = async () => {
     setDeleting(true);
@@ -18,11 +16,6 @@ const SavedMatCard = ({ mat }) => {
     } finally {
       setDeleting(false);
     }
-  };
-
-  const handleLoadInDesigner = () => {
-    // Navigate to home with mat data in state
-    navigate('/', { state: { loadMat: mat } });
   };
 
   const formatDate = (timestamp) => {
@@ -91,6 +84,28 @@ const SavedMatCard = ({ mat }) => {
               No preview available
             </div>
           )}
+
+          {/* In Cart Badge */}
+          {isInCart && (
+            <div style={{
+              position: 'absolute',
+              top: '12px',
+              right: '12px',
+              padding: '6px 12px',
+              background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
+              color: 'white',
+              borderRadius: '20px',
+              fontSize: '12px',
+              fontWeight: '800',
+              letterSpacing: '0.5px',
+              boxShadow: '0 4px 12px rgba(16, 185, 129, 0.4)',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '4px'
+            }}>
+              🛒 IN CART
+            </div>
+          )}
         </div>
 
         {/* Card Content */}
@@ -152,7 +167,7 @@ const SavedMatCard = ({ mat }) => {
             gap: '8px'
           }}>
             <button
-              onClick={handleLoadInDesigner}
+              onClick={() => onViewMat(mat)}
               style={{
                 flex: 1,
                 padding: '12px',

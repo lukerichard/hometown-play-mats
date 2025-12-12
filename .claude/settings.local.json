@@ -14,7 +14,9 @@
       "Bash(vercel --prod:*)",
       "Bash(vercel login)",
       "Bash(del tailwind.config.js)",
-      "Bash(taskkill:*)"
+      "Bash(taskkill:*)",
+      "Bash(cat:*)",
+      "Bash(del:*)"
     ]
   }
 }

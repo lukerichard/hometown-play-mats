@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { updateCartQuantity, removeFromCart } from '../../utils/cartUtils';
 
-const CartItem = ({ cartItem, mat }) => {
+const CartItem = ({ cartItem, mat, onViewMat }) => {
   const [updating, setUpdating] = useState(false);
 
   const handleQuantityChange = async (newQuantity) => {
@@ -47,14 +47,30 @@ const CartItem = ({ cartItem, mat }) => {
       transition: 'all 0.2s'
     }}>
       {/* Mat Preview Image */}
-      <div style={{
-        width: '120px',
-        height: '120px',
-        borderRadius: '8px',
-        overflow: 'hidden',
-        background: '#f8fafb',
-        flexShrink: 0
-      }}>
+      <div
+        onClick={() => mat && onViewMat(mat)}
+        style={{
+          width: '120px',
+          height: '120px',
+          borderRadius: '8px',
+          overflow: 'hidden',
+          background: '#f8fafb',
+          flexShrink: 0,
+          cursor: mat ? 'pointer' : 'default',
+          transition: 'all 0.2s',
+          border: '2px solid transparent'
+        }}
+        onMouseEnter={(e) => {
+          if (mat) {
+            e.currentTarget.style.transform = 'scale(1.05)';
+            e.currentTarget.style.borderColor = 'rgba(16, 185, 129, 0.5)';
+          }
+        }}
+        onMouseLeave={(e) => {
+          e.currentTarget.style.transform = 'scale(1)';
+          e.currentTarget.style.borderColor = 'transparent';
+        }}
+      >
         {mat?.previewImageUrl ? (
           <img
             src={mat.previewImageUrl}
@@ -82,12 +98,19 @@ const CartItem = ({ cartItem, mat }) => {
 
       {/* Item Details */}
       <div style={{ flex: 1 }}>
-        <h3 style={{
-          margin: '0 0 8px 0',
-          fontSize: '18px',
-          fontWeight: '800',
-          color: '#1e293b'
-        }}>
+        <h3
+          onClick={() => mat && onViewMat(mat)}
+          style={{
+            margin: '0 0 8px 0',
+            fontSize: '18px',
+            fontWeight: '800',
+            color: '#1e293b',
+            cursor: mat ? 'pointer' : 'default',
+            transition: 'color 0.2s'
+          }}
+          onMouseEnter={(e) => mat && (e.currentTarget.style.color = '#10b981')}
+          onMouseLeave={(e) => (e.currentTarget.style.color = '#1e293b')}
+        >
           {mat?.name || 'Mat'}
         </h3>
 

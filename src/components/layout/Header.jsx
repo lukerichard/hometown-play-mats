@@ -75,7 +75,7 @@ const Header = () => {
             backgroundClip: 'text',
             letterSpacing: '-0.5px'
           }}>
-            ToyMaps
+            Hometown Play Mats
           </h1>
         </Link>
 

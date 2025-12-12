@@ -4,13 +4,28 @@ import { where, orderBy } from 'firebase/firestore';
 import { useAuth } from '../../hooks/useAuth';
 import { useFirestore } from '../../hooks/useFirestore';
 import { getMat } from '../../utils/matStorage';
-import { calculateCartTotal } from '../../utils/cartUtils';
+import { calculateCartTotal, addToCart, updateCartQuantity, removeFromCart } from '../../utils/cartUtils';
 import CartItem from './CartItem';
+import MatPreview from '../MatPreview';
 
 const Cart = () => {
   const { currentUser } = useAuth();
   const [matsData, setMatsData] = useState({});
   const [loadingMats, setLoadingMats] = useState(true);
+  const [previewingMat, setPreviewingMat] = useState(null);
+
+  // Mat size and color scheme definitions
+  const matSizes = {
+    small: { width: 1, height: 2, name: 'Small', dimensions: '39" × 79" (1m × 2m)' },
+    medium: { width: 1.5, height: 2, name: 'Medium', dimensions: '59" × 79" (1.5m × 2m)' },
+    large: { width: 2, height: 3, name: 'Large', dimensions: '79" × 118" (2m × 3m)' }
+  };
+
+  const colorSchemes = {
+    classic: { color: '#10b981', name: 'Classic' },
+    muted: { color: '#64748b', name: 'Muted' },
+    neon: { color: '#ec4899', name: 'Neon Vibrant' }
+  };
 
   // Real-time listener for cart items
   const { data: cartItems, loading: loadingCart, error } = useFirestore('cart', [
@@ -55,6 +70,42 @@ const Cart = () => {
 
   const loading = loadingCart || loadingMats;
   const total = calculateCartTotal(cartItems);
+
+  // Find cart item for the mat being previewed
+  const previewingCartItem = previewingMat ? cartItems.find(item => item.matId === previewingMat.id) : null;
+
+  // Handler for adding mat to cart
+  const handleAddToCart = async () => {
+    if (!currentUser || !previewingMat) return;
+
+    try {
+      const pricePerUnit = previewingMat.matSize === 'small' ? 29.99
+        : previewingMat.matSize === 'medium' ? 39.99
+        : 49.99;
+
+      await addToCart(currentUser.uid, previewingMat.id, 1, pricePerUnit);
+    } catch (error) {
+      console.error('Error adding to cart:', error);
+      alert('Failed to add to cart. Please try again.');
+    }
+  };
+
+  // Handler for updating cart quantity
+  const handleUpdateQuantity = async (newQuantity) => {
+    if (!previewingCartItem) return;
+
+    try {
+      if (newQuantity <= 0) {
+        await removeFromCart(previewingCartItem.id);
+        setPreviewingMat(null); // Close preview when removed
+      } else {
+        await updateCartQuantity(previewingCartItem.id, newQuantity);
+      }
+    } catch (error) {
+      console.error('Error updating quantity:', error);
+      alert('Failed to update quantity. Please try again.');
+    }
+  };
 
   if (loading) {
     return (
@@ -208,6 +259,7 @@ const Cart = () => {
                   key={item.id}
                   cartItem={item}
                   mat={matsData[item.matId]}
+                  onViewMat={setPreviewingMat}
                 />
               ))}
             </div>
@@ -316,6 +368,24 @@ const Cart = () => {
           </div>
         )}
       </div>
+
+      {/* Preview Modal */}
+      {previewingMat && (
+        <MatPreview
+          previewImage={previewingMat.previewImageUrl}
+          matSize={previewingMat.matSize}
+          colorScheme={previewingMat.colorScheme}
+          matSizes={matSizes}
+          colorSchemes={colorSchemes}
+          savedMatId={previewingMat.id}
+          matName={previewingMat.name}
+          cartItem={previewingCartItem}
+          onBackToEdit={() => setPreviewingMat(null)}
+          onAddToCart={handleAddToCart}
+          onUpdateQuantity={handleUpdateQuantity}
+          onSave={() => {}}
+        />
+      )}
     </div>
   );
 };

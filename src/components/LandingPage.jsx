@@ -47,7 +47,7 @@ const LandingPage = () => {
   return (
     <div style={{ padding: '2rem', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '2rem' }}>
       <h1 style={{ fontSize: '2rem', fontWeight: 'bold', color: '#2D3436' }}>
-        ToyMaps - Custom Street Play Mats
+        Hometown Play Mats - Custom Street Play Mats
       </h1>
 
       {/* Address Search */}

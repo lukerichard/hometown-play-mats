@@ -1,5 +1,5 @@
 # CLAUDE.md
-# Project: ToyMaps (Custom Street Play Mats)
+# Project: Hometown Play Mats (Custom Street Play Mats)
 # Role: Senior Frontend Architect / Product Manager
 
 ## Tech Stack (Strict)

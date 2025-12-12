@@ -12,21 +12,59 @@ import {
 } from 'firebase/firestore';
 import { db } from '../config/firebase';
 
-// Add item to cart
-export const addToCart = async (userId, matId, quantity = 1, pricePerUnit) => {
+// Get cart item for a specific mat
+export const getCartItemByMatId = async (userId, matId) => {
   try {
     const cartRef = collection(db, 'cart');
-    const newCartItemRef = doc(cartRef);
+    const q = query(
+      cartRef,
+      where('userId', '==', userId),
+      where('matId', '==', matId)
+    );
 
-    await setDoc(newCartItemRef, {
-      userId,
-      matId,
-      quantity,
-      pricePerUnit,
-      addedAt: serverTimestamp()
-    });
+    const querySnapshot = await getDocs(q);
 
-    return newCartItemRef.id;
+    if (querySnapshot.empty) {
+      return null;
+    }
+
+    const doc = querySnapshot.docs[0];
+    return {
+      id: doc.id,
+      ...doc.data()
+    };
+  } catch (error) {
+    console.error('Error getting cart item:', error);
+    throw error;
+  }
+};
+
+// Add item to cart (or update quantity if already exists)
+export const addToCart = async (userId, matId, quantity = 1, pricePerUnit) => {
+  try {
+    // Check if item already exists in cart
+    const existingItem = await getCartItemByMatId(userId, matId);
+
+    if (existingItem) {
+      // Update quantity of existing item
+      const newQuantity = existingItem.quantity + quantity;
+      await updateCartQuantity(existingItem.id, newQuantity);
+      return existingItem.id;
+    } else {
+      // Add new item to cart
+      const cartRef = collection(db, 'cart');
+      const newCartItemRef = doc(cartRef);
+
+      await setDoc(newCartItemRef, {
+        userId,
+        matId,
+        quantity,
+        pricePerUnit,
+        addedAt: serverTimestamp()
+      });
+
+      return newCartItemRef.id;
+    }
   } catch (error) {
     console.error('Error adding to cart:', error);
     throw error;

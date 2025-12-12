@@ -1,8 +1,10 @@
 import { useState, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
+import { where } from 'firebase/firestore';
 import { useAuth } from '../hooks/useAuth';
+import { useFirestore } from '../hooks/useFirestore';
 import { saveMat, updateMat } from '../utils/matStorage';
-import { addToCart } from '../utils/cartUtils';
+import { addToCart, updateCartQuantity, removeFromCart } from '../utils/cartUtils';
 import MatSidebar from './MatSidebar';
 import MatMapView from './MatMapView';
 import MatPreview from './MatPreview';
@@ -38,6 +40,17 @@ const ToyMatDesigner = () => {
   const [savedMatId, setSavedMatId] = useState(null);
   const [showSaveDialog, setShowSaveDialog] = useState(false);
   const [saving, setSaving] = useState(false);
+
+  // Cart state - fetch user's cart items
+  const { data: cartItems } = useFirestore(
+    currentUser?.uid ? 'cart' : null,
+    currentUser?.uid ? [
+      where('userId', '==', currentUser.uid)
+    ] : []
+  );
+
+  // Find cart item for current mat
+  const currentCartItem = savedMatId ? cartItems.find(item => item.matId === savedMatId) : null;
 
   // Mat sizes in meters
   const matSizes = {
@@ -308,6 +321,7 @@ const ToyMatDesigner = () => {
       }
 
       setShowSaveDialog(false);
+      setMatName(''); // Clear for next save
     } catch (error) {
       console.error('Error saving mat:', error);
       alert('Failed to save mat. Please try again.');
@@ -332,28 +346,62 @@ const ToyMatDesigner = () => {
       return;
     }
 
-    // Check if mat is saved
-    if (!savedMatId) {
-      const shouldSave = confirm('You need to save this mat before adding to cart. Save now?');
-      if (shouldSave) {
-        setShowSaveDialog(true);
-      }
+    // Check if preview exists
+    if (!previewImage) {
+      alert('Please generate a preview first');
       return;
     }
 
     try {
+      let matIdToAdd = savedMatId;
+
+      // Auto-save mat if not already saved
+      if (!matIdToAdd) {
+        const defaultName = `Mat - ${address.substring(0, 30)}${address.length > 30 ? '...' : ''}`;
+
+        const matData = {
+          name: defaultName,
+          matSize,
+          colorScheme,
+          rotation,
+          mapCenter,
+          mapZoom,
+          address,
+          previewImageUrl: previewImage
+        };
+
+        matIdToAdd = await saveMat(currentUser.uid, matData);
+        setSavedMatId(matIdToAdd);
+      }
+
       // Calculate price based on mat size
       const pricePerUnit = matSize === 'small' ? 29.99 : matSize === 'medium' ? 39.99 : 49.99;
 
-      await addToCart(currentUser.uid, savedMatId, 1, pricePerUnit);
+      // Add to cart (will update quantity if already exists)
+      await addToCart(currentUser.uid, matIdToAdd, 1, pricePerUnit);
 
-      const viewCart = confirm('Added to cart! View your cart now?');
-      if (viewCart) {
-        navigate('/cart');
-      }
+      // No dialog - clean UX, user can see it in cart badge
     } catch (error) {
       console.error('Error adding to cart:', error);
       alert('Failed to add to cart. Please try again.');
+    }
+  };
+
+  // Handle updating cart quantity
+  const handleUpdateQuantity = async (newQuantity) => {
+    if (!currentCartItem) return;
+
+    try {
+      if (newQuantity <= 0) {
+        // Remove item from cart when quantity reaches 0
+        await removeFromCart(currentCartItem.id);
+      } else {
+        // Update quantity
+        await updateCartQuantity(currentCartItem.id, newQuantity);
+      }
+    } catch (error) {
+      console.error('Error updating quantity:', error);
+      alert('Failed to update quantity. Please try again.');
     }
   };
 
@@ -568,9 +616,22 @@ const ToyMatDesigner = () => {
         colorSchemes={colorSchemes}
         savedMatId={savedMatId}
         matName={matName}
+        cartItem={currentCartItem}
         onBackToEdit={handleBackToEdit}
         onAddToCart={handleAddToCart}
-        onSave={() => setShowSaveDialog(true)}
+        onUpdateQuantity={handleUpdateQuantity}
+        onSave={() => {
+          // Autofill mat name with address if available, otherwise use default
+          if (!matName) {
+            if (address) {
+              setMatName(address);
+            } else {
+              const timestamp = new Date().toLocaleDateString();
+              setMatName(`My Mat - ${timestamp}`);
+            }
+          }
+          setShowSaveDialog(true);
+        }}
       />
     )}
 
@@ -578,7 +639,10 @@ const ToyMatDesigner = () => {
     {showSaveDialog && (
       <>
         <div
-          onClick={() => setShowSaveDialog(false)}
+          onClick={() => {
+            setShowSaveDialog(false);
+            setMatName(''); // Clear for next save
+          }}
           style={{
             position: 'fixed',
             top: 0,
@@ -653,7 +717,10 @@ const ToyMatDesigner = () => {
 
           <div style={{ display: 'flex', gap: '12px' }}>
             <button
-              onClick={() => setShowSaveDialog(false)}
+              onClick={() => {
+                setShowSaveDialog(false);
+                setMatName(''); // Clear for next save
+              }}
               disabled={saving}
               style={{
                 flex: 1,
