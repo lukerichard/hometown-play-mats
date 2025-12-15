@@ -29,6 +29,27 @@ const MatMapView = ({ center, zoom, matSize, rotation, colorScheme, onMapReady }
 
   const selectionBoxSize = getSelectionBoxDimensions();
 
+  // Calculate road width in pixels based on mat size
+  // Goal: 2 inches wide on the physical mat
+  const getRoadWidth = () => {
+    const matPhysicalWidthMeters = matSize.width; // Physical width in meters
+    const selectionBoxPixels = selectionBoxSize.width; // Pixels on screen
+
+    // Calculate pixels per meter
+    const pixelsPerMeter = selectionBoxPixels / matPhysicalWidthMeters;
+
+    // 2 inches = 0.0508 meters
+    const roadWidthMeters = 0.0508;
+    const roadWidthPixels = roadWidthMeters * pixelsPerMeter;
+
+    // Return width expression for different road types
+    return {
+      base: roadWidthPixels,
+      highway: roadWidthPixels * 1.5, // Highways are 50% wider
+      street: roadWidthPixels
+    };
+  };
+
   useEffect(() => {
     // Initialize map
     if (!mapRef.current) {
@@ -43,7 +64,7 @@ const MatMapView = ({ center, zoom, matSize, rotation, colorScheme, onMapReady }
 
       mapRef.current = new mapboxgl.Map({
         container: mapContainerRef.current,
-        style: 'mapbox://styles/mapbox/streets-v12', // Classic map style
+        style: 'mapbox://styles/mapbox/streets-v11', // Use streets-v11 style
         center: center,
         zoom: zoom,
         pitch: 0,
@@ -53,6 +74,10 @@ const MatMapView = ({ center, zoom, matSize, rotation, colorScheme, onMapReady }
 
       mapRef.current.on('load', () => {
         console.log('Mat map loaded successfully!');
+
+        // Apply Toy Car Mat styling
+        applyToyCarMatStyle();
+
         if (onMapReady) {
           onMapReady(mapRef.current);
         }
@@ -66,6 +91,63 @@ const MatMapView = ({ center, zoom, matSize, rotation, colorScheme, onMapReady }
       }
     };
   }, []);
+
+  // Apply custom Toy Car Mat styling
+  const applyToyCarMatStyle = () => {
+    const map = mapRef.current;
+    if (!map || !map.isStyleLoaded()) return;
+
+    // Hide all default layers
+    const style = map.getStyle();
+    if (style && style.layers) {
+      style.layers.forEach(layer => {
+        map.setLayoutProperty(layer.id, 'visibility', 'none');
+      });
+    }
+
+    // Add bright green background
+    map.addLayer({
+      id: 'toy-background',
+      type: 'background',
+      paint: {
+        'background-color': '#7CFC00' // Bright green (Lawn Green)
+      }
+    });
+
+    const roadWidth = getRoadWidth();
+    console.log('Road width values:', roadWidth);
+    console.log('Mat size:', matSize);
+    console.log('Selection box size:', selectionBoxSize);
+
+    // Add black road layer (base)
+    // Simplified filter for debugging - show ALL roads first
+    map.addLayer({
+      id: 'toy-roads-base',
+      type: 'line',
+      source: 'composite',
+      'source-layer': 'road',
+      filter: ['==', '$type', 'LineString'],
+      paint: {
+        'line-color': '#000000', // Black
+        'line-width': roadWidth.street
+      }
+    });
+
+    // Add yellow dashed center line
+    // Simplified filter for debugging
+    map.addLayer({
+      id: 'toy-roads-centerline',
+      type: 'line',
+      source: 'composite',
+      'source-layer': 'road',
+      filter: ['==', '$type', 'LineString'],
+      paint: {
+        'line-color': '#FFEB3B', // Yellow
+        'line-width': Math.max(roadWidth.street * 0.15, 1), // Thinner center line, minimum 1px
+        'line-dasharray': [2, 2] // Dashed pattern
+      }
+    });
+  };
 
   // Update map center and zoom when they change
   useEffect(() => {
@@ -86,6 +168,22 @@ const MatMapView = ({ center, zoom, matSize, rotation, colorScheme, onMapReady }
       });
     }
   }, [rotation]);
+
+  // Re-apply styling when mat size changes (affects road width)
+  useEffect(() => {
+    if (mapRef.current && mapRef.current.isStyleLoaded()) {
+      // Remove existing custom layers
+      const layersToRemove = ['toy-background', 'toy-roads-base', 'toy-roads-centerline'];
+      layersToRemove.forEach(layerId => {
+        if (mapRef.current.getLayer(layerId)) {
+          mapRef.current.removeLayer(layerId);
+        }
+      });
+
+      // Re-apply with new dimensions
+      applyToyCarMatStyle();
+    }
+  }, [matSize]);
 
   return (
     <div style={{
