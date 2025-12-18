@@ -119,32 +119,122 @@ const MatMapView = ({ center, zoom, matSize, rotation, colorScheme, onMapReady }
     console.log('Mat size:', matSize);
     console.log('Selection box size:', selectionBoxSize);
 
-    // Add black road layer (base)
-    // Simplified filter for debugging - show ALL roads first
+    // Filter for actual roads (exclude pedestrian paths, sidewalks, etc.)
+    const roadFilter = [
+      'all',
+      ['==', '$type', 'LineString'],
+      ['!=', 'class', 'path'],
+      ['!=', 'class', 'pedestrian'],
+      ['!=', 'type', 'sidewalk']
+    ];
+
+    // Filter for roads that should have center lines and edge lines
+    // Exclude link roads, service roads, and short connecting segments to reduce clutter at intersections
+    const linePaintFilter = [
+      'all',
+      ['==', '$type', 'LineString'],
+      ['in', 'class', 'motorway', 'trunk', 'primary', 'secondary', 'tertiary', 'street', 'street_limited'],
+      ['!=', 'type', 'service'],
+      ['!=', 'type', 'link'],
+      ['!=', 'type', 'turning_loop'],
+      ['!=', 'type', 'turning_circle']
+    ];
+
+    // Add sidewalks - light gray concrete paths
+    // Filter for sidewalks and footpaths
+    const sidewalkFilter = [
+      'any',
+      ['==', 'type', 'sidewalk'],
+      ['==', 'type', 'footway'],
+      ['all', ['==', 'class', 'path'], ['!=', 'type', 'crossing']],
+      ['all', ['==', 'class', 'pedestrian'], ['!=', 'type', 'crossing']]
+    ];
+
+    map.addLayer({
+      id: 'toy-sidewalks',
+      type: 'line',
+      source: 'composite',
+      'source-layer': 'road',
+      filter: sidewalkFilter,
+      paint: {
+        'line-color': '#C0C0C0', // Light gray (concrete color)
+        'line-width': roadWidth.street * 0.25 // Sidewalks are narrower than roads
+      },
+      layout: {
+        'line-join': 'round',
+        'line-cap': 'round'
+      }
+    });
+
+    // Add white road casing FIRST (underneath) - this creates the edge lines
+    // By drawing casing underneath and road on top, intersections are naturally clean
+    map.addLayer({
+      id: 'toy-roads-casing',
+      type: 'line',
+      source: 'composite',
+      'source-layer': 'road',
+      filter: linePaintFilter,
+      paint: {
+        'line-color': '#FFFFFF', // White casing (edge lines)
+        'line-width': roadWidth.street + Math.max(roadWidth.street * 0.16, 4) // Road width + edge thickness on both sides
+      },
+      layout: {
+        'line-join': 'round',
+        'line-cap': 'round'
+      }
+    });
+
+    // Add black road layer (base) ON TOP - covers the casing at intersections
     map.addLayer({
       id: 'toy-roads-base',
       type: 'line',
       source: 'composite',
       'source-layer': 'road',
-      filter: ['==', '$type', 'LineString'],
+      filter: roadFilter,
       paint: {
-        'line-color': '#000000', // Black
+        'line-color': '#000000', // Black road surface
         'line-width': roadWidth.street
+      },
+      layout: {
+        'line-join': 'round',
+        'line-cap': 'round'
       }
     });
 
-    // Add yellow dashed center line
-    // Simplified filter for debugging
+    // Add white dashed center line - only on main roads
     map.addLayer({
       id: 'toy-roads-centerline',
       type: 'line',
       source: 'composite',
       'source-layer': 'road',
-      filter: ['==', '$type', 'LineString'],
+      filter: linePaintFilter,
       paint: {
-        'line-color': '#FFEB3B', // Yellow
+        'line-color': '#FFFFFF', // White
         'line-width': Math.max(roadWidth.street * 0.15, 1), // Thinner center line, minimum 1px
-        'line-dasharray': [2, 2] // Dashed pattern
+        'line-dasharray': [3, 2] // Longer dashes with gaps - helps break at intersections naturally
+      },
+      layout: {
+        'line-join': 'miter', // Use miter instead of round to avoid line overlap at intersections
+        'line-cap': 'butt' // Square ends to prevent overlap
+      }
+    });
+
+    // Add crosswalks at intersections
+    map.addLayer({
+      id: 'toy-crosswalks',
+      type: 'line',
+      source: 'composite',
+      'source-layer': 'road',
+      filter: ['all', ['==', 'class', 'pedestrian'], ['==', 'type', 'crossing']],
+      paint: {
+        'line-color': '#FFFFFF',
+        'line-width': roadWidth.street * 0.6,
+        'line-dasharray': [0.3, 0.3], // Very short dashes for crosswalk stripe effect
+        'line-opacity': 0.9
+      },
+      layout: {
+        'line-join': 'miter',
+        'line-cap': 'butt'
       }
     });
   };
@@ -173,7 +263,7 @@ const MatMapView = ({ center, zoom, matSize, rotation, colorScheme, onMapReady }
   useEffect(() => {
     if (mapRef.current && mapRef.current.isStyleLoaded()) {
       // Remove existing custom layers
-      const layersToRemove = ['toy-background', 'toy-roads-base', 'toy-roads-centerline'];
+      const layersToRemove = ['toy-background', 'toy-sidewalks', 'toy-roads-casing', 'toy-roads-base', 'toy-roads-centerline', 'toy-crosswalks'];
       layersToRemove.forEach(layerId => {
         if (mapRef.current.getLayer(layerId)) {
           mapRef.current.removeLayer(layerId);
