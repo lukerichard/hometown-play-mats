@@ -75,12 +75,39 @@ const MatMapView = ({ center, zoom, matSize, rotation, colorScheme, onMapReady }
       mapRef.current.on('load', () => {
         console.log('Mat map loaded successfully!');
 
-        // Apply Toy Car Mat styling
-        applyToyCarMatStyle();
+        // Load icon images
+        const iconsToLoad = [
+          { name: 'school-icon', path: '/images/school.png' },
+          { name: 'park-icon', path: '/images/park.png' }
+        ];
 
-        if (onMapReady) {
-          onMapReady(mapRef.current);
-        }
+        let loadedCount = 0;
+        const totalIcons = iconsToLoad.length;
+
+        const onAllIconsLoaded = () => {
+          // Apply Toy Car Mat styling (after all images load)
+          applyToyCarMatStyle();
+
+          if (onMapReady) {
+            onMapReady(mapRef.current);
+          }
+        };
+
+        iconsToLoad.forEach(icon => {
+          mapRef.current.loadImage(icon.path, (error, image) => {
+            if (error) {
+              console.error(`Error loading ${icon.name}:`, error);
+            } else {
+              if (!mapRef.current.hasImage(icon.name)) {
+                mapRef.current.addImage(icon.name, image);
+              }
+            }
+            loadedCount++;
+            if (loadedCount === totalIcons) {
+              onAllIconsLoaded();
+            }
+          });
+        });
       });
     }
 
@@ -110,7 +137,18 @@ const MatMapView = ({ center, zoom, matSize, rotation, colorScheme, onMapReady }
       id: 'toy-background',
       type: 'background',
       paint: {
-        'background-color': '#7CFC00' // Bright green (Lawn Green)
+        'background-color': '#CDD5C6' // Sage green
+      }
+    });
+
+    // Add water layer
+    map.addLayer({
+      id: 'toy-water',
+      type: 'fill',
+      source: 'composite',
+      'source-layer': 'water',
+      paint: {
+        'fill-color': '#B4CED9' // Light blue water
       }
     });
 
@@ -192,7 +230,7 @@ const MatMapView = ({ center, zoom, matSize, rotation, colorScheme, onMapReady }
       'source-layer': 'road',
       filter: roadFilter,
       paint: {
-        'line-color': '#000000', // Black road surface
+        'line-color': '#B7BCBF', // Light gray road surface
         'line-width': roadWidth.street
       },
       layout: {
@@ -237,6 +275,50 @@ const MatMapView = ({ center, zoom, matSize, rotation, colorScheme, onMapReady }
         'line-cap': 'butt'
       }
     });
+
+    // Add school icons where schools are present
+    if (map.hasImage('school-icon')) {
+      map.addLayer({
+        id: 'toy-schools',
+        type: 'symbol',
+        source: 'composite',
+        'source-layer': 'poi_label',
+        filter: [
+          'any',
+          ['==', ['get', 'class'], 'school'],
+          ['==', ['get', 'type'], 'School'],
+          ['in', 'school', ['downcase', ['get', 'name']]]
+        ],
+        layout: {
+          'icon-image': 'school-icon',
+          'icon-size': 0.25,
+          'icon-allow-overlap': true,
+          'icon-ignore-placement': true
+        }
+      });
+    }
+
+    // Add park icons where parks are present
+    if (map.hasImage('park-icon')) {
+      map.addLayer({
+        id: 'toy-parks',
+        type: 'symbol',
+        source: 'composite',
+        'source-layer': 'poi_label',
+        filter: [
+          'any',
+          ['==', ['get', 'class'], 'park'],
+          ['==', ['get', 'type'], 'Park'],
+          ['in', 'park', ['downcase', ['get', 'name']]]
+        ],
+        layout: {
+          'icon-image': 'park-icon',
+          'icon-size': 0.08,
+          'icon-allow-overlap': true,
+          'icon-ignore-placement': true
+        }
+      });
+    }
   };
 
   // Update map center and zoom when they change
@@ -263,7 +345,7 @@ const MatMapView = ({ center, zoom, matSize, rotation, colorScheme, onMapReady }
   useEffect(() => {
     if (mapRef.current && mapRef.current.isStyleLoaded()) {
       // Remove existing custom layers
-      const layersToRemove = ['toy-background', 'toy-sidewalks', 'toy-roads-casing', 'toy-roads-base', 'toy-roads-centerline', 'toy-crosswalks'];
+      const layersToRemove = ['toy-background', 'toy-water', 'toy-sidewalks', 'toy-roads-casing', 'toy-roads-base', 'toy-roads-centerline', 'toy-crosswalks', 'toy-schools', 'toy-parks'];
       layersToRemove.forEach(layerId => {
         if (mapRef.current.getLayer(layerId)) {
           mapRef.current.removeLayer(layerId);

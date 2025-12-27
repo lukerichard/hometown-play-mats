@@ -41,7 +41,7 @@ const CartItem = ({ cartItem, mat, onViewMat }) => {
       padding: '20px',
       background: 'white',
       borderRadius: '12px',
-      border: '2px solid rgba(16, 185, 129, 0.15)',
+      border: '2px solid rgba(121, 151, 127, 0.5)',
       opacity: updating ? 0.6 : 1,
       pointerEvents: updating ? 'none' : 'auto',
       transition: 'all 0.2s'
@@ -63,7 +63,7 @@ const CartItem = ({ cartItem, mat, onViewMat }) => {
         onMouseEnter={(e) => {
           if (mat) {
             e.currentTarget.style.transform = 'scale(1.05)';
-            e.currentTarget.style.borderColor = 'rgba(16, 185, 129, 0.5)';
+            e.currentTarget.style.borderColor = 'rgba(121, 151, 127, 0.8)';
           }
         }}
         onMouseLeave={(e) => {
@@ -104,12 +104,12 @@ const CartItem = ({ cartItem, mat, onViewMat }) => {
             margin: '0 0 8px 0',
             fontSize: '18px',
             fontWeight: '800',
-            color: '#1e293b',
+            color: '#3A3A3A',
             cursor: mat ? 'pointer' : 'default',
             transition: 'color 0.2s'
           }}
-          onMouseEnter={(e) => mat && (e.currentTarget.style.color = '#10b981')}
-          onMouseLeave={(e) => (e.currentTarget.style.color = '#1e293b')}
+          onMouseEnter={(e) => mat && (e.currentTarget.style.color = '#C78880')}
+          onMouseLeave={(e) => (e.currentTarget.style.color = '#3A3A3A')}
         >
           {mat?.name || 'Mat'}
         </h3>
@@ -121,27 +121,15 @@ const CartItem = ({ cartItem, mat, onViewMat }) => {
         }}>
           <span style={{
             padding: '4px 10px',
-            background: 'rgba(16, 185, 129, 0.1)',
-            border: '1px solid rgba(16, 185, 129, 0.2)',
+            background: 'rgba(121, 151, 127, 0.3)',
+            border: '1px solid rgba(121, 151, 127, 0.6)',
             borderRadius: '6px',
             fontSize: '12px',
             fontWeight: '700',
-            color: '#059669',
+            color: '#A86E67',
             textTransform: 'capitalize'
           }}>
             {mat?.matSize || 'N/A'}
-          </span>
-          <span style={{
-            padding: '4px 10px',
-            background: 'rgba(100, 116, 139, 0.1)',
-            border: '1px solid rgba(100, 116, 139, 0.2)',
-            borderRadius: '6px',
-            fontSize: '12px',
-            fontWeight: '700',
-            color: '#475569',
-            textTransform: 'capitalize'
-          }}>
-            {mat?.colorScheme || 'N/A'}
           </span>
         </div>
 
@@ -167,11 +155,11 @@ const CartItem = ({ cartItem, mat, onViewMat }) => {
                 width: '32px',
                 height: '32px',
                 background: 'white',
-                border: '2px solid rgba(16, 185, 129, 0.2)',
+                border: '2px solid rgba(121, 151, 127, 0.6)',
                 borderRadius: '6px',
                 fontSize: '18px',
                 fontWeight: '700',
-                color: '#1e293b',
+                color: '#3A3A3A',
                 cursor: cartItem.quantity <= 1 ? 'not-allowed' : 'pointer',
                 opacity: cartItem.quantity <= 1 ? 0.4 : 1
               }}
@@ -181,7 +169,7 @@ const CartItem = ({ cartItem, mat, onViewMat }) => {
             <span style={{
               fontSize: '16px',
               fontWeight: '700',
-              color: '#1e293b',
+              color: '#3A3A3A',
               minWidth: '30px',
               textAlign: 'center'
             }}>
@@ -194,11 +182,11 @@ const CartItem = ({ cartItem, mat, onViewMat }) => {
                 width: '32px',
                 height: '32px',
                 background: 'white',
-                border: '2px solid rgba(16, 185, 129, 0.2)',
+                border: '2px solid rgba(121, 151, 127, 0.6)',
                 borderRadius: '6px',
                 fontSize: '18px',
                 fontWeight: '700',
-                color: '#1e293b',
+                color: '#3A3A3A',
                 cursor: 'pointer'
               }}
             >
@@ -219,7 +207,7 @@ const CartItem = ({ cartItem, mat, onViewMat }) => {
             <span style={{
               fontSize: '18px',
               fontWeight: '800',
-              color: '#10b981'
+              color: '#C78880'
             }}>
               ${totalPrice}
             </span>

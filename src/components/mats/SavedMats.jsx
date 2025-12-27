@@ -40,7 +40,7 @@ const SavedMats = () => {
   };
 
   const colorSchemes = {
-    classic: { color: '#10b981', name: 'Classic' },
+    classic: { color: '#C78880', name: 'Classic' },
     muted: { color: '#64748b', name: 'Muted' },
     neon: { color: '#ec4899', name: 'Neon Vibrant' }
   };
@@ -105,8 +105,8 @@ const SavedMats = () => {
           <div style={{
             width: '50px',
             height: '50px',
-            border: '4px solid rgba(16, 185, 129, 0.2)',
-            borderTop: '4px solid #10b981',
+            border: '4px solid rgba(121, 151, 127, 0.6)',
+            borderTop: '4px solid #C78880',
             borderRadius: '50%',
             animation: 'spin 1s linear infinite',
             margin: '0 auto 20px'
@@ -174,7 +174,7 @@ const SavedMats = () => {
           <h1 style={{
             fontSize: '32px',
             fontWeight: '800',
-            color: '#1e293b',
+            color: '#3A3A3A',
             margin: 0,
             letterSpacing: '-0.5px'
           }}>
@@ -183,7 +183,7 @@ const SavedMats = () => {
           <Link to="/">
             <button style={{
               padding: '12px 24px',
-              background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
+              background: 'linear-gradient(135deg, #C78880 0%, #A86E67 100%)',
               color: 'white',
               border: 'none',
               borderRadius: '10px',
@@ -191,7 +191,7 @@ const SavedMats = () => {
               fontWeight: '700',
               cursor: 'pointer',
               fontFamily: 'Inter, sans-serif',
-              boxShadow: '0 4px 12px rgba(16, 185, 129, 0.3)',
+              boxShadow: '0 4px 12px rgba(121, 151, 127, 0.5)',
               transition: 'all 0.2s'
             }}
             onMouseEnter={(e) => e.currentTarget.style.transform = 'translateY(-2px)'}
@@ -220,7 +220,7 @@ const SavedMats = () => {
             <h2 style={{
               fontSize: '24px',
               fontWeight: '800',
-              color: '#1e293b',
+              color: '#3A3A3A',
               marginBottom: '12px'
             }}>
               No saved mats yet
@@ -237,7 +237,7 @@ const SavedMats = () => {
             <Link to="/">
               <button style={{
                 padding: '16px 32px',
-                background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
+                background: 'linear-gradient(135deg, #C78880 0%, #A86E67 100%)',
                 color: 'white',
                 border: 'none',
                 borderRadius: '12px',
@@ -245,7 +245,7 @@ const SavedMats = () => {
                 fontWeight: '800',
                 cursor: 'pointer',
                 fontFamily: 'Inter, sans-serif',
-                boxShadow: '0 4px 20px rgba(16, 185, 129, 0.3)',
+                boxShadow: '0 4px 20px rgba(121, 151, 127, 0.5)',
                 transition: 'all 0.2s'
               }}
               onMouseEnter={(e) => e.currentTarget.style.transform = 'translateY(-2px)'}

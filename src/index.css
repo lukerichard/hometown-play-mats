@@ -3,14 +3,23 @@
 
 /* Hometown Play Mats Custom Theme (Hot Wheels Colors) */
 @theme {
-  --color-grass: #4CAF50;
+  --color-grass: #CDD5C6;
   --color-road: #333333;
   --color-centerline: #FFEB3B;
-  --color-toy-grass: #70D058;
+  --color-toy-grass: #CDD5C6;
   --color-toy-road: #2D3436;
   --color-toy-stripe: #FFEAA7;
-  --color-toy-water: #74B9FF;
-  --color-toy-accent: #FF7675;
+  --color-toy-water: #B4CED9;
+  --color-toy-accent: #C78880;
+  /* New Color Scheme */
+  --color-cta: #C78880;           /* Dusty Rose - Primary Action Buttons */
+  --color-cta-dark: #A86E67;
+  --color-nav: #2C3E50;           /* Classic/Trust - Navigation & Headers */
+  --color-nav-light: #3D5166;
+  --color-active: #4A5D4E;        /* Minimalist - Active states */
+  --color-active-light: #5C7360;
+  --color-text: #3A3A3A;          /* Neutral - Body text */
+  --color-text-light: #64748b;
 }
 
 /* Hometown Play Mats Custom Styles */

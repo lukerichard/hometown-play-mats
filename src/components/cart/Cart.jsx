@@ -22,7 +22,7 @@ const Cart = () => {
   };
 
   const colorSchemes = {
-    classic: { color: '#10b981', name: 'Classic' },
+    classic: { color: '#C78880', name: 'Classic' },
     muted: { color: '#64748b', name: 'Muted' },
     neon: { color: '#ec4899', name: 'Neon Vibrant' }
   };
@@ -121,8 +121,8 @@ const Cart = () => {
           <div style={{
             width: '50px',
             height: '50px',
-            border: '4px solid rgba(16, 185, 129, 0.2)',
-            borderTop: '4px solid #10b981',
+            border: '4px solid rgba(121, 151, 127, 0.6)',
+            borderTop: '4px solid #C78880',
             borderRadius: '50%',
             animation: 'spin 1s linear infinite',
             margin: '0 auto 20px'
@@ -182,7 +182,7 @@ const Cart = () => {
         <h1 style={{
           fontSize: '32px',
           fontWeight: '800',
-          color: '#1e293b',
+          color: '#3A3A3A',
           marginBottom: '32px',
           letterSpacing: '-0.5px'
         }}>
@@ -207,7 +207,7 @@ const Cart = () => {
             <h2 style={{
               fontSize: '24px',
               fontWeight: '800',
-              color: '#1e293b',
+              color: '#3A3A3A',
               marginBottom: '12px'
             }}>
               Your cart is empty
@@ -224,7 +224,7 @@ const Cart = () => {
             <Link to="/">
               <button style={{
                 padding: '16px 32px',
-                background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
+                background: 'linear-gradient(135deg, #C78880 0%, #A86E67 100%)',
                 color: 'white',
                 border: 'none',
                 borderRadius: '12px',
@@ -232,7 +232,7 @@ const Cart = () => {
                 fontWeight: '800',
                 cursor: 'pointer',
                 fontFamily: 'Inter, sans-serif',
-                boxShadow: '0 4px 20px rgba(16, 185, 129, 0.3)',
+                boxShadow: '0 4px 20px rgba(121, 151, 127, 0.5)',
                 transition: 'all 0.2s'
               }}
               onMouseEnter={(e) => e.currentTarget.style.transform = 'translateY(-2px)'}
@@ -276,7 +276,7 @@ const Cart = () => {
               <h2 style={{
                 fontSize: '20px',
                 fontWeight: '800',
-                color: '#1e293b',
+                color: '#3A3A3A',
                 marginBottom: '20px'
               }}>
                 Order Summary
@@ -290,23 +290,23 @@ const Cart = () => {
                 <span style={{ fontSize: '15px', color: '#64748b', fontWeight: '600' }}>
                   Items ({cartItems.length})
                 </span>
-                <span style={{ fontSize: '15px', color: '#1e293b', fontWeight: '700' }}>
+                <span style={{ fontSize: '15px', color: '#3A3A3A', fontWeight: '700' }}>
                   ${total.toFixed(2)}
                 </span>
               </div>
 
               <div style={{
-                borderTop: '2px solid rgba(16, 185, 129, 0.15)',
+                borderTop: '2px solid rgba(121, 151, 127, 0.5)',
                 marginTop: '16px',
                 paddingTop: '16px',
                 display: 'flex',
                 justifyContent: 'space-between',
                 marginBottom: '24px'
               }}>
-                <span style={{ fontSize: '18px', color: '#1e293b', fontWeight: '800' }}>
+                <span style={{ fontSize: '18px', color: '#3A3A3A', fontWeight: '800' }}>
                   Total
                 </span>
-                <span style={{ fontSize: '24px', color: '#10b981', fontWeight: '800' }}>
+                <span style={{ fontSize: '24px', color: '#C78880', fontWeight: '800' }}>
                   ${total.toFixed(2)}
                 </span>
               </div>
@@ -316,7 +316,7 @@ const Cart = () => {
                 style={{
                   width: '100%',
                   padding: '16px',
-                  background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
+                  background: 'linear-gradient(135deg, #C78880 0%, #A86E67 100%)',
                   color: 'white',
                   border: 'none',
                   borderRadius: '10px',
@@ -325,7 +325,7 @@ const Cart = () => {
                   cursor: 'pointer',
                   fontFamily: 'Inter, sans-serif',
                   letterSpacing: '0.3px',
-                  boxShadow: '0 4px 20px rgba(16, 185, 129, 0.3)',
+                  boxShadow: '0 4px 20px rgba(121, 151, 127, 0.5)',
                   transition: 'all 0.2s',
                   marginBottom: '12px'
                 }}
@@ -340,7 +340,7 @@ const Cart = () => {
                   width: '100%',
                   padding: '14px',
                   background: 'white',
-                  border: '2px solid rgba(16, 185, 129, 0.2)',
+                  border: '2px solid rgba(121, 151, 127, 0.6)',
                   borderRadius: '10px',
                   fontSize: '15px',
                   fontWeight: '700',
@@ -350,14 +350,14 @@ const Cart = () => {
                   display: 'block',
                   textAlign: 'center',
                   textDecoration: 'none',
-                  color: '#1e293b'
+                  color: '#3A3A3A'
                 }}
                 onMouseEnter={(e) => {
-                  e.currentTarget.style.borderColor = '#10b981';
-                  e.currentTarget.style.background = 'rgba(16, 185, 129, 0.05)';
+                  e.currentTarget.style.borderColor = '#C78880';
+                  e.currentTarget.style.background = 'rgba(121, 151, 127, 0.2)';
                 }}
                 onMouseLeave={(e) => {
-                  e.currentTarget.style.borderColor = 'rgba(16, 185, 129, 0.2)';
+                  e.currentTarget.style.borderColor = 'rgba(121, 151, 127, 0.6)';
                   e.currentTarget.style.background = 'white';
                 }}
                 >

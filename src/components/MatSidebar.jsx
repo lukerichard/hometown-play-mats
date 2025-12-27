@@ -1,5 +1,3 @@
-import { useState, useEffect, useRef } from 'react';
-
 const MatSidebar = ({
   matSize,
   setMatSize,
@@ -7,41 +5,10 @@ const MatSidebar = ({
   setRotation,
   rotateLeft,
   rotateRight,
-  colorScheme,
-  setColorScheme,
   matSizes,
-  colorSchemes,
   onGenerate
 }) => {
   const sizeOptions = Object.entries(matSizes);
-  const colorOptions = Object.entries(colorSchemes);
-  const [colorDropdownOpen, setColorDropdownOpen] = useState(false);
-  const dropdownRef = useRef(null);
-
-  const colorGradients = {
-    classic: 'linear-gradient(135deg, #10b981, #34d399, #fbbf24, #f87171)',
-    muted: 'linear-gradient(135deg, #64748b, #94a3b8, #cbd5e1, #78716c)',
-    neon: 'linear-gradient(135deg, #ec4899, #f59e0b, #06b6d4, #a855f7)'
-  };
-
-  const handleColorSelect = (key) => {
-    setColorScheme(key);
-    setColorDropdownOpen(false);
-  };
-
-  // Close dropdown when clicking outside
-  useEffect(() => {
-    const handleClickOutside = (event) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
-        setColorDropdownOpen(false);
-      }
-    };
-
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
-    };
-  }, []);
 
   return (
     <div style={{
@@ -52,7 +19,7 @@ const MatSidebar = ({
       maxHeight: 'calc(100vh - 82px)'
     }}>
       <h2 style={{
-        color: '#1e293b',
+        color: '#3A3A3A',
         marginBottom: '16px',
         fontSize: '22px',
         fontWeight: '800',
@@ -81,13 +48,13 @@ const MatSidebar = ({
               display: 'flex',
               alignItems: 'center',
               padding: '12px',
-              background: matSize === key ? 'rgba(16, 185, 129, 0.08)' : '#f8fafb',
-              border: `2px solid ${matSize === key ? '#10b981' : 'rgba(16, 185, 129, 0.15)'}`,
+              background: matSize === key ? 'rgba(74, 93, 78, 0.2)' : '#f8fafb',
+              border: `2px solid ${matSize === key ? '#4A5D4E' : 'rgba(121, 151, 127, 0.5)'}`,
               borderRadius: '10px',
               marginBottom: '8px',
               cursor: 'pointer',
               transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-              boxShadow: matSize === key ? '0 4px 20px rgba(16, 185, 129, 0.2)' : 'none'
+              boxShadow: matSize === key ? '0 4px 20px rgba(74, 93, 78, 0.4)' : 'none'
             }}
           >
             <input
@@ -99,13 +66,13 @@ const MatSidebar = ({
                 width: '16px',
                 height: '16px',
                 cursor: 'pointer',
-                accentColor: '#10b981'
+                accentColor: '#4A5D4E'
               }}
             />
             <div style={{ flex: 1 }}>
               <div style={{
                 fontWeight: '700',
-                color: '#1e293b',
+                color: '#3A3A3A',
                 marginBottom: '2px',
                 fontSize: '14px'
               }}>
@@ -146,7 +113,7 @@ const MatSidebar = ({
               flex: 1,
               padding: '10px',
               background: '#f8fafb',
-              border: '2px solid rgba(16, 185, 129, 0.2)',
+              border: '2px solid rgba(121, 151, 127, 0.6)',
               borderRadius: '10px',
               cursor: 'pointer',
               fontWeight: '700',
@@ -162,7 +129,7 @@ const MatSidebar = ({
             textAlign: 'center',
             fontSize: '18px',
             fontWeight: '800',
-            background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
+            background: 'linear-gradient(135deg, #C78880 0%, #A86E67 100%)',
             WebkitBackgroundClip: 'text',
             WebkitTextFillColor: 'transparent',
             backgroundClip: 'text',
@@ -177,7 +144,7 @@ const MatSidebar = ({
               flex: 1,
               padding: '10px',
               background: '#f8fafb',
-              border: '2px solid rgba(16, 185, 129, 0.2)',
+              border: '2px solid rgba(121, 151, 127, 0.6)',
               borderRadius: '10px',
               cursor: 'pointer',
               fontWeight: '700',
@@ -204,7 +171,7 @@ const MatSidebar = ({
               width: '100%',
               height: '6px',
               borderRadius: '3px',
-              background: `linear-gradient(to right, #10b981 0%, #10b981 ${(rotation / 360) * 100}%, #e5e7eb ${(rotation / 360) * 100}%, #e5e7eb 100%)`,
+              background: `linear-gradient(to right, #C78880 0%, #C78880 ${(rotation / 360) * 100}%, #e5e7eb ${(rotation / 360) * 100}%, #e5e7eb 100%)`,
               outline: 'none',
               cursor: 'pointer',
               WebkitAppearance: 'none',
@@ -214,121 +181,13 @@ const MatSidebar = ({
         </div>
       </div>
 
-      {/* Color Scheme Section */}
-      <div ref={dropdownRef} style={{ marginBottom: '18px', position: 'relative' }}>
-        <div style={{
-          fontSize: '11px',
-          fontWeight: '700',
-          color: '#64748b',
-          textTransform: 'uppercase',
-          letterSpacing: '1px',
-          marginBottom: '10px'
-        }}>
-          Color Scheme
-        </div>
-
-        {/* Selected Option Display */}
-        <div
-          onClick={() => setColorDropdownOpen(!colorDropdownOpen)}
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            padding: '12px',
-            background: 'white',
-            border: '2px solid rgba(16, 185, 129, 0.2)',
-            borderRadius: '10px',
-            cursor: 'pointer',
-            transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-            position: 'relative'
-          }}
-        >
-          <div style={{
-            width: '36px',
-            height: '36px',
-            borderRadius: '8px',
-            marginRight: '10px',
-            border: '2px solid rgba(0, 0, 0, 0.08)',
-            boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)',
-            background: colorGradients[colorScheme]
-          }} />
-          <div style={{
-            fontWeight: '700',
-            color: '#1e293b',
-            fontSize: '14px',
-            flex: 1
-          }}>
-            {colorSchemes[colorScheme].name}
-          </div>
-          <div style={{
-            fontSize: '18px',
-            color: '#64748b',
-            transition: 'transform 0.3s',
-            transform: colorDropdownOpen ? 'rotate(180deg)' : 'rotate(0deg)'
-          }}>
-            ▼
-          </div>
-        </div>
-
-        {/* Dropdown Options */}
-        {colorDropdownOpen && (
-          <div style={{
-            position: 'absolute',
-            top: '100%',
-            left: 0,
-            right: 0,
-            marginTop: '4px',
-            background: 'white',
-            border: '2px solid rgba(16, 185, 129, 0.2)',
-            borderRadius: '10px',
-            boxShadow: '0 10px 40px rgba(0, 0, 0, 0.15)',
-            zIndex: 1000,
-            overflow: 'hidden'
-          }}>
-            {colorOptions.map(([key, scheme]) => (
-              <div
-                key={key}
-                onClick={() => handleColorSelect(key)}
-                style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  padding: '12px',
-                  cursor: 'pointer',
-                  borderBottom: key !== colorOptions[colorOptions.length - 1][0] ? '1px solid rgba(16, 185, 129, 0.1)' : 'none',
-                  transition: 'background 0.2s',
-                  background: colorScheme === key ? 'rgba(16, 185, 129, 0.08)' : 'transparent'
-                }}
-                onMouseEnter={(e) => e.currentTarget.style.background = 'rgba(16, 185, 129, 0.08)'}
-                onMouseLeave={(e) => e.currentTarget.style.background = colorScheme === key ? 'rgba(16, 185, 129, 0.08)' : 'transparent'}
-              >
-                <div style={{
-                  width: '36px',
-                  height: '36px',
-                  borderRadius: '8px',
-                  marginRight: '10px',
-                  border: '2px solid rgba(0, 0, 0, 0.08)',
-                  boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)',
-                  background: colorGradients[key]
-                }} />
-                <div style={{
-                  fontWeight: '700',
-                  color: '#1e293b',
-                  fontSize: '14px'
-                }}>
-                  {scheme.name}
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
-      </div>
-
       {/* Generate Button */}
       <button
         onClick={onGenerate}
         style={{
           width: '100%',
           padding: '14px',
-          background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
+          background: 'linear-gradient(135deg, #C78880 0%, #A86E67 100%)',
           color: 'white',
           border: 'none',
           borderRadius: '10px',
@@ -338,7 +197,7 @@ const MatSidebar = ({
           transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
           fontFamily: 'Inter, sans-serif',
           letterSpacing: '0.3px',
-          boxShadow: '0 4px 20px rgba(16, 185, 129, 0.3)'
+          boxShadow: '0 4px 20px rgba(121, 151, 127, 0.5)'
         }}
       >
         🏎️ Create My Play Mat!

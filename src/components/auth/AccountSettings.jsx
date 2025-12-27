@@ -131,7 +131,7 @@ const AccountSettings = () => {
         <h1 style={{
           fontSize: '32px',
           fontWeight: '800',
-          color: '#1e293b',
+          color: '#3A3A3A',
           marginBottom: '32px',
           letterSpacing: '-0.5px'
         }}>
@@ -149,7 +149,7 @@ const AccountSettings = () => {
           <h2 style={{
             fontSize: '20px',
             fontWeight: '800',
-            color: '#1e293b',
+            color: '#3A3A3A',
             marginBottom: '24px'
           }}>
             Profile Information
@@ -159,19 +159,19 @@ const AccountSettings = () => {
           <div style={{
             marginBottom: '24px',
             padding: '20px',
-            background: 'rgba(16, 185, 129, 0.05)',
+            background: 'rgba(121, 151, 127, 0.2)',
             borderRadius: '12px',
-            border: '1px solid rgba(16, 185, 129, 0.15)'
+            border: '1px solid rgba(121, 151, 127, 0.5)'
           }}>
             <div style={{ marginBottom: '12px' }}>
               <span style={{ fontSize: '13px', color: '#64748b', fontWeight: '600' }}>Email:</span>
-              <div style={{ fontSize: '15px', color: '#1e293b', fontWeight: '700', marginTop: '4px' }}>
+              <div style={{ fontSize: '15px', color: '#3A3A3A', fontWeight: '700', marginTop: '4px' }}>
                 {currentUser?.email}
               </div>
             </div>
             <div>
               <span style={{ fontSize: '13px', color: '#64748b', fontWeight: '600' }}>Display Name:</span>
-              <div style={{ fontSize: '15px', color: '#1e293b', fontWeight: '700', marginTop: '4px' }}>
+              <div style={{ fontSize: '15px', color: '#3A3A3A', fontWeight: '700', marginTop: '4px' }}>
                 {currentUser?.displayName || 'Not set'}
               </div>
             </div>
@@ -184,7 +184,7 @@ const AccountSettings = () => {
                 display: 'block',
                 fontSize: '14px',
                 fontWeight: '700',
-                color: '#1e293b',
+                color: '#3A3A3A',
                 marginBottom: '8px'
               }}>
                 Update Display Name
@@ -197,7 +197,7 @@ const AccountSettings = () => {
                 style={{
                   width: '100%',
                   padding: '14px 16px',
-                  border: '2px solid rgba(16, 185, 129, 0.2)',
+                  border: '2px solid rgba(121, 151, 127, 0.6)',
                   borderRadius: '10px',
                   fontSize: '15px',
                   fontFamily: 'Inter, sans-serif',
@@ -211,10 +211,10 @@ const AccountSettings = () => {
               <div style={{
                 marginBottom: '16px',
                 padding: '12px 16px',
-                background: 'rgba(16, 185, 129, 0.1)',
-                border: '1px solid rgba(16, 185, 129, 0.3)',
+                background: 'rgba(121, 151, 127, 0.3)',
+                border: '1px solid rgba(121, 151, 127, 0.5)',
                 borderRadius: '10px',
-                color: '#059669',
+                color: '#A86E67',
                 fontSize: '14px',
                 fontWeight: '600'
               }}>
@@ -242,7 +242,7 @@ const AccountSettings = () => {
               disabled={profileLoading}
               style={{
                 padding: '14px 24px',
-                background: profileLoading ? '#9ca3af' : 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
+                background: profileLoading ? '#9ca3af' : 'linear-gradient(135deg, #C78880 0%, #A86E67 100%)',
                 color: 'white',
                 border: 'none',
                 borderRadius: '10px',
@@ -269,7 +269,7 @@ const AccountSettings = () => {
             <h2 style={{
               fontSize: '20px',
               fontWeight: '800',
-              color: '#1e293b',
+              color: '#3A3A3A',
               marginBottom: '24px'
             }}>
               Change Password
@@ -281,7 +281,7 @@ const AccountSettings = () => {
                   display: 'block',
                   fontSize: '14px',
                   fontWeight: '700',
-                  color: '#1e293b',
+                  color: '#3A3A3A',
                   marginBottom: '8px'
                 }}>
                   Current Password
@@ -294,7 +294,7 @@ const AccountSettings = () => {
                   style={{
                     width: '100%',
                     padding: '14px 16px',
-                    border: '2px solid rgba(16, 185, 129, 0.2)',
+                    border: '2px solid rgba(121, 151, 127, 0.6)',
                     borderRadius: '10px',
                     fontSize: '15px',
                     fontFamily: 'Inter, sans-serif',
@@ -309,7 +309,7 @@ const AccountSettings = () => {
                   display: 'block',
                   fontSize: '14px',
                   fontWeight: '700',
-                  color: '#1e293b',
+                  color: '#3A3A3A',
                   marginBottom: '8px'
                 }}>
                   New Password
@@ -322,7 +322,7 @@ const AccountSettings = () => {
                   style={{
                     width: '100%',
                     padding: '14px 16px',
-                    border: '2px solid rgba(16, 185, 129, 0.2)',
+                    border: '2px solid rgba(121, 151, 127, 0.6)',
                     borderRadius: '10px',
                     fontSize: '15px',
                     fontFamily: 'Inter, sans-serif',
@@ -337,7 +337,7 @@ const AccountSettings = () => {
                   display: 'block',
                   fontSize: '14px',
                   fontWeight: '700',
-                  color: '#1e293b',
+                  color: '#3A3A3A',
                   marginBottom: '8px'
                 }}>
                   Confirm New Password
@@ -350,7 +350,7 @@ const AccountSettings = () => {
                   style={{
                     width: '100%',
                     padding: '14px 16px',
-                    border: '2px solid rgba(16, 185, 129, 0.2)',
+                    border: '2px solid rgba(121, 151, 127, 0.6)',
                     borderRadius: '10px',
                     fontSize: '15px',
                     fontFamily: 'Inter, sans-serif',
@@ -364,10 +364,10 @@ const AccountSettings = () => {
                 <div style={{
                   marginBottom: '16px',
                   padding: '12px 16px',
-                  background: 'rgba(16, 185, 129, 0.1)',
-                  border: '1px solid rgba(16, 185, 129, 0.3)',
+                  background: 'rgba(121, 151, 127, 0.3)',
+                  border: '1px solid rgba(121, 151, 127, 0.5)',
                   borderRadius: '10px',
-                  color: '#059669',
+                  color: '#A86E67',
                   fontSize: '14px',
                   fontWeight: '600'
                 }}>
@@ -395,7 +395,7 @@ const AccountSettings = () => {
                 disabled={passwordLoading}
                 style={{
                   padding: '14px 24px',
-                  background: passwordLoading ? '#9ca3af' : 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
+                  background: passwordLoading ? '#9ca3af' : 'linear-gradient(135deg, #C78880 0%, #A86E67 100%)',
                   color: 'white',
                   border: 'none',
                   borderRadius: '10px',
@@ -434,8 +434,8 @@ const AccountSettings = () => {
               style={{
                 padding: '14px 24px',
                 background: 'white',
-                color: '#1e293b',
-                border: '2px solid rgba(16, 185, 129, 0.2)',
+                color: '#3A3A3A',
+                border: '2px solid rgba(121, 151, 127, 0.6)',
                 borderRadius: '10px',
                 fontSize: '15px',
                 fontWeight: '700',
@@ -518,7 +518,7 @@ const AccountSettings = () => {
                   flex: 1,
                   padding: '14px',
                   background: 'white',
-                  border: '2px solid rgba(16, 185, 129, 0.2)',
+                  border: '2px solid rgba(121, 151, 127, 0.6)',
                   borderRadius: '10px',
                   fontSize: '15px',
                   fontWeight: '700',

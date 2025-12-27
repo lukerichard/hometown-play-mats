@@ -40,8 +40,8 @@ const SavedMatCard = ({ mat, onViewMat, isInCart }) => {
       }}
       onMouseEnter={(e) => {
         e.currentTarget.style.transform = 'translateY(-4px)';
-        e.currentTarget.style.boxShadow = '0 8px 30px rgba(16, 185, 129, 0.2)';
-        e.currentTarget.style.borderColor = 'rgba(16, 185, 129, 0.3)';
+        e.currentTarget.style.boxShadow = '0 8px 30px rgba(121, 151, 127, 0.6)';
+        e.currentTarget.style.borderColor = 'rgba(121, 151, 127, 0.5)';
       }}
       onMouseLeave={(e) => {
         e.currentTarget.style.transform = 'translateY(0)';
@@ -92,18 +92,18 @@ const SavedMatCard = ({ mat, onViewMat, isInCart }) => {
               top: '12px',
               right: '12px',
               padding: '6px 12px',
-              background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
+              background: 'linear-gradient(135deg, #4A5D4E 0%, #3D4D41 100%)',
               color: 'white',
               borderRadius: '20px',
               fontSize: '12px',
               fontWeight: '800',
               letterSpacing: '0.5px',
-              boxShadow: '0 4px 12px rgba(16, 185, 129, 0.4)',
+              boxShadow: '0 4px 12px rgba(74, 93, 78, 0.5)',
               display: 'flex',
               alignItems: 'center',
               gap: '4px'
             }}>
-              🛒 IN CART
+              ✓ IN CART
             </div>
           )}
         </div>
@@ -114,7 +114,7 @@ const SavedMatCard = ({ mat, onViewMat, isInCart }) => {
             margin: '0 0 8px 0',
             fontSize: '18px',
             fontWeight: '800',
-            color: '#1e293b',
+            color: '#3A3A3A',
             letterSpacing: '-0.3px'
           }}>
             {mat.name}
@@ -128,12 +128,12 @@ const SavedMatCard = ({ mat, onViewMat, isInCart }) => {
           }}>
             <span style={{
               padding: '4px 12px',
-              background: 'rgba(16, 185, 129, 0.1)',
-              border: '1px solid rgba(16, 185, 129, 0.2)',
+              background: 'rgba(121, 151, 127, 0.3)',
+              border: '1px solid rgba(121, 151, 127, 0.6)',
               borderRadius: '6px',
               fontSize: '12px',
               fontWeight: '700',
-              color: '#059669',
+              color: '#A86E67',
               textTransform: 'capitalize'
             }}>
               {mat.matSize}
@@ -171,7 +171,7 @@ const SavedMatCard = ({ mat, onViewMat, isInCart }) => {
               style={{
                 flex: 1,
                 padding: '12px',
-                background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
+                background: 'linear-gradient(135deg, #C78880 0%, #A86E67 100%)',
                 color: 'white',
                 border: 'none',
                 borderRadius: '8px',
@@ -267,7 +267,7 @@ const SavedMatCard = ({ mat, onViewMat, isInCart }) => {
                   flex: 1,
                   padding: '14px',
                   background: 'white',
-                  border: '2px solid rgba(16, 185, 129, 0.2)',
+                  border: '2px solid rgba(121, 151, 127, 0.6)',
                   borderRadius: '10px',
                   fontSize: '15px',
                   fontWeight: '700',

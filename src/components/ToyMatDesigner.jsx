@@ -61,7 +61,7 @@ const ToyMatDesigner = () => {
 
   // Color schemes
   const colorSchemes = {
-    classic: { color: '#10b981', name: 'Classic' },
+    classic: { color: '#C78880', name: 'Classic' },
     muted: { color: '#64748b', name: 'Muted' },
     neon: { color: '#ec4899', name: 'Neon Vibrant' }
   };
@@ -207,25 +207,35 @@ const ToyMatDesigner = () => {
         return;
       }
 
+      // Get the device pixel ratio - Mapbox renders canvas at this scale
+      const pixelRatio = window.devicePixelRatio || 1;
+
       console.log('Canvas dimensions:', canvas.width, canvas.height);
+      console.log('Pixel ratio:', pixelRatio);
 
       const selectionBox = getSelectionBoxDimensions();
-      console.log('Selection box dimensions:', selectionBox.width, selectionBox.height);
+
+      // Scale selection box dimensions by pixel ratio to match canvas resolution
+      const scaledWidth = selectionBox.width * pixelRatio;
+      const scaledHeight = selectionBox.height * pixelRatio;
+
+      console.log('Selection box dimensions (CSS):', selectionBox.width, selectionBox.height);
+      console.log('Selection box dimensions (scaled):', scaledWidth, scaledHeight);
 
       // Calculate center of canvas
       const centerX = canvas.width / 2;
       const centerY = canvas.height / 2;
 
-      // Calculate crop area (selection box area)
-      const cropX = centerX - (selectionBox.width / 2);
-      const cropY = centerY - (selectionBox.height / 2);
+      // Calculate crop area (selection box area) - using scaled dimensions
+      const cropX = centerX - (scaledWidth / 2);
+      const cropY = centerY - (scaledHeight / 2);
 
       console.log('Crop position:', cropX, cropY);
 
-      // Create a new canvas to hold the cropped image
+      // Create a new canvas to hold the cropped image at the scaled resolution
       const croppedCanvas = document.createElement('canvas');
-      croppedCanvas.width = selectionBox.width;
-      croppedCanvas.height = selectionBox.height;
+      croppedCanvas.width = scaledWidth;
+      croppedCanvas.height = scaledHeight;
       const ctx = croppedCanvas.getContext('2d');
 
       if (!ctx) {
@@ -237,8 +247,8 @@ const ToyMatDesigner = () => {
       // Draw the cropped area onto the new canvas
       ctx.drawImage(
         canvas,
-        cropX, cropY, selectionBox.width, selectionBox.height,
-        0, 0, selectionBox.width, selectionBox.height
+        cropX, cropY, scaledWidth, scaledHeight,
+        0, 0, scaledWidth, scaledHeight
       );
 
       // Convert to data URL
@@ -416,7 +426,7 @@ const ToyMatDesigner = () => {
       <div style={{
         background: 'rgba(255, 255, 255, 0.9)',
         backdropFilter: 'blur(20px)',
-        borderBottom: '1px solid rgba(16, 185, 129, 0.15)',
+        borderBottom: '1px solid rgba(121, 151, 127, 0.5)',
         padding: '24px 40px',
         position: 'relative',
         boxShadow: '0 1px 3px rgba(0, 0, 0, 0.05)'
@@ -427,7 +437,7 @@ const ToyMatDesigner = () => {
           left: 0,
           right: 0,
           height: '3px',
-          background: 'linear-gradient(90deg, #10b981, #059669, #047857, #10b981)',
+          background: 'linear-gradient(90deg, #C78880, #A86E67, #4A5D4E, #C78880)',
           backgroundSize: '200% 100%',
           animation: 'shimmer 3s linear infinite'
         }} />
@@ -435,7 +445,7 @@ const ToyMatDesigner = () => {
           margin: 0,
           fontSize: '32px',
           fontWeight: '800',
-          background: 'linear-gradient(135deg, #10b981 0%, #059669 50%, #047857 100%)',
+          background: 'linear-gradient(135deg, #C78880 0%, #A86E67 50%, #4A5D4E 100%)',
           WebkitBackgroundClip: 'text',
           WebkitTextFillColor: 'transparent',
           backgroundClip: 'text',
@@ -459,10 +469,7 @@ const ToyMatDesigner = () => {
           setRotation={setRotation}
           rotateLeft={rotateLeft}
           rotateRight={rotateRight}
-          colorScheme={colorScheme}
-          setColorScheme={setColorScheme}
           matSizes={matSizes}
-          colorSchemes={colorSchemes}
           onGenerate={handleGenerateMat}
         />
 
@@ -488,11 +495,11 @@ const ToyMatDesigner = () => {
                     width: '100%',
                     padding: '16px 20px',
                     background: '#f8fafb',
-                    border: '2px solid rgba(16, 185, 129, 0.2)',
+                    border: '2px solid rgba(121, 151, 127, 0.6)',
                     borderRadius: '12px',
                     fontSize: '16px',
                     fontWeight: '500',
-                    color: '#1e293b',
+                    color: '#3A3A3A',
                     outline: 'none',
                     fontFamily: 'Inter, sans-serif'
                   }}
@@ -507,7 +514,7 @@ const ToyMatDesigner = () => {
                     right: 0,
                     marginTop: '8px',
                     background: 'white',
-                    border: '2px solid rgba(16, 185, 129, 0.2)',
+                    border: '2px solid rgba(121, 151, 127, 0.6)',
                     borderRadius: '12px',
                     boxShadow: '0 10px 40px rgba(0, 0, 0, 0.15)',
                     zIndex: 99999,
@@ -517,17 +524,20 @@ const ToyMatDesigner = () => {
                     {suggestions.map((suggestion, index) => (
                       <div
                         key={suggestion.id || index}
-                        onClick={() => handleSelectSuggestion(suggestion)}
+                        onMouseDown={(e) => {
+                          e.preventDefault();
+                          handleSelectSuggestion(suggestion);
+                        }}
                         style={{
                           padding: '14px 20px',
                           cursor: 'pointer',
-                          borderBottom: index < suggestions.length - 1 ? '1px solid rgba(16, 185, 129, 0.1)' : 'none',
+                          borderBottom: index < suggestions.length - 1 ? '1px solid rgba(121, 151, 127, 0.3)' : 'none',
                           transition: 'background 0.2s',
                           fontSize: '15px',
-                          color: '#1e293b',
+                          color: '#3A3A3A',
                           fontWeight: '500'
                         }}
-                        onMouseEnter={(e) => e.currentTarget.style.background = 'rgba(16, 185, 129, 0.08)'}
+                        onMouseEnter={(e) => e.currentTarget.style.background = 'rgba(74, 93, 78, 0.15)'}
                         onMouseLeave={(e) => e.currentTarget.style.background = 'transparent'}
                       >
                         <div style={{ fontWeight: '600', marginBottom: '2px' }}>
@@ -547,7 +557,7 @@ const ToyMatDesigner = () => {
                 disabled={isSearching}
                 style={{
                   padding: '16px 32px',
-                  background: isSearching ? '#9ca3af' : 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
+                  background: isSearching ? '#9ca3af' : 'linear-gradient(135deg, #C78880 0%, #A86E67 100%)',
                   color: 'white',
                   border: 'none',
                   borderRadius: '12px',
@@ -555,7 +565,7 @@ const ToyMatDesigner = () => {
                   fontWeight: '700',
                   cursor: isSearching ? 'not-allowed' : 'pointer',
                   fontFamily: 'Inter, sans-serif',
-                  boxShadow: '0 4px 20px rgba(16, 185, 129, 0.3)',
+                  boxShadow: '0 4px 20px rgba(121, 151, 127, 0.5)',
                   letterSpacing: '0.3px'
                 }}
               >
@@ -588,20 +598,20 @@ const ToyMatDesigner = () => {
           width: 16px;
           height: 16px;
           border-radius: 50%;
-          background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+          background: linear-gradient(135deg, #C78880 0%, #A86E67 100%);
           cursor: pointer;
           border: 2px solid white;
-          box-shadow: 0 2px 6px rgba(16, 185, 129, 0.4);
+          box-shadow: 0 2px 6px rgba(121, 151, 127, 0.6);
         }
 
         input[type="range"]::-moz-range-thumb {
           width: 16px;
           height: 16px;
           border-radius: 50%;
-          background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+          background: linear-gradient(135deg, #C78880 0%, #A86E67 100%);
           cursor: pointer;
           border: 2px solid white;
-          box-shadow: 0 2px 6px rgba(16, 185, 129, 0.4);
+          box-shadow: 0 2px 6px rgba(121, 151, 127, 0.6);
         }
       `}</style>
     </div>
@@ -670,7 +680,7 @@ const ToyMatDesigner = () => {
           <h3 style={{
             fontSize: '24px',
             fontWeight: '800',
-            color: '#1e293b',
+            color: '#3A3A3A',
             marginBottom: '8px'
           }}>
             {savedMatId ? 'Update Mat' : 'Save Your Mat'}
@@ -689,7 +699,7 @@ const ToyMatDesigner = () => {
               display: 'block',
               fontSize: '14px',
               fontWeight: '700',
-              color: '#1e293b',
+              color: '#3A3A3A',
               marginBottom: '8px'
             }}>
               Mat Name
@@ -703,15 +713,15 @@ const ToyMatDesigner = () => {
               style={{
                 width: '100%',
                 padding: '14px 16px',
-                border: '2px solid rgba(16, 185, 129, 0.2)',
+                border: '2px solid rgba(121, 151, 127, 0.6)',
                 borderRadius: '10px',
                 fontSize: '15px',
                 fontFamily: 'Inter, sans-serif',
                 outline: 'none',
                 boxSizing: 'border-box'
               }}
-              onFocus={(e) => e.currentTarget.style.borderColor = '#10b981'}
-              onBlur={(e) => e.currentTarget.style.borderColor = 'rgba(16, 185, 129, 0.2)'}
+              onFocus={(e) => e.currentTarget.style.borderColor = '#C78880'}
+              onBlur={(e) => e.currentTarget.style.borderColor = 'rgba(121, 151, 127, 0.6)'}
             />
           </div>
 
@@ -726,7 +736,7 @@ const ToyMatDesigner = () => {
                 flex: 1,
                 padding: '14px',
                 background: 'white',
-                border: '2px solid rgba(16, 185, 129, 0.2)',
+                border: '2px solid rgba(121, 151, 127, 0.6)',
                 borderRadius: '10px',
                 fontSize: '15px',
                 fontWeight: '700',
@@ -742,7 +752,7 @@ const ToyMatDesigner = () => {
               style={{
                 flex: 1,
                 padding: '14px',
-                background: saving ? '#9ca3af' : 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
+                background: saving ? '#9ca3af' : 'linear-gradient(135deg, #C78880 0%, #A86E67 100%)',
                 color: 'white',
                 border: 'none',
                 borderRadius: '10px',
