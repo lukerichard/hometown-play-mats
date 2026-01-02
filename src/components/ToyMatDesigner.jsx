@@ -61,9 +61,9 @@ const ToyMatDesigner = () => {
 
   // Color schemes
   const colorSchemes = {
-    classic: { color: '#C78880', name: 'Classic' },
-    muted: { color: '#64748b', name: 'Muted' },
-    neon: { color: '#ec4899', name: 'Neon Vibrant' }
+    classic: { color: '#FF6B6B', name: 'Coral Fun' },
+    muted: { color: '#4ECDC4', name: 'Ocean Blue' },
+    neon: { color: '#6C5CE7', name: 'Purple Magic' }
   };
 
   // Fetch address suggestions as user types
@@ -419,25 +419,25 @@ const ToyMatDesigner = () => {
     <>
     <div style={{
       height: '100vh',
-      background: '#f8fafb',
+      background: 'linear-gradient(135deg, #FFF9F0 0%, #FFEAA7 100%)',
       overflow: 'hidden'
     }}>
       {/* Title Bar */}
       <div style={{
-        background: 'rgba(255, 255, 255, 0.9)',
+        background: 'rgba(255, 255, 255, 0.95)',
         backdropFilter: 'blur(20px)',
-        borderBottom: '1px solid rgba(121, 151, 127, 0.5)',
+        borderBottom: '3px solid rgba(255, 107, 107, 0.3)',
         padding: '24px 40px',
         position: 'relative',
-        boxShadow: '0 1px 3px rgba(0, 0, 0, 0.05)'
+        boxShadow: '0 4px 20px rgba(255, 107, 107, 0.15)'
       }}>
         <div style={{
           position: 'absolute',
           top: 0,
           left: 0,
           right: 0,
-          height: '3px',
-          background: 'linear-gradient(90deg, #C78880, #A86E67, #4A5D4E, #C78880)',
+          height: '4px',
+          background: 'linear-gradient(90deg, #FF6B6B, #FFD93D, #6C5CE7, #4ECDC4, #FF6B6B)',
           backgroundSize: '200% 100%',
           animation: 'shimmer 3s linear infinite'
         }} />
@@ -445,13 +445,13 @@ const ToyMatDesigner = () => {
           margin: 0,
           fontSize: '32px',
           fontWeight: '800',
-          background: 'linear-gradient(135deg, #C78880 0%, #A86E67 50%, #4A5D4E 100%)',
+          background: 'linear-gradient(135deg, #FF6B6B 0%, #FFD93D 30%, #6C5CE7 70%, #4ECDC4 100%)',
           WebkitBackgroundClip: 'text',
           WebkitTextFillColor: 'transparent',
           backgroundClip: 'text',
           letterSpacing: '-0.5px'
         }}>
-          🎨 Toy Play Mat Designer
+          Toy Play Mat Designer
         </h1>
       </div>
 
@@ -476,7 +476,7 @@ const ToyMatDesigner = () => {
         <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '0', position: 'relative', zIndex: 10 }}>
           {/* Search Bar */}
           <div style={{
-            background: '#f8fafb',
+            background: 'linear-gradient(135deg, rgba(255, 249, 240, 0.95) 0%, rgba(255, 234, 167, 0.95) 100%)',
             padding: '20px',
             position: 'relative',
             zIndex: 10000
@@ -488,20 +488,30 @@ const ToyMatDesigner = () => {
                   value={address}
                   onChange={handleAddressChange}
                   onKeyPress={(e) => e.key === 'Enter' && handleSearchAddress()}
-                  onFocus={() => suggestions.length > 0 && setShowSuggestions(true)}
-                  onBlur={() => setTimeout(() => setShowSuggestions(false), 200)}
+                  onFocus={(e) => {
+                    suggestions.length > 0 && setShowSuggestions(true);
+                    e.currentTarget.style.borderColor = '#FF6B6B';
+                    e.currentTarget.style.boxShadow = '0 4px 20px rgba(255, 107, 107, 0.25)';
+                  }}
+                  onBlur={(e) => {
+                    setTimeout(() => setShowSuggestions(false), 200);
+                    e.currentTarget.style.borderColor = 'rgba(255, 107, 107, 0.3)';
+                    e.currentTarget.style.boxShadow = '0 4px 15px rgba(255, 107, 107, 0.1)';
+                  }}
                   placeholder="Enter your address (e.g., 1600 Pennsylvania Avenue, Washington, DC)"
                   style={{
                     width: '100%',
-                    padding: '16px 20px',
-                    background: '#f8fafb',
-                    border: '2px solid rgba(121, 151, 127, 0.6)',
-                    borderRadius: '12px',
+                    padding: '18px 24px',
+                    background: 'white',
+                    border: '3px solid rgba(255, 107, 107, 0.3)',
+                    borderRadius: '16px',
                     fontSize: '16px',
-                    fontWeight: '500',
-                    color: '#3A3A3A',
+                    fontWeight: '600',
+                    color: '#2D3436',
                     outline: 'none',
-                    fontFamily: 'Inter, sans-serif'
+                    fontFamily: 'Inter, sans-serif',
+                    boxShadow: '0 4px 15px rgba(255, 107, 107, 0.1)',
+                    transition: 'all 0.3s'
                   }}
                 />
 
@@ -514,9 +524,9 @@ const ToyMatDesigner = () => {
                     right: 0,
                     marginTop: '8px',
                     background: 'white',
-                    border: '2px solid rgba(121, 151, 127, 0.6)',
-                    borderRadius: '12px',
-                    boxShadow: '0 10px 40px rgba(0, 0, 0, 0.15)',
+                    border: '3px solid rgba(255, 107, 107, 0.3)',
+                    borderRadius: '16px',
+                    boxShadow: '0 10px 40px rgba(255, 107, 107, 0.2)',
                     zIndex: 99999,
                     maxHeight: '300px',
                     overflowY: 'auto'
@@ -529,21 +539,21 @@ const ToyMatDesigner = () => {
                           handleSelectSuggestion(suggestion);
                         }}
                         style={{
-                          padding: '14px 20px',
+                          padding: '16px 24px',
                           cursor: 'pointer',
-                          borderBottom: index < suggestions.length - 1 ? '1px solid rgba(121, 151, 127, 0.3)' : 'none',
+                          borderBottom: index < suggestions.length - 1 ? '2px solid rgba(255, 107, 107, 0.1)' : 'none',
                           transition: 'background 0.2s',
                           fontSize: '15px',
-                          color: '#3A3A3A',
+                          color: '#2D3436',
                           fontWeight: '500'
                         }}
-                        onMouseEnter={(e) => e.currentTarget.style.background = 'rgba(74, 93, 78, 0.15)'}
+                        onMouseEnter={(e) => e.currentTarget.style.background = 'rgba(255, 107, 107, 0.08)'}
                         onMouseLeave={(e) => e.currentTarget.style.background = 'transparent'}
                       >
-                        <div style={{ fontWeight: '600', marginBottom: '2px' }}>
+                        <div style={{ fontWeight: '700', marginBottom: '4px' }}>
                           {suggestion.text}
                         </div>
-                        <div style={{ fontSize: '13px', color: '#64748b' }}>
+                        <div style={{ fontSize: '13px', color: '#636E72' }}>
                           {suggestion.place_name}
                         </div>
                       </div>
@@ -556,18 +566,22 @@ const ToyMatDesigner = () => {
                 onClick={handleSearchAddress}
                 disabled={isSearching}
                 style={{
-                  padding: '16px 32px',
-                  background: isSearching ? '#9ca3af' : 'linear-gradient(135deg, #C78880 0%, #A86E67 100%)',
+                  padding: '18px 36px',
+                  background: isSearching ? '#B2BEC3' : 'linear-gradient(135deg, #FF6B6B 0%, #FFD93D 100%)',
                   color: 'white',
                   border: 'none',
-                  borderRadius: '12px',
+                  borderRadius: '16px',
                   fontSize: '16px',
-                  fontWeight: '700',
+                  fontWeight: '800',
                   cursor: isSearching ? 'not-allowed' : 'pointer',
                   fontFamily: 'Inter, sans-serif',
-                  boxShadow: '0 4px 20px rgba(121, 151, 127, 0.5)',
-                  letterSpacing: '0.3px'
+                  boxShadow: '0 4px 20px rgba(255, 107, 107, 0.4)',
+                  letterSpacing: '0.3px',
+                  transition: 'all 0.3s',
+                  textShadow: '0 2px 4px rgba(0, 0, 0, 0.1)'
                 }}
+                onMouseEnter={(e) => !isSearching && (e.currentTarget.style.transform = 'translateY(-2px)')}
+                onMouseLeave={(e) => !isSearching && (e.currentTarget.style.transform = 'translateY(0)')}
               >
                 {isSearching ? 'Searching...' : 'Search'}
               </button>
@@ -595,23 +609,23 @@ const ToyMatDesigner = () => {
         input[type="range"]::-webkit-slider-thumb {
           -webkit-appearance: none;
           appearance: none;
-          width: 16px;
-          height: 16px;
+          width: 20px;
+          height: 20px;
           border-radius: 50%;
-          background: linear-gradient(135deg, #C78880 0%, #A86E67 100%);
+          background: linear-gradient(135deg, #FF6B6B 0%, #FFD93D 100%);
           cursor: pointer;
-          border: 2px solid white;
-          box-shadow: 0 2px 6px rgba(121, 151, 127, 0.6);
+          border: 3px solid white;
+          box-shadow: 0 2px 8px rgba(255, 107, 107, 0.5);
         }
 
         input[type="range"]::-moz-range-thumb {
-          width: 16px;
-          height: 16px;
+          width: 20px;
+          height: 20px;
           border-radius: 50%;
-          background: linear-gradient(135deg, #C78880 0%, #A86E67 100%);
+          background: linear-gradient(135deg, #FF6B6B 0%, #FFD93D 100%);
           cursor: pointer;
-          border: 2px solid white;
-          box-shadow: 0 2px 6px rgba(121, 151, 127, 0.6);
+          border: 3px solid white;
+          box-shadow: 0 2px 8px rgba(255, 107, 107, 0.5);
         }
       `}</style>
     </div>
@@ -670,37 +684,44 @@ const ToyMatDesigner = () => {
           left: '50%',
           transform: 'translate(-50%, -50%)',
           background: 'white',
-          borderRadius: '16px',
-          padding: '32px',
-          maxWidth: '450px',
+          borderRadius: '24px',
+          padding: '40px',
+          maxWidth: '500px',
           width: '90%',
           zIndex: 10000,
-          boxShadow: '0 20px 60px rgba(0, 0, 0, 0.3)'
+          boxShadow: '0 20px 60px rgba(255, 107, 107, 0.3)',
+          border: '4px solid rgba(255, 107, 107, 0.2)'
         }}>
           <h3 style={{
-            fontSize: '24px',
+            fontSize: '28px',
             fontWeight: '800',
-            color: '#3A3A3A',
-            marginBottom: '8px'
+            background: 'linear-gradient(135deg, #FF6B6B 0%, #FFD93D 100%)',
+            WebkitBackgroundClip: 'text',
+            WebkitTextFillColor: 'transparent',
+            backgroundClip: 'text',
+            marginBottom: '12px'
           }}>
             {savedMatId ? 'Update Mat' : 'Save Your Mat'}
           </h3>
           <p style={{
             fontSize: '15px',
-            color: '#64748b',
-            marginBottom: '24px',
-            lineHeight: '1.6'
+            color: '#636E72',
+            marginBottom: '28px',
+            lineHeight: '1.6',
+            fontWeight: '500'
           }}>
             {savedMatId ? 'Update the name for your mat.' : 'Give your custom play mat a name so you can find it later.'}
           </p>
 
-          <div style={{ marginBottom: '20px' }}>
+          <div style={{ marginBottom: '24px' }}>
             <label style={{
               display: 'block',
               fontSize: '14px',
-              fontWeight: '700',
-              color: '#3A3A3A',
-              marginBottom: '8px'
+              fontWeight: '800',
+              color: '#2D3436',
+              marginBottom: '10px',
+              textTransform: 'uppercase',
+              letterSpacing: '1px'
             }}>
               Mat Name
             </label>
@@ -712,16 +733,24 @@ const ToyMatDesigner = () => {
               autoFocus
               style={{
                 width: '100%',
-                padding: '14px 16px',
-                border: '2px solid rgba(121, 151, 127, 0.6)',
-                borderRadius: '10px',
-                fontSize: '15px',
+                padding: '16px 20px',
+                border: '3px solid rgba(255, 107, 107, 0.3)',
+                borderRadius: '16px',
+                fontSize: '16px',
                 fontFamily: 'Inter, sans-serif',
+                fontWeight: '600',
                 outline: 'none',
-                boxSizing: 'border-box'
+                boxSizing: 'border-box',
+                transition: 'all 0.3s'
               }}
-              onFocus={(e) => e.currentTarget.style.borderColor = '#C78880'}
-              onBlur={(e) => e.currentTarget.style.borderColor = 'rgba(121, 151, 127, 0.6)'}
+              onFocus={(e) => {
+                e.currentTarget.style.borderColor = '#FF6B6B';
+                e.currentTarget.style.boxShadow = '0 0 0 4px rgba(255, 107, 107, 0.1)';
+              }}
+              onBlur={(e) => {
+                e.currentTarget.style.borderColor = 'rgba(255, 107, 107, 0.3)';
+                e.currentTarget.style.boxShadow = 'none';
+              }}
             />
           </div>
 
@@ -734,15 +763,19 @@ const ToyMatDesigner = () => {
               disabled={saving}
               style={{
                 flex: 1,
-                padding: '14px',
+                padding: '16px',
                 background: 'white',
-                border: '2px solid rgba(121, 151, 127, 0.6)',
-                borderRadius: '10px',
-                fontSize: '15px',
-                fontWeight: '700',
+                border: '3px solid rgba(255, 107, 107, 0.3)',
+                borderRadius: '16px',
+                fontSize: '16px',
+                fontWeight: '800',
                 cursor: saving ? 'not-allowed' : 'pointer',
-                fontFamily: 'Inter, sans-serif'
+                fontFamily: 'Inter, sans-serif',
+                color: '#636E72',
+                transition: 'all 0.3s'
               }}
+              onMouseEnter={(e) => !saving && (e.currentTarget.style.borderColor = '#FF6B6B')}
+              onMouseLeave={(e) => !saving && (e.currentTarget.style.borderColor = 'rgba(255, 107, 107, 0.3)')}
             >
               Cancel
             </button>
@@ -751,16 +784,21 @@ const ToyMatDesigner = () => {
               disabled={saving}
               style={{
                 flex: 1,
-                padding: '14px',
-                background: saving ? '#9ca3af' : 'linear-gradient(135deg, #C78880 0%, #A86E67 100%)',
+                padding: '16px',
+                background: saving ? '#B2BEC3' : 'linear-gradient(135deg, #FF6B6B 0%, #FFD93D 100%)',
                 color: 'white',
                 border: 'none',
-                borderRadius: '10px',
-                fontSize: '15px',
-                fontWeight: '700',
+                borderRadius: '16px',
+                fontSize: '16px',
+                fontWeight: '800',
                 cursor: saving ? 'not-allowed' : 'pointer',
-                fontFamily: 'Inter, sans-serif'
+                fontFamily: 'Inter, sans-serif',
+                boxShadow: '0 4px 20px rgba(255, 107, 107, 0.4)',
+                transition: 'all 0.3s',
+                textShadow: '0 2px 4px rgba(0, 0, 0, 0.1)'
               }}
+              onMouseEnter={(e) => !saving && (e.currentTarget.style.transform = 'translateY(-2px)')}
+              onMouseLeave={(e) => !saving && (e.currentTarget.style.transform = 'translateY(0)')}
             >
               {saving ? 'Saving...' : savedMatId ? 'Update' : 'Save'}
             </button>

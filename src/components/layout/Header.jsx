@@ -33,9 +33,11 @@ const Header = () => {
       top: 0,
       left: 0,
       right: 0,
-      background: '#f8fafb',
+      background: 'rgba(255, 255, 255, 0.95)',
+      backdropFilter: 'blur(20px)',
       zIndex: 1000,
-      boxShadow: '0 2px 8px rgba(0, 0, 0, 0.08)'
+      boxShadow: '0 4px 20px rgba(255, 107, 107, 0.15)',
+      borderBottom: '3px solid rgba(255, 107, 107, 0.2)'
     }}>
       {/* Top gradient bar */}
       <div style={{
@@ -43,15 +45,15 @@ const Header = () => {
         top: 0,
         left: 0,
         right: 0,
-        height: '3px',
-        background: 'linear-gradient(90deg, #C78880, #A86E67, #C78880)',
+        height: '4px',
+        background: 'linear-gradient(90deg, #FF6B6B, #FFD93D, #6C5CE7, #4ECDC4, #FF6B6B)',
         backgroundSize: '200% 100%',
         animation: 'shimmer 3s linear infinite'
       }} />
 
       <div style={{
         maxWidth: '100%',
-        padding: '16px 40px',
+        padding: '18px 40px',
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'space-between'
@@ -67,7 +69,10 @@ const Header = () => {
             margin: 0,
             fontSize: '24px',
             fontWeight: '800',
-            color: '#3A3A3A',
+            background: 'linear-gradient(135deg, #FF6B6B 0%, #FFD93D 100%)',
+            WebkitBackgroundClip: 'text',
+            WebkitTextFillColor: 'transparent',
+            backgroundClip: 'text',
             letterSpacing: '-0.5px'
           }}>
             Hometown Play Mats
@@ -87,20 +92,23 @@ const Header = () => {
                   alignItems: 'center',
                   gap: '10px',
                   background: 'white',
-                  border: '2px solid rgba(199, 136, 128, 0.4)',
+                  border: '3px solid rgba(255, 107, 107, 0.3)',
                   borderRadius: '30px',
                   padding: '6px 16px 6px 6px',
                   cursor: 'pointer',
-                  transition: 'all 0.2s',
-                  fontFamily: 'Inter, sans-serif'
+                  transition: 'all 0.3s',
+                  fontFamily: 'Inter, sans-serif',
+                  boxShadow: '0 2px 10px rgba(255, 107, 107, 0.1)'
                 }}
                 onMouseEnter={(e) => {
-                  e.currentTarget.style.background = 'rgba(199, 136, 128, 0.1)';
-                  e.currentTarget.style.borderColor = '#C78880';
+                  e.currentTarget.style.background = 'rgba(255, 107, 107, 0.08)';
+                  e.currentTarget.style.borderColor = '#FF6B6B';
+                  e.currentTarget.style.boxShadow = '0 4px 15px rgba(255, 107, 107, 0.2)';
                 }}
                 onMouseLeave={(e) => {
                   e.currentTarget.style.background = 'white';
-                  e.currentTarget.style.borderColor = 'rgba(199, 136, 128, 0.4)';
+                  e.currentTarget.style.borderColor = 'rgba(255, 107, 107, 0.3)';
+                  e.currentTarget.style.boxShadow = '0 2px 10px rgba(255, 107, 107, 0.1)';
                 }}
               >
                 {/* Avatar */}
@@ -112,7 +120,8 @@ const Header = () => {
                       width: '36px',
                       height: '36px',
                       borderRadius: '50%',
-                      objectFit: 'cover'
+                      objectFit: 'cover',
+                      border: '2px solid rgba(255, 107, 107, 0.3)'
                     }}
                   />
                 ) : (
@@ -120,13 +129,14 @@ const Header = () => {
                     width: '36px',
                     height: '36px',
                     borderRadius: '50%',
-                    background: 'linear-gradient(135deg, #C78880 0%, #A86E67 100%)',
+                    background: 'linear-gradient(135deg, #FF6B6B 0%, #FFD93D 100%)',
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
                     color: 'white',
                     fontSize: '14px',
-                    fontWeight: '700'
+                    fontWeight: '800',
+                    boxShadow: '0 2px 8px rgba(255, 107, 107, 0.3)'
                   }}>
                     {getInitials(currentUser.displayName || currentUser.email)}
                   </div>
@@ -135,8 +145,8 @@ const Header = () => {
                 {/* Display name */}
                 <span style={{
                   fontSize: '15px',
-                  fontWeight: '600',
-                  color: '#3A3A3A'
+                  fontWeight: '700',
+                  color: '#2D3436'
                 }}>
                   {currentUser.displayName || 'Account'}
                 </span>
@@ -146,8 +156,8 @@ const Header = () => {
                   style={{
                     width: '16px',
                     height: '16px',
-                    fill: '#3A3A3A',
-                    transition: 'transform 0.2s',
+                    fill: '#2D3436',
+                    transition: 'transform 0.3s',
                     transform: showDropdown ? 'rotate(180deg)' : 'rotate(0deg)'
                   }}
                   viewBox="0 0 20 20"
@@ -165,9 +175,9 @@ const Header = () => {
                   marginTop: '8px',
                   width: '220px',
                   background: 'white',
-                  border: '1px solid #e5e7eb',
-                  borderRadius: '12px',
-                  boxShadow: '0 10px 40px rgba(0, 0, 0, 0.15)',
+                  border: '3px solid rgba(255, 107, 107, 0.2)',
+                  borderRadius: '16px',
+                  boxShadow: '0 10px 40px rgba(255, 107, 107, 0.2)',
                   overflow: 'hidden'
                 }}>
                   <Link
@@ -175,14 +185,14 @@ const Header = () => {
                     style={{
                       display: 'block',
                       padding: '14px 20px',
-                      color: '#3A3A3A',
+                      color: '#2D3436',
                       textDecoration: 'none',
                       fontSize: '15px',
-                      fontWeight: '600',
-                      borderBottom: '1px solid #e5e7eb',
+                      fontWeight: '700',
+                      borderBottom: '2px solid rgba(255, 107, 107, 0.1)',
                       transition: 'background 0.2s'
                     }}
-                    onMouseEnter={(e) => e.currentTarget.style.background = '#f8fafb'}
+                    onMouseEnter={(e) => e.currentTarget.style.background = 'rgba(255, 107, 107, 0.08)'}
                     onMouseLeave={(e) => e.currentTarget.style.background = 'transparent'}
                   >
                     Account Settings
@@ -192,14 +202,14 @@ const Header = () => {
                     style={{
                       display: 'block',
                       padding: '14px 20px',
-                      color: '#3A3A3A',
+                      color: '#2D3436',
                       textDecoration: 'none',
                       fontSize: '15px',
-                      fontWeight: '600',
-                      borderBottom: '1px solid #e5e7eb',
+                      fontWeight: '700',
+                      borderBottom: '2px solid rgba(255, 107, 107, 0.1)',
                       transition: 'background 0.2s'
                     }}
-                    onMouseEnter={(e) => e.currentTarget.style.background = '#f8fafb'}
+                    onMouseEnter={(e) => e.currentTarget.style.background = 'rgba(255, 107, 107, 0.08)'}
                     onMouseLeave={(e) => e.currentTarget.style.background = 'transparent'}
                   >
                     Saved Mats
@@ -209,14 +219,14 @@ const Header = () => {
                     style={{
                       display: 'block',
                       padding: '14px 20px',
-                      color: '#3A3A3A',
+                      color: '#2D3436',
                       textDecoration: 'none',
                       fontSize: '15px',
-                      fontWeight: '600',
-                      borderBottom: '1px solid #e5e7eb',
+                      fontWeight: '700',
+                      borderBottom: '2px solid rgba(255, 107, 107, 0.1)',
                       transition: 'background 0.2s'
                     }}
-                    onMouseEnter={(e) => e.currentTarget.style.background = '#f8fafb'}
+                    onMouseEnter={(e) => e.currentTarget.style.background = 'rgba(255, 107, 107, 0.08)'}
                     onMouseLeave={(e) => e.currentTarget.style.background = 'transparent'}
                   >
                     Cart
@@ -232,7 +242,7 @@ const Header = () => {
                       color: '#dc2626',
                       textAlign: 'left',
                       fontSize: '15px',
-                      fontWeight: '600',
+                      fontWeight: '700',
                       cursor: 'pointer',
                       transition: 'background 0.2s',
                       fontFamily: 'Inter, sans-serif'
@@ -250,44 +260,53 @@ const Header = () => {
             <>
               <Link to="/login">
                 <button style={{
-                  padding: '10px 20px',
+                  padding: '12px 24px',
                   background: 'white',
-                  color: '#3A3A3A',
-                  border: '2px solid rgba(199, 136, 128, 0.4)',
-                  borderRadius: '10px',
+                  color: '#2D3436',
+                  border: '3px solid rgba(255, 107, 107, 0.3)',
+                  borderRadius: '14px',
                   fontSize: '15px',
-                  fontWeight: '700',
+                  fontWeight: '800',
                   cursor: 'pointer',
                   fontFamily: 'Inter, sans-serif',
-                  transition: 'all 0.2s'
+                  transition: 'all 0.3s'
                 }}
                 onMouseEnter={(e) => {
-                  e.currentTarget.style.borderColor = '#C78880';
-                  e.currentTarget.style.background = 'rgba(199, 136, 128, 0.1)';
+                  e.currentTarget.style.borderColor = '#FF6B6B';
+                  e.currentTarget.style.background = 'rgba(255, 107, 107, 0.08)';
+                  e.currentTarget.style.transform = 'translateY(-2px)';
                 }}
                 onMouseLeave={(e) => {
-                  e.currentTarget.style.borderColor = 'rgba(199, 136, 128, 0.4)';
+                  e.currentTarget.style.borderColor = 'rgba(255, 107, 107, 0.3)';
                   e.currentTarget.style.background = 'white';
+                  e.currentTarget.style.transform = 'translateY(0)';
                 }}>
                   Login
                 </button>
               </Link>
               <Link to="/signup">
                 <button style={{
-                  padding: '10px 20px',
-                  background: 'linear-gradient(135deg, #C78880 0%, #A86E67 100%)',
+                  padding: '12px 24px',
+                  background: 'linear-gradient(135deg, #FF6B6B 0%, #FFD93D 100%)',
                   color: 'white',
                   border: 'none',
-                  borderRadius: '10px',
+                  borderRadius: '14px',
                   fontSize: '15px',
-                  fontWeight: '700',
+                  fontWeight: '800',
                   cursor: 'pointer',
                   fontFamily: 'Inter, sans-serif',
-                  boxShadow: '0 4px 12px rgba(121, 151, 127, 0.5)',
-                  transition: 'all 0.2s'
+                  boxShadow: '0 4px 15px rgba(255, 107, 107, 0.4)',
+                  transition: 'all 0.3s',
+                  textShadow: '0 2px 4px rgba(0, 0, 0, 0.1)'
                 }}
-                onMouseEnter={(e) => e.currentTarget.style.transform = 'translateY(-2px)'}
-                onMouseLeave={(e) => e.currentTarget.style.transform = 'translateY(0)'}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.transform = 'translateY(-2px)';
+                  e.currentTarget.style.boxShadow = '0 6px 20px rgba(255, 107, 107, 0.5)';
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.transform = 'translateY(0)';
+                  e.currentTarget.style.boxShadow = '0 4px 15px rgba(255, 107, 107, 0.4)';
+                }}
                 >
                   Sign Up
                 </button>
