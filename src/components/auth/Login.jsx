@@ -88,7 +88,7 @@ const Login = () => {
       }}>
         {/* Header */}
         <div style={{
-          background: 'linear-gradient(135deg, #C78880 0%, #A86E67 100%)',
+          background: '#7A8A6E',
           padding: '32px',
           textAlign: 'center'
         }}>
@@ -132,7 +132,7 @@ const Login = () => {
                 style={{
                   width: '100%',
                   padding: '14px 16px',
-                  border: '2px solid rgba(121, 151, 127, 0.6)',
+                  border: '2px solid #D4C4AA',
                   borderRadius: '10px',
                   fontSize: '15px',
                   fontFamily: 'Inter, sans-serif',
@@ -140,8 +140,8 @@ const Login = () => {
                   transition: 'border-color 0.2s',
                   boxSizing: 'border-box'
                 }}
-                onFocus={(e) => e.currentTarget.style.borderColor = '#C78880'}
-                onBlur={(e) => e.currentTarget.style.borderColor = 'rgba(121, 151, 127, 0.6)'}
+                onFocus={(e) => e.currentTarget.style.borderColor = '#7A8A6E'}
+                onBlur={(e) => e.currentTarget.style.borderColor = '#D4C4AA'}
               />
             </div>
 
@@ -164,7 +164,7 @@ const Login = () => {
                 style={{
                   width: '100%',
                   padding: '14px 16px',
-                  border: '2px solid rgba(121, 151, 127, 0.6)',
+                  border: '2px solid #D4C4AA',
                   borderRadius: '10px',
                   fontSize: '15px',
                   fontFamily: 'Inter, sans-serif',
@@ -172,8 +172,8 @@ const Login = () => {
                   transition: 'border-color 0.2s',
                   boxSizing: 'border-box'
                 }}
-                onFocus={(e) => e.currentTarget.style.borderColor = '#C78880'}
-                onBlur={(e) => e.currentTarget.style.borderColor = 'rgba(121, 151, 127, 0.6)'}
+                onFocus={(e) => e.currentTarget.style.borderColor = '#7A8A6E'}
+                onBlur={(e) => e.currentTarget.style.borderColor = '#D4C4AA'}
               />
             </div>
 
@@ -200,18 +200,19 @@ const Login = () => {
               style={{
                 width: '100%',
                 padding: '16px',
-                background: loading ? '#9ca3af' : 'linear-gradient(135deg, #C78880 0%, #A86E67 100%)',
+                background: loading ? '#9ca3af' : '#7A8A6E',
                 color: 'white',
                 border: 'none',
                 borderRadius: '10px',
                 fontSize: '16px',
-                fontWeight: '800',
+                fontWeight: '700',
                 cursor: loading ? 'not-allowed' : 'pointer',
                 fontFamily: 'Inter, sans-serif',
                 letterSpacing: '0.3px',
-                boxShadow: loading ? 'none' : '0 4px 20px rgba(121, 151, 127, 0.5)',
                 transition: 'all 0.2s'
               }}
+              onMouseEnter={(e) => !loading && (e.currentTarget.style.background = '#5C6E54')}
+              onMouseLeave={(e) => !loading && (e.currentTarget.style.background = '#7A8A6E')}
             >
               {loading ? 'Logging in...' : 'Login'}
             </button>
@@ -224,11 +225,11 @@ const Login = () => {
             margin: '24px 0',
             gap: '16px'
           }}>
-            <div style={{ flex: 1, height: '1px', background: 'rgba(121, 151, 127, 0.6)' }} />
+            <div style={{ flex: 1, height: '1px', background: '#D4C4AA' }} />
             <span style={{ color: '#64748b', fontSize: '14px', fontWeight: '600' }}>
               Or continue with
             </span>
-            <div style={{ flex: 1, height: '1px', background: 'rgba(121, 151, 127, 0.6)' }} />
+            <div style={{ flex: 1, height: '1px', background: '#D4C4AA' }} />
           </div>
 
           {/* Google Login */}
@@ -252,8 +253,8 @@ const Login = () => {
               transition: 'all 0.2s',
               opacity: loading ? 0.6 : 1
             }}
-            onMouseEnter={(e) => !loading && (e.currentTarget.style.borderColor = '#C78880')}
-            onMouseLeave={(e) => !loading && (e.currentTarget.style.borderColor = 'rgba(121, 151, 127, 0.6)')}
+            onMouseEnter={(e) => !loading && (e.currentTarget.style.background = '#F5F0E8')}
+            onMouseLeave={(e) => !loading && (e.currentTarget.style.background = 'white')}
           >
             <svg width="20" height="20" viewBox="0 0 20 20">
               <path fill="#4285F4" d="M19.6 10.23c0-.82-.1-1.42-.25-2.05H10v3.72h5.5c-.15.96-.74 2.31-2.04 3.22v2.45h3.16c1.89-1.73 2.98-4.3 2.98-7.34z"/>
@@ -273,7 +274,7 @@ const Login = () => {
           }}>
             Don't have an account?{' '}
             <Link to="/signup" style={{
-              color: '#C78880',
+              color: '#7A8A6E',
               fontWeight: '700',
               textDecoration: 'none'
             }}>
