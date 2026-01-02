@@ -55,7 +55,7 @@ const MatPreview = ({
         }}>
         {/* Modal Header */}
         <div style={{
-          background: 'linear-gradient(135deg, #C78880 0%, #A86E67 100%)',
+          background: '#7A8A6E',
           padding: '24px 32px',
           color: 'white',
           position: 'relative'
@@ -162,7 +162,7 @@ const MatPreview = ({
             <div style={{
               padding: '16px',
               background: 'white',
-              border: '2px solid rgba(121, 151, 127, 0.6)',
+              border: '2px solid #D4C4AA',
               borderRadius: '10px'
             }}>
               <div style={{
@@ -198,7 +198,7 @@ const MatPreview = ({
             <div style={{
               padding: '16px',
               background: 'white',
-              border: '2px solid rgba(121, 151, 127, 0.6)',
+              border: '2px solid #D4C4AA',
               borderRadius: '10px'
             }}>
               <div style={{
@@ -216,15 +216,15 @@ const MatPreview = ({
             {/* Cart Controls */}
             {cartItem ? (
               <div style={{
-                background: 'rgba(74, 93, 78, 0.15)',
-                border: '2px solid rgba(74, 93, 78, 0.4)',
+                background: '#F0F4F0',
+                border: '2px solid #7A8A6E',
                 borderRadius: '12px',
                 padding: '16px'
               }}>
                 <div style={{
                   fontSize: '13px',
                   fontWeight: '700',
-                  color: '#4A5D4E',
+                  color: '#7A8A6E',
                   marginBottom: '12px',
                   textTransform: 'uppercase',
                   letterSpacing: '0.5px',
@@ -253,7 +253,7 @@ const MatPreview = ({
                         width: '36px',
                         height: '36px',
                         background: 'white',
-                        border: '2px solid rgba(74, 93, 78, 0.4)',
+                        border: '2px solid #D4C4AA',
                         borderRadius: '8px',
                         fontSize: '20px',
                         fontWeight: '700',
@@ -262,12 +262,12 @@ const MatPreview = ({
                         transition: 'all 0.2s'
                       }}
                       onMouseEnter={(e) => {
-                        e.currentTarget.style.background = 'rgba(74, 93, 78, 0.15)';
-                        e.currentTarget.style.borderColor = '#4A5D4E';
+                        e.currentTarget.style.background = '#F5F0E8';
+                        e.currentTarget.style.borderColor = '#7A8A6E';
                       }}
                       onMouseLeave={(e) => {
                         e.currentTarget.style.background = 'white';
-                        e.currentTarget.style.borderColor = 'rgba(74, 93, 78, 0.4)';
+                        e.currentTarget.style.borderColor = '#D4C4AA';
                       }}
                     >
                       -
@@ -275,7 +275,7 @@ const MatPreview = ({
                     <span style={{
                       fontSize: '20px',
                       fontWeight: '800',
-                      color: '#4A5D4E',
+                      color: '#7A8A6E',
                       minWidth: '40px',
                       textAlign: 'center'
                     }}>
@@ -287,7 +287,7 @@ const MatPreview = ({
                         width: '36px',
                         height: '36px',
                         background: 'white',
-                        border: '2px solid rgba(74, 93, 78, 0.4)',
+                        border: '2px solid #D4C4AA',
                         borderRadius: '8px',
                         fontSize: '20px',
                         fontWeight: '700',
@@ -296,12 +296,12 @@ const MatPreview = ({
                         transition: 'all 0.2s'
                       }}
                       onMouseEnter={(e) => {
-                        e.currentTarget.style.background = 'rgba(74, 93, 78, 0.15)';
-                        e.currentTarget.style.borderColor = '#4A5D4E';
+                        e.currentTarget.style.background = '#F5F0E8';
+                        e.currentTarget.style.borderColor = '#7A8A6E';
                       }}
                       onMouseLeave={(e) => {
                         e.currentTarget.style.background = 'white';
-                        e.currentTarget.style.borderColor = 'rgba(74, 93, 78, 0.4)';
+                        e.currentTarget.style.borderColor = '#D4C4AA';
                       }}
                     >
                       +
@@ -320,21 +320,20 @@ const MatPreview = ({
                 style={{
                   width: '100%',
                   padding: '18px',
-                  background: isAdding ? '#9ca3af' : 'linear-gradient(135deg, #C78880 0%, #A86E67 100%)',
+                  background: isAdding ? '#9ca3af' : '#C88B70',
                   color: 'white',
                   border: 'none',
                   borderRadius: '10px',
                   fontSize: '18px',
-                  fontWeight: '800',
+                  fontWeight: '700',
                   cursor: isAdding ? 'not-allowed' : 'pointer',
                   transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
                   fontFamily: 'Inter, sans-serif',
                   letterSpacing: '0.3px',
-                  boxShadow: '0 4px 20px rgba(121, 151, 127, 0.5)',
                   transform: isAdding ? 'scale(0.98)' : 'scale(1)'
                 }}
-                onMouseEnter={(e) => !isAdding && (e.currentTarget.style.transform = 'translateY(-2px)')}
-                onMouseLeave={(e) => !isAdding && (e.currentTarget.style.transform = 'translateY(0)')}
+                onMouseEnter={(e) => !isAdding && (e.currentTarget.style.background = '#B37759')}
+                onMouseLeave={(e) => !isAdding && (e.currentTarget.style.background = '#C88B70')}
               >
                 {isAdding ? '✓ Added!' : '🛒 Add to Cart'}
               </button>
@@ -348,8 +347,8 @@ const MatPreview = ({
                   width: '100%',
                   padding: '12px',
                   background: 'white',
-                  color: '#C78880',
-                  border: '2px solid rgba(121, 151, 127, 0.5)',
+                  color: '#7A8A6E',
+                  border: '2px solid #D4C4AA',
                   borderRadius: '10px',
                   fontSize: '14px',
                   fontWeight: '700',
@@ -359,12 +358,12 @@ const MatPreview = ({
                   letterSpacing: '0.3px'
                 }}
                 onMouseEnter={(e) => {
-                  e.currentTarget.style.background = 'rgba(121, 151, 127, 0.3)';
-                  e.currentTarget.style.borderColor = '#C78880';
+                  e.currentTarget.style.background = '#F5F0E8';
+                  e.currentTarget.style.borderColor = '#7A8A6E';
                 }}
                 onMouseLeave={(e) => {
                   e.currentTarget.style.background = 'white';
-                  e.currentTarget.style.borderColor = 'rgba(121, 151, 127, 0.5)';
+                  e.currentTarget.style.borderColor = '#D4C4AA';
                 }}
               >
                 💾 Save for Later
@@ -379,8 +378,8 @@ const MatPreview = ({
                   width: '100%',
                   padding: '12px',
                   background: 'white',
-                  color: '#C78880',
-                  border: '2px solid rgba(121, 151, 127, 0.5)',
+                  color: '#7A8A6E',
+                  border: '2px solid #D4C4AA',
                   borderRadius: '10px',
                   fontSize: '14px',
                   fontWeight: '700',
@@ -390,12 +389,12 @@ const MatPreview = ({
                   letterSpacing: '0.3px'
                 }}
                 onMouseEnter={(e) => {
-                  e.currentTarget.style.background = 'rgba(121, 151, 127, 0.3)';
-                  e.currentTarget.style.borderColor = '#C78880';
+                  e.currentTarget.style.background = '#F5F0E8';
+                  e.currentTarget.style.borderColor = '#7A8A6E';
                 }}
                 onMouseLeave={(e) => {
                   e.currentTarget.style.background = 'white';
-                  e.currentTarget.style.borderColor = 'rgba(121, 151, 127, 0.5)';
+                  e.currentTarget.style.borderColor = '#D4C4AA';
                 }}
               >
                 ✏️ Rename Mat
@@ -463,11 +462,11 @@ const MatPreview = ({
             <div style={{
               marginTop: '24px',
               padding: '16px',
-              background: 'rgba(121, 151, 127, 0.3)',
-              border: '1px solid rgba(121, 151, 127, 0.5)',
+              background: '#F5F0E8',
+              border: '1px solid #D4C4AA',
               borderRadius: '10px',
               fontSize: '13px',
-              color: '#8A5139',
+              color: '#6B7280',
               fontWeight: '500',
               lineHeight: '1.6'
             }}>
