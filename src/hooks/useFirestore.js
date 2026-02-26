@@ -14,12 +14,11 @@ import { db } from '../config/firebase';
  */
 export const useFirestore = (collectionName, queryConstraints = []) => {
   const [data, setData] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(() => !!collectionName);
   const [error, setError] = useState(null);
 
   useEffect(() => {
     if (!collectionName) {
-      setLoading(false);
       return;
     }
 
@@ -57,8 +56,10 @@ export const useFirestore = (collectionName, queryConstraints = []) => {
       return () => unsubscribe();
     } catch (err) {
       console.error('useFirestore error:', err);
-      setError(err.message);
-      setLoading(false);
+      queueMicrotask(() => {
+        setError(err.message);
+        setLoading(false);
+      });
     }
   }, [collectionName, JSON.stringify(queryConstraints)]);
 
@@ -66,3 +67,5 @@ export const useFirestore = (collectionName, queryConstraints = []) => {
 };
 
 export default useFirestore;
+
+

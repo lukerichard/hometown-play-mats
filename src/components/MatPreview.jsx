@@ -8,7 +8,6 @@ const MatPreview = ({
   matSizes,
   colorSchemes,
   savedMatId,
-  matName,
   cartItem,
   onBackToEdit,
   onAddToCart,
@@ -482,3 +481,4 @@ const MatPreview = ({
 };
 
 export default MatPreview;
+
