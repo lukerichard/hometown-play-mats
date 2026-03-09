@@ -28,30 +28,22 @@ const Header = () => {
 
   return (
     <header className="fixed top-0 left-0 right-0 z-[1000] bg-white/95 backdrop-blur-xl border-b-2 border-border"
-      style={{ boxShadow: '0 1px 8px rgba(91, 140, 90, 0.08)' }}>
+      style={{ boxShadow: '0 1px 8px rgba(0, 0, 0, 0.08)' }}>
 
-      {/* Top accent stripe - toy mat lane lines */}
-      <div className="absolute top-0 left-0 right-0 h-[3px]"
-        style={{
-          background: 'linear-gradient(90deg, #5B8C5A, #FFD666, #E8945A, #C5DDE8, #5B8C5A)',
-          backgroundSize: '200% 100%',
-          animation: 'shimmer 4s linear infinite'
-        }}
-      />
 
       <div className="flex items-center justify-between px-6 py-3">
         {/* Logo */}
         <Link to="/" className="no-underline flex items-center gap-2.5 group">
           {/* Mini road icon */}
           <div className="w-8 h-8 rounded-lg flex items-center justify-center"
-            style={{ background: 'linear-gradient(135deg, #5B8C5A, #7BAF7A)' }}>
+            style={{ background: 'linear-gradient(135deg, #3B3B3B, #6B6B6B)' }}>
             <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-              <rect x="3" y="2" width="10" height="12" rx="1" fill="#5C6366" />
-              <line x1="8" y1="3" x2="8" y2="13" stroke="#FFD666" strokeWidth="1.5" strokeDasharray="2 1.5" />
+              <rect x="3" y="2" width="10" height="12" rx="1" fill="#6B6B6B" />
+              <line x1="8" y1="3" x2="8" y2="13" stroke="#FFCC00" strokeWidth="1.5" strokeDasharray="2 1.5" />
             </svg>
           </div>
           <span className="text-lg font-bold tracking-tight text-text"
-            style={{ fontFamily: "'Geist', system-ui, sans-serif" }}>
+            style={{ fontFamily: "'Poppins', 'DM Sans', sans-serif" }}>
             Hometown Play Mats
           </span>
         </Link>
@@ -64,7 +56,7 @@ const Header = () => {
                 onClick={() => setShowDropdown(!showDropdown)}
                 onBlur={() => setTimeout(() => setShowDropdown(false), 200)}
                 className="flex items-center gap-2.5 bg-surface-alt border-2 border-border rounded-full py-1.5 px-4 pl-1.5 cursor-pointer transition-all duration-200 hover:border-primary hover:shadow-md"
-                style={{ fontFamily: "'Geist', system-ui, sans-serif" }}
+                style={{ fontFamily: "'DM Sans', sans-serif" }}
               >
                 {currentUser.photoURL ? (
                   <img
@@ -74,7 +66,7 @@ const Header = () => {
                   />
                 ) : (
                   <div className="w-8 h-8 rounded-full flex items-center justify-center text-white text-xs font-bold"
-                    style={{ background: 'linear-gradient(135deg, #5B8C5A, #7BAF7A)' }}>
+                    style={{ background: '#3DAEF5' }}>
                     {getInitials(currentUser.displayName || currentUser.email)}
                   </div>
                 )}
@@ -93,7 +85,7 @@ const Header = () => {
 
               {showDropdown && (
                 <div className="absolute top-full right-0 mt-2 w-52 bg-white border-2 border-border rounded-xl overflow-hidden animate-fade-in"
-                  style={{ boxShadow: '0 8px 24px rgba(91, 140, 90, 0.12)' }}>
+                  style={{ boxShadow: '0 8px 24px rgba(0, 0, 0, 0.12)' }}>
                   {[
                     { to: '/account', label: 'Account Settings' },
                     { to: '/saved-mats', label: 'Saved Mats' },
@@ -102,15 +94,15 @@ const Header = () => {
                     <Link
                       key={item.to}
                       to={item.to}
-                      className="block px-4 py-3 text-sm font-semibold text-text no-underline border-b border-border/50 transition-colors duration-150 hover:bg-grass/50"
+                      className="block px-4 py-3 text-sm font-semibold text-text no-underline border-b border-border/50 transition-colors duration-150 hover:bg-sky-light/50"
                     >
                       {item.label}
                     </Link>
                   ))}
                   <button
                     onClick={handleLogout}
-                    className="block w-full text-left px-4 py-3 text-sm font-semibold text-red-500 bg-transparent border-none cursor-pointer transition-colors duration-150 hover:bg-red-50"
-                    style={{ fontFamily: "'Geist', system-ui, sans-serif" }}
+                    className="block w-full text-left px-4 py-3 text-sm font-semibold bg-transparent border-none cursor-pointer transition-colors duration-150 hover:bg-red-50"
+                    style={{ fontFamily: "'DM Sans', sans-serif", color: '#E84545' }}
                   >
                     Logout
                   </button>
@@ -121,19 +113,19 @@ const Header = () => {
             <>
               <Link to="/login">
                 <button
-                  className="px-5 py-2.5 bg-white text-text border-2 border-border rounded-lg text-sm font-semibold cursor-pointer transition-all duration-200 hover:border-primary hover:bg-grass/30 hover:-translate-y-0.5"
-                  style={{ fontFamily: "'Geist', system-ui, sans-serif" }}
+                  className="px-5 py-2.5 bg-white text-text border-2 border-border rounded-full text-sm font-bold cursor-pointer transition-all duration-200 hover:border-primary hover:bg-sky-light/30 hover:-translate-y-0.5"
+                  style={{ fontFamily: "'DM Sans', sans-serif" }}
                 >
                   Login
                 </button>
               </Link>
               <Link to="/signup">
                 <button
-                  className="px-5 py-2.5 text-white border-none rounded-lg text-sm font-semibold cursor-pointer transition-all duration-200 hover:-translate-y-0.5"
+                  className="px-5 py-2.5 text-white border-none rounded-full text-sm font-bold cursor-pointer transition-all duration-200 hover:-translate-y-0.5"
                   style={{
-                    fontFamily: "'Geist', system-ui, sans-serif",
-                    background: 'linear-gradient(135deg, #5B8C5A, #7BAF7A)',
-                    boxShadow: '0 2px 8px rgba(91, 140, 90, 0.3)',
+                    fontFamily: "'DM Sans', sans-serif",
+                    background: '#3DAEF5',
+                    boxShadow: '0 2px 8px rgba(61, 174, 245, 0.3)',
                   }}
                 >
                   Sign Up

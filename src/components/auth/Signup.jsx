@@ -12,7 +12,6 @@ const Signup = () => {
   const { signup, loginWithGoogle, currentUser } = useAuth();
   const navigate = useNavigate();
 
-  // Redirect if already logged in (handles Google redirect result)
   useEffect(() => {
     if (currentUser) {
       navigate('/');
@@ -22,7 +21,6 @@ const Signup = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    // Validation
     if (!displayName || !email || !password || !confirmPassword) {
       setError('Please fill in all fields');
       return;
@@ -79,15 +77,37 @@ const Signup = () => {
     }
   };
 
-  // Password strength indicator
   const getPasswordStrength = () => {
     if (!password) return null;
-    if (password.length < 6) return { label: 'Weak', color: '#dc2626' };
-    if (password.length < 10) return { label: 'Medium', color: '#f59e0b' };
-    return { label: 'Strong', color: '#C78880' };
+    if (password.length < 6) return { label: 'Weak', color: '#E84545' };
+    if (password.length < 10) return { label: 'Medium', color: '#FFD036' };
+    return { label: 'Strong', color: '#5EC269' };
   };
 
   const strength = getPasswordStrength();
+
+  const inputStyle = {
+    width: '100%',
+    padding: '12px 18px',
+    border: '2.5px solid #E0DDD5',
+    borderRadius: '12px',
+    fontSize: '15px',
+    fontFamily: "'DM Sans', sans-serif",
+    outline: 'none',
+    transition: 'border-color 0.2s, box-shadow 0.2s',
+    boxSizing: 'border-box',
+    color: '#2D2D2D'
+  };
+
+  const handleFocus = (e) => {
+    e.currentTarget.style.borderColor = '#3DAEF5';
+    e.currentTarget.style.boxShadow = '0 0 0 4px rgba(61, 174, 245, 0.25)';
+  };
+
+  const handleBlur = (e) => {
+    e.currentTarget.style.borderColor = '#E0DDD5';
+    e.currentTarget.style.boxShadow = 'none';
+  };
 
   return (
     <div style={{
@@ -95,36 +115,39 @@ const Signup = () => {
       display: 'flex',
       alignItems: 'center',
       justifyContent: 'center',
-      background: '#f8fafb',
+      background: '#FDF8F0',
       padding: '20px',
-      paddingTop: '80px'
+      paddingTop: '80px',
+      fontFamily: "'DM Sans', 'Poppins', sans-serif"
     }}>
       <div style={{
         width: '100%',
         maxWidth: '450px',
         background: 'white',
         borderRadius: '20px',
-        boxShadow: '0 10px 40px rgba(0, 0, 0, 0.1)',
+        boxShadow: '0 8px 30px rgba(0, 0, 0, 0.12)',
         overflow: 'hidden'
       }}>
         {/* Header */}
         <div style={{
-          background: 'linear-gradient(135deg, #C78880 0%, #A86E67 100%)',
+          background: '#3B3B3B',
           padding: '32px',
-          textAlign: 'center'
+          textAlign: 'center',
+          position: 'relative'
         }}>
           <h1 style={{
             margin: 0,
             fontSize: '32px',
             fontWeight: '800',
             color: 'white',
-            letterSpacing: '-0.5px'
+            letterSpacing: '-0.5px',
+            fontFamily: "'Poppins', 'DM Sans', sans-serif"
           }}>
             Create Account
           </h1>
           <p style={{
             margin: '8px 0 0 0',
-            color: 'rgba(255, 255, 255, 0.9)',
+            color: 'rgba(255, 255, 255, 0.85)',
             fontSize: '15px'
           }}>
             Start designing custom play mats today
@@ -136,105 +159,31 @@ const Signup = () => {
           <form onSubmit={handleSubmit}>
             {/* Display Name */}
             <div style={{ marginBottom: '20px' }}>
-              <label style={{
-                display: 'block',
-                fontSize: '14px',
-                fontWeight: '700',
-                color: '#3A3A3A',
-                marginBottom: '8px'
-              }}>
+              <label style={{ display: 'block', fontSize: '14px', fontWeight: '700', color: '#2D2D2D', marginBottom: '8px' }}>
                 Full Name
               </label>
-              <input
-                type="text"
-                value={displayName}
-                onChange={(e) => setDisplayName(e.target.value)}
-                placeholder="John Doe"
-                style={{
-                  width: '100%',
-                  padding: '14px 16px',
-                  border: '2px solid rgba(121, 151, 127, 0.6)',
-                  borderRadius: '10px',
-                  fontSize: '15px',
-                  fontFamily: 'Inter, sans-serif',
-                  outline: 'none',
-                  transition: 'border-color 0.2s',
-                  boxSizing: 'border-box'
-                }}
-                onFocus={(e) => e.currentTarget.style.borderColor = '#C78880'}
-                onBlur={(e) => e.currentTarget.style.borderColor = 'rgba(121, 151, 127, 0.6)'}
-              />
+              <input type="text" value={displayName} onChange={(e) => setDisplayName(e.target.value)}
+                placeholder="John Doe" style={inputStyle} onFocus={handleFocus} onBlur={handleBlur} />
             </div>
 
             {/* Email */}
             <div style={{ marginBottom: '20px' }}>
-              <label style={{
-                display: 'block',
-                fontSize: '14px',
-                fontWeight: '700',
-                color: '#3A3A3A',
-                marginBottom: '8px'
-              }}>
+              <label style={{ display: 'block', fontSize: '14px', fontWeight: '700', color: '#2D2D2D', marginBottom: '8px' }}>
                 Email Address
               </label>
-              <input
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                placeholder="you@example.com"
-                style={{
-                  width: '100%',
-                  padding: '14px 16px',
-                  border: '2px solid rgba(121, 151, 127, 0.6)',
-                  borderRadius: '10px',
-                  fontSize: '15px',
-                  fontFamily: 'Inter, sans-serif',
-                  outline: 'none',
-                  transition: 'border-color 0.2s',
-                  boxSizing: 'border-box'
-                }}
-                onFocus={(e) => e.currentTarget.style.borderColor = '#C78880'}
-                onBlur={(e) => e.currentTarget.style.borderColor = 'rgba(121, 151, 127, 0.6)'}
-              />
+              <input type="email" value={email} onChange={(e) => setEmail(e.target.value)}
+                placeholder="you@example.com" style={inputStyle} onFocus={handleFocus} onBlur={handleBlur} />
             </div>
 
             {/* Password */}
             <div style={{ marginBottom: '20px' }}>
-              <label style={{
-                display: 'block',
-                fontSize: '14px',
-                fontWeight: '700',
-                color: '#3A3A3A',
-                marginBottom: '8px'
-              }}>
+              <label style={{ display: 'block', fontSize: '14px', fontWeight: '700', color: '#2D2D2D', marginBottom: '8px' }}>
                 Password
               </label>
-              <input
-                type="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                placeholder="At least 6 characters"
-                style={{
-                  width: '100%',
-                  padding: '14px 16px',
-                  border: '2px solid rgba(121, 151, 127, 0.6)',
-                  borderRadius: '10px',
-                  fontSize: '15px',
-                  fontFamily: 'Inter, sans-serif',
-                  outline: 'none',
-                  transition: 'border-color 0.2s',
-                  boxSizing: 'border-box'
-                }}
-                onFocus={(e) => e.currentTarget.style.borderColor = '#C78880'}
-                onBlur={(e) => e.currentTarget.style.borderColor = 'rgba(121, 151, 127, 0.6)'}
-              />
+              <input type="password" value={password} onChange={(e) => setPassword(e.target.value)}
+                placeholder="At least 6 characters" style={inputStyle} onFocus={handleFocus} onBlur={handleBlur} />
               {strength && (
-                <div style={{
-                  marginTop: '8px',
-                  fontSize: '13px',
-                  fontWeight: '600',
-                  color: strength.color
-                }}>
+                <div style={{ marginTop: '8px', fontSize: '13px', fontWeight: '600', color: strength.color }}>
                   Password strength: {strength.label}
                 </div>
               )}
@@ -242,45 +191,22 @@ const Signup = () => {
 
             {/* Confirm Password */}
             <div style={{ marginBottom: '24px' }}>
-              <label style={{
-                display: 'block',
-                fontSize: '14px',
-                fontWeight: '700',
-                color: '#3A3A3A',
-                marginBottom: '8px'
-              }}>
+              <label style={{ display: 'block', fontSize: '14px', fontWeight: '700', color: '#2D2D2D', marginBottom: '8px' }}>
                 Confirm Password
               </label>
-              <input
-                type="password"
-                value={confirmPassword}
-                onChange={(e) => setConfirmPassword(e.target.value)}
-                placeholder="Re-enter your password"
-                style={{
-                  width: '100%',
-                  padding: '14px 16px',
-                  border: '2px solid rgba(121, 151, 127, 0.6)',
-                  borderRadius: '10px',
-                  fontSize: '15px',
-                  fontFamily: 'Inter, sans-serif',
-                  outline: 'none',
-                  transition: 'border-color 0.2s',
-                  boxSizing: 'border-box'
-                }}
-                onFocus={(e) => e.currentTarget.style.borderColor = '#C78880'}
-                onBlur={(e) => e.currentTarget.style.borderColor = 'rgba(121, 151, 127, 0.6)'}
-              />
+              <input type="password" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)}
+                placeholder="Re-enter your password" style={inputStyle} onFocus={handleFocus} onBlur={handleBlur} />
             </div>
 
-            {/* Error Message */}
+            {/* Error */}
             {error && (
               <div style={{
                 marginBottom: '20px',
                 padding: '12px 16px',
-                background: 'rgba(220, 38, 38, 0.1)',
-                border: '1px solid rgba(220, 38, 38, 0.3)',
-                borderRadius: '10px',
-                color: '#dc2626',
+                background: '#fde8e8',
+                borderLeft: '5px solid #E84545',
+                borderRadius: '12px',
+                color: '#b71c1c',
                 fontSize: '14px',
                 fontWeight: '600'
               }}>
@@ -294,17 +220,16 @@ const Signup = () => {
               disabled={loading}
               style={{
                 width: '100%',
-                padding: '16px',
-                background: loading ? '#9ca3af' : 'linear-gradient(135deg, #C78880 0%, #A86E67 100%)',
+                padding: '14px 28px',
+                background: loading ? '#B0A999' : '#3DAEF5',
                 color: 'white',
                 border: 'none',
-                borderRadius: '10px',
+                borderRadius: '999px',
                 fontSize: '16px',
-                fontWeight: '800',
+                fontWeight: '700',
                 cursor: loading ? 'not-allowed' : 'pointer',
-                fontFamily: 'Inter, sans-serif',
-                letterSpacing: '0.3px',
-                boxShadow: loading ? 'none' : '0 4px 20px rgba(121, 151, 127, 0.5)',
+                fontFamily: "'DM Sans', sans-serif",
+                boxShadow: loading ? 'none' : '0 0 0 4px rgba(61, 174, 245, 0.25)',
                 transition: 'all 0.2s'
               }}
             >
@@ -313,17 +238,10 @@ const Signup = () => {
           </form>
 
           {/* Divider */}
-          <div style={{
-            display: 'flex',
-            alignItems: 'center',
-            margin: '24px 0',
-            gap: '16px'
-          }}>
-            <div style={{ flex: 1, height: '1px', background: 'rgba(121, 151, 127, 0.6)' }} />
-            <span style={{ color: '#64748b', fontSize: '14px', fontWeight: '600' }}>
-              Or continue with
-            </span>
-            <div style={{ flex: 1, height: '1px', background: 'rgba(121, 151, 127, 0.6)' }} />
+          <div style={{ display: 'flex', alignItems: 'center', margin: '24px 0', gap: '16px' }}>
+            <div style={{ flex: 1, height: '1px', background: '#E0DDD5' }} />
+            <span style={{ color: '#5A5A5A', fontSize: '14px', fontWeight: '600' }}>Or continue with</span>
+            <div style={{ flex: 1, height: '1px', background: '#E0DDD5' }} />
           </div>
 
           {/* Google Signup */}
@@ -334,21 +252,22 @@ const Signup = () => {
               width: '100%',
               padding: '14px',
               background: 'white',
-              border: '2px solid rgba(121, 151, 127, 0.6)',
-              borderRadius: '10px',
+              border: '2.5px solid #E0DDD5',
+              borderRadius: '999px',
               fontSize: '15px',
               fontWeight: '700',
               cursor: loading ? 'not-allowed' : 'pointer',
-              fontFamily: 'Inter, sans-serif',
+              fontFamily: "'DM Sans', sans-serif",
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
               gap: '12px',
               transition: 'all 0.2s',
-              opacity: loading ? 0.6 : 1
+              opacity: loading ? 0.6 : 1,
+              color: '#2D2D2D'
             }}
-            onMouseEnter={(e) => !loading && (e.currentTarget.style.borderColor = '#C78880')}
-            onMouseLeave={(e) => !loading && (e.currentTarget.style.borderColor = 'rgba(121, 151, 127, 0.6)')}
+            onMouseEnter={(e) => !loading && (e.currentTarget.style.borderColor = '#3DAEF5')}
+            onMouseLeave={(e) => !loading && (e.currentTarget.style.borderColor = '#E0DDD5')}
           >
             <svg width="20" height="20" viewBox="0 0 20 20">
               <path fill="#4285F4" d="M19.6 10.23c0-.82-.1-1.42-.25-2.05H10v3.72h5.5c-.15.96-.74 2.31-2.04 3.22v2.45h3.16c1.89-1.73 2.98-4.3 2.98-7.34z"/>
@@ -360,18 +279,9 @@ const Signup = () => {
           </button>
 
           {/* Login Link */}
-          <p style={{
-            marginTop: '24px',
-            textAlign: 'center',
-            color: '#64748b',
-            fontSize: '15px'
-          }}>
+          <p style={{ marginTop: '24px', textAlign: 'center', color: '#5A5A5A', fontSize: '15px' }}>
             Already have an account?{' '}
-            <Link to="/login" style={{
-              color: '#C78880',
-              fontWeight: '700',
-              textDecoration: 'none'
-            }}>
+            <Link to="/login" style={{ color: '#3DAEF5', fontWeight: '700', textDecoration: 'none' }}>
               Login
             </Link>
           </p>

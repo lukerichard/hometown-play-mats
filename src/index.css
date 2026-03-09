@@ -1,54 +1,65 @@
 /* Hometown Play Mats - Tailwind v4 Import */
 @import "tailwindcss";
 
-/* Toy Car Mat Theme - Playful & Light */
+/* Style Guide Design Tokens */
 @theme {
-  /* Primary palette - inspired by toy car play mats */
-  --color-grass: #E8F0E4;
-  --color-grass-dark: #CDD5C6;
-  --color-road: #5C6366;
-  --color-road-light: #B7BCBF;
-  --color-centerline: #FFD666;
-  --color-water: #C5DDE8;
-  --color-water-dark: #A3C4D4;
-  --color-cream: #FFFDF7;
-  --color-cream-dark: #FFF8EC;
+  /* ── ROAD PALETTE ───────────────────────────────── */
+  --color-road-asphalt: #3B3B3B;
+  --color-road-pavement: #6B6B6B;
+  --color-road-line-yellow: #FFCC00;
+  --color-road-curb: #B0A999;
 
-  /* UI Colors */
-  --color-primary: #5B8C5A;
-  --color-primary-light: #7BAF7A;
-  --color-primary-dark: #477346;
-  --color-accent: #E8945A;
-  --color-accent-light: #F0AD7A;
-  --color-accent-dark: #D07A3E;
-  --color-cta: #E8945A;
-  --color-cta-dark: #D07A3E;
+  /* ── CAR COLORS (Primary Toy Palette) ───────────── */
+  --color-car-red: #E84545;
+  --color-car-blue: #3DAEF5;
+  --color-car-green: #5EC269;
+  --color-car-yellow: #FFD036;
+  --color-car-orange: #FF8C42;
+  --color-car-purple: #A76BDB;
 
-  /* Neutral tones */
-  --color-text: #2D3436;
-  --color-text-light: #636E72;
-  --color-text-muted: #9BA3A8;
-  --color-border: #E2E8E4;
-  --color-border-dark: #CBD5CE;
+  /* ── NEIGHBORHOOD SCENERY ──────────────────────── */
+  --color-grass-light: #8ED16F;
+  --color-grass-dark: #4CAF50;
+  --color-sky-light: #D6EFFF;
+  --color-sky-blue: #87CEEB;
+  --color-water-blue: #4FC3F7;
+
+  /* ── UI FOUNDATIONS ────────────────────────────── */
+  --color-bg-page: #FDF8F0;
+  --color-bg-card: #FFFFFF;
+  --color-bg-section: #F0F7ED;
+  --color-text-primary: #2D2D2D;
+  --color-text-secondary: #5A5A5A;
+  --color-border-light: #E0DDD5;
+
+  /* ── SEMANTIC / ACTION ─────────────────────────── */
+  --color-action-primary: #3DAEF5;
+  --color-action-hover: #2A9BE0;
+  --color-action-secondary: #5EC269;
+  --color-action-danger: #E84545;
+  --color-action-warning: #FFD036;
+  --color-highlight: #FF8C42;
+
+  /* ── TAILWIND-COMPATIBLE ALIASES ────────────────── */
+  --color-primary: #3DAEF5;
+  --color-primary-hover: #2A9BE0;
+  --color-secondary: #5EC269;
+  --color-danger: #E84545;
+  --color-text: #2D2D2D;
+  --color-text-light: #5A5A5A;
+  --color-text-muted: #B0A999;
+  --color-border: #E0DDD5;
+  --color-border-dark: #C8C4BB;
   --color-surface: #FFFFFF;
-  --color-surface-alt: #F7FAF7;
+  --color-surface-alt: #F0F7ED;
+  --color-grass: #F0F7ED;
 
-  /* Shadows */
-  --shadow-sm: 0 1px 2px rgba(91, 140, 90, 0.06);
-  --shadow-md: 0 4px 12px rgba(91, 140, 90, 0.08);
-  --shadow-lg: 0 8px 24px rgba(91, 140, 90, 0.12);
-  --shadow-xl: 0 16px 48px rgba(91, 140, 90, 0.16);
-
-  /* Legacy compat */
-  --color-toy-grass: #CDD5C6;
-  --color-toy-road: #2D3436;
-  --color-toy-stripe: #FFD666;
-  --color-toy-water: #B4CED9;
-  --color-toy-accent: #E8945A;
-  --color-nav: #2D3436;
-  --color-nav-light: #3D5166;
-  --color-active: #5B8C5A;
-  --color-active-light: #7BAF7A;
+  /* ── SHADOWS ───────────────────────────────────── */
+  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.08);
+  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.10);
+  --shadow-lg: 0 8px 30px rgba(0, 0, 0, 0.12);
+  --shadow-xl: 0 16px 48px rgba(0, 0, 0, 0.16);
+  --shadow-glow: 0 0 0 4px rgba(61, 174, 245, 0.25);
 }
 
 /* Base styles */
@@ -65,11 +76,11 @@ body {
   overflow: hidden;
   width: 100%;
   height: 100%;
-  font-family: 'Geist', system-ui, -apple-system, sans-serif;
+  font-family: 'DM Sans', 'Poppins', 'Segoe UI', sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  color: var(--color-text);
-  background: var(--color-cream);
+  color: var(--color-text-primary);
+  background: var(--color-bg-page);
 }
 
 #root {
