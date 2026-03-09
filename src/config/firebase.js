@@ -12,13 +12,21 @@ const firebaseConfig = {
   appId: import.meta.env.VITE_FIREBASE_APP_ID
 };
 
-// Initialize Firebase
-const app = initializeApp(firebaseConfig);
+// Check if Firebase is configured
+export const isFirebaseConfigured = Boolean(firebaseConfig.apiKey && firebaseConfig.projectId);
 
-// Initialize Firebase Authentication and get a reference to the service
-export const auth = getAuth(app);
+// Initialize Firebase only if configured
+let app = null;
+let auth = null;
+let db = null;
 
-// Initialize Cloud Firestore and get a reference to the service
-export const db = getFirestore(app);
+if (isFirebaseConfigured) {
+  app = initializeApp(firebaseConfig);
+  auth = getAuth(app);
+  db = getFirestore(app);
+} else {
+  console.warn('Firebase is not configured. Auth features will be unavailable.');
+}
 
+export { auth, db };
 export default app;
