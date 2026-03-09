@@ -73,7 +73,6 @@ const MatMapView = ({ center, zoom, matSize, rotation, colorScheme, onMapReady }
       });
 
       mapRef.current.on('load', () => {
-        console.log('Mat map loaded successfully!');
 
         // Load icon images
         const iconsToLoad = [
@@ -153,9 +152,6 @@ const MatMapView = ({ center, zoom, matSize, rotation, colorScheme, onMapReady }
     });
 
     const roadWidth = getRoadWidth();
-    console.log('Road width values:', roadWidth);
-    console.log('Mat size:', matSize);
-    console.log('Selection box size:', selectionBoxSize);
 
     // Filter for actual roads (exclude pedestrian paths, sidewalks, etc.)
     const roadFilter = [
