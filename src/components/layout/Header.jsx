@@ -17,7 +17,6 @@ const Header = () => {
     }
   };
 
-  // Get user initials for avatar
   const getInitials = (name) => {
     if (!name) return '?';
     const parts = name.split(' ');
@@ -28,227 +27,90 @@ const Header = () => {
   };
 
   return (
-    <header style={{
-      position: 'fixed',
-      top: 0,
-      left: 0,
-      right: 0,
-      background: 'rgba(255, 255, 255, 0.95)',
-      backdropFilter: 'blur(20px)',
-      zIndex: 1000,
-      boxShadow: '0 4px 20px rgba(255, 107, 107, 0.15)',
-      borderBottom: '3px solid rgba(255, 107, 107, 0.2)'
-    }}>
-      {/* Top gradient bar */}
-      <div style={{
-        position: 'absolute',
-        top: 0,
-        left: 0,
-        right: 0,
-        height: '4px',
-        background: 'linear-gradient(90deg, #FF6B6B, #FFD93D, #6C5CE7, #4ECDC4, #FF6B6B)',
-        backgroundSize: '200% 100%',
-        animation: 'shimmer 3s linear infinite'
-      }} />
+    <header className="fixed top-0 left-0 right-0 z-[1000] bg-white/95 backdrop-blur-xl border-b-2 border-border"
+      style={{ boxShadow: '0 1px 8px rgba(91, 140, 90, 0.08)' }}>
 
-      <div style={{
-        maxWidth: '100%',
-        padding: '18px 40px',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'space-between'
-      }}>
-        {/* Logo/Title */}
-        <Link to="/" style={{
-          textDecoration: 'none',
-          display: 'flex',
-          alignItems: 'center',
-          gap: '8px'
-        }}>
-          <h1 style={{
-            margin: 0,
-            fontSize: '24px',
-            fontWeight: '800',
-            background: 'linear-gradient(135deg, #FF6B6B 0%, #FFD93D 100%)',
-            WebkitBackgroundClip: 'text',
-            WebkitTextFillColor: 'transparent',
-            backgroundClip: 'text',
-            letterSpacing: '-0.5px'
-          }}>
+      {/* Top accent stripe - toy mat lane lines */}
+      <div className="absolute top-0 left-0 right-0 h-[3px]"
+        style={{
+          background: 'linear-gradient(90deg, #5B8C5A, #FFD666, #E8945A, #C5DDE8, #5B8C5A)',
+          backgroundSize: '200% 100%',
+          animation: 'shimmer 4s linear infinite'
+        }}
+      />
+
+      <div className="flex items-center justify-between px-6 py-3">
+        {/* Logo */}
+        <Link to="/" className="no-underline flex items-center gap-2.5 group">
+          {/* Mini road icon */}
+          <div className="w-8 h-8 rounded-lg flex items-center justify-center"
+            style={{ background: 'linear-gradient(135deg, #5B8C5A, #7BAF7A)' }}>
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+              <rect x="3" y="2" width="10" height="12" rx="1" fill="#5C6366" />
+              <line x1="8" y1="3" x2="8" y2="13" stroke="#FFD666" strokeWidth="1.5" strokeDasharray="2 1.5" />
+            </svg>
+          </div>
+          <span className="text-lg font-bold tracking-tight text-text"
+            style={{ fontFamily: "'Geist', system-ui, sans-serif" }}>
             Hometown Play Mats
-          </h1>
+          </span>
         </Link>
 
-        {/* Right side - Auth actions */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+        {/* Right side */}
+        <div className="flex items-center gap-3">
           {currentUser ? (
-            // Authenticated user - show avatar with dropdown
-            <div style={{ position: 'relative' }}>
+            <div className="relative">
               <button
                 onClick={() => setShowDropdown(!showDropdown)}
                 onBlur={() => setTimeout(() => setShowDropdown(false), 200)}
-                style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '10px',
-                  background: 'white',
-                  border: '3px solid rgba(255, 107, 107, 0.3)',
-                  borderRadius: '30px',
-                  padding: '6px 16px 6px 6px',
-                  cursor: 'pointer',
-                  transition: 'all 0.3s',
-                  fontFamily: 'Inter, sans-serif',
-                  boxShadow: '0 2px 10px rgba(255, 107, 107, 0.1)'
-                }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.background = 'rgba(255, 107, 107, 0.08)';
-                  e.currentTarget.style.borderColor = '#FF6B6B';
-                  e.currentTarget.style.boxShadow = '0 4px 15px rgba(255, 107, 107, 0.2)';
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.background = 'white';
-                  e.currentTarget.style.borderColor = 'rgba(255, 107, 107, 0.3)';
-                  e.currentTarget.style.boxShadow = '0 2px 10px rgba(255, 107, 107, 0.1)';
-                }}
+                className="flex items-center gap-2.5 bg-surface-alt border-2 border-border rounded-full py-1.5 px-4 pl-1.5 cursor-pointer transition-all duration-200 hover:border-primary hover:shadow-md"
+                style={{ fontFamily: "'Geist', system-ui, sans-serif" }}
               >
-                {/* Avatar */}
                 {currentUser.photoURL ? (
                   <img
                     src={currentUser.photoURL}
                     alt="Profile"
-                    style={{
-                      width: '36px',
-                      height: '36px',
-                      borderRadius: '50%',
-                      objectFit: 'cover',
-                      border: '2px solid rgba(255, 107, 107, 0.3)'
-                    }}
+                    className="w-8 h-8 rounded-full object-cover border-2 border-border"
                   />
                 ) : (
-                  <div style={{
-                    width: '36px',
-                    height: '36px',
-                    borderRadius: '50%',
-                    background: 'linear-gradient(135deg, #FF6B6B 0%, #FFD93D 100%)',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    color: 'white',
-                    fontSize: '14px',
-                    fontWeight: '800',
-                    boxShadow: '0 2px 8px rgba(255, 107, 107, 0.3)'
-                  }}>
+                  <div className="w-8 h-8 rounded-full flex items-center justify-center text-white text-xs font-bold"
+                    style={{ background: 'linear-gradient(135deg, #5B8C5A, #7BAF7A)' }}>
                     {getInitials(currentUser.displayName || currentUser.email)}
                   </div>
                 )}
-
-                {/* Display name */}
-                <span style={{
-                  fontSize: '15px',
-                  fontWeight: '700',
-                  color: '#2D3436'
-                }}>
+                <span className="text-sm font-semibold text-text">
                   {currentUser.displayName || 'Account'}
                 </span>
-
-                {/* Dropdown arrow */}
                 <svg
-                  style={{
-                    width: '16px',
-                    height: '16px',
-                    fill: '#2D3436',
-                    transition: 'transform 0.3s',
-                    transform: showDropdown ? 'rotate(180deg)' : 'rotate(0deg)'
-                  }}
+                  className="w-4 h-4 text-text-light transition-transform duration-200"
+                  style={{ transform: showDropdown ? 'rotate(180deg)' : 'rotate(0deg)' }}
                   viewBox="0 0 20 20"
+                  fill="currentColor"
                 >
                   <path fillRule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clipRule="evenodd" />
                 </svg>
               </button>
 
-              {/* Dropdown Menu */}
               {showDropdown && (
-                <div style={{
-                  position: 'absolute',
-                  top: '100%',
-                  right: 0,
-                  marginTop: '8px',
-                  width: '220px',
-                  background: 'white',
-                  border: '3px solid rgba(255, 107, 107, 0.2)',
-                  borderRadius: '16px',
-                  boxShadow: '0 10px 40px rgba(255, 107, 107, 0.2)',
-                  overflow: 'hidden'
-                }}>
-                  <Link
-                    to="/account"
-                    style={{
-                      display: 'block',
-                      padding: '14px 20px',
-                      color: '#2D3436',
-                      textDecoration: 'none',
-                      fontSize: '15px',
-                      fontWeight: '700',
-                      borderBottom: '2px solid rgba(255, 107, 107, 0.1)',
-                      transition: 'background 0.2s'
-                    }}
-                    onMouseEnter={(e) => e.currentTarget.style.background = 'rgba(255, 107, 107, 0.08)'}
-                    onMouseLeave={(e) => e.currentTarget.style.background = 'transparent'}
-                  >
-                    Account Settings
-                  </Link>
-                  <Link
-                    to="/saved-mats"
-                    style={{
-                      display: 'block',
-                      padding: '14px 20px',
-                      color: '#2D3436',
-                      textDecoration: 'none',
-                      fontSize: '15px',
-                      fontWeight: '700',
-                      borderBottom: '2px solid rgba(255, 107, 107, 0.1)',
-                      transition: 'background 0.2s'
-                    }}
-                    onMouseEnter={(e) => e.currentTarget.style.background = 'rgba(255, 107, 107, 0.08)'}
-                    onMouseLeave={(e) => e.currentTarget.style.background = 'transparent'}
-                  >
-                    Saved Mats
-                  </Link>
-                  <Link
-                    to="/cart"
-                    style={{
-                      display: 'block',
-                      padding: '14px 20px',
-                      color: '#2D3436',
-                      textDecoration: 'none',
-                      fontSize: '15px',
-                      fontWeight: '700',
-                      borderBottom: '2px solid rgba(255, 107, 107, 0.1)',
-                      transition: 'background 0.2s'
-                    }}
-                    onMouseEnter={(e) => e.currentTarget.style.background = 'rgba(255, 107, 107, 0.08)'}
-                    onMouseLeave={(e) => e.currentTarget.style.background = 'transparent'}
-                  >
-                    Cart
-                  </Link>
+                <div className="absolute top-full right-0 mt-2 w-52 bg-white border-2 border-border rounded-xl overflow-hidden animate-fade-in"
+                  style={{ boxShadow: '0 8px 24px rgba(91, 140, 90, 0.12)' }}>
+                  {[
+                    { to: '/account', label: 'Account Settings' },
+                    { to: '/saved-mats', label: 'Saved Mats' },
+                    { to: '/cart', label: 'Cart' },
+                  ].map((item) => (
+                    <Link
+                      key={item.to}
+                      to={item.to}
+                      className="block px-4 py-3 text-sm font-semibold text-text no-underline border-b border-border/50 transition-colors duration-150 hover:bg-grass/50"
+                    >
+                      {item.label}
+                    </Link>
+                  ))}
                   <button
                     onClick={handleLogout}
-                    style={{
-                      display: 'block',
-                      width: '100%',
-                      padding: '14px 20px',
-                      background: 'transparent',
-                      border: 'none',
-                      color: '#dc2626',
-                      textAlign: 'left',
-                      fontSize: '15px',
-                      fontWeight: '700',
-                      cursor: 'pointer',
-                      transition: 'background 0.2s',
-                      fontFamily: 'Inter, sans-serif'
-                    }}
-                    onMouseEnter={(e) => e.currentTarget.style.background = 'rgba(220, 38, 38, 0.08)'}
-                    onMouseLeave={(e) => e.currentTarget.style.background = 'transparent'}
+                    className="block w-full text-left px-4 py-3 text-sm font-semibold text-red-500 bg-transparent border-none cursor-pointer transition-colors duration-150 hover:bg-red-50"
+                    style={{ fontFamily: "'Geist', system-ui, sans-serif" }}
                   >
                     Logout
                   </button>
@@ -256,57 +118,23 @@ const Header = () => {
               )}
             </div>
           ) : (
-            // Not authenticated - show login/signup buttons
             <>
               <Link to="/login">
-                <button style={{
-                  padding: '12px 24px',
-                  background: 'white',
-                  color: '#2D3436',
-                  border: '3px solid rgba(255, 107, 107, 0.3)',
-                  borderRadius: '14px',
-                  fontSize: '15px',
-                  fontWeight: '800',
-                  cursor: 'pointer',
-                  fontFamily: 'Inter, sans-serif',
-                  transition: 'all 0.3s'
-                }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.borderColor = '#FF6B6B';
-                  e.currentTarget.style.background = 'rgba(255, 107, 107, 0.08)';
-                  e.currentTarget.style.transform = 'translateY(-2px)';
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.borderColor = 'rgba(255, 107, 107, 0.3)';
-                  e.currentTarget.style.background = 'white';
-                  e.currentTarget.style.transform = 'translateY(0)';
-                }}>
+                <button
+                  className="px-5 py-2.5 bg-white text-text border-2 border-border rounded-lg text-sm font-semibold cursor-pointer transition-all duration-200 hover:border-primary hover:bg-grass/30 hover:-translate-y-0.5"
+                  style={{ fontFamily: "'Geist', system-ui, sans-serif" }}
+                >
                   Login
                 </button>
               </Link>
               <Link to="/signup">
-                <button style={{
-                  padding: '12px 24px',
-                  background: 'linear-gradient(135deg, #FF6B6B 0%, #FFD93D 100%)',
-                  color: 'white',
-                  border: 'none',
-                  borderRadius: '14px',
-                  fontSize: '15px',
-                  fontWeight: '800',
-                  cursor: 'pointer',
-                  fontFamily: 'Inter, sans-serif',
-                  boxShadow: '0 4px 15px rgba(255, 107, 107, 0.4)',
-                  transition: 'all 0.3s',
-                  textShadow: '0 2px 4px rgba(0, 0, 0, 0.1)'
-                }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.transform = 'translateY(-2px)';
-                  e.currentTarget.style.boxShadow = '0 6px 20px rgba(255, 107, 107, 0.5)';
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.transform = 'translateY(0)';
-                  e.currentTarget.style.boxShadow = '0 4px 15px rgba(255, 107, 107, 0.4)';
-                }}
+                <button
+                  className="px-5 py-2.5 text-white border-none rounded-lg text-sm font-semibold cursor-pointer transition-all duration-200 hover:-translate-y-0.5"
+                  style={{
+                    fontFamily: "'Geist', system-ui, sans-serif",
+                    background: 'linear-gradient(135deg, #5B8C5A, #7BAF7A)',
+                    boxShadow: '0 2px 8px rgba(91, 140, 90, 0.3)',
+                  }}
                 >
                   Sign Up
                 </button>
@@ -315,13 +143,6 @@ const Header = () => {
           )}
         </div>
       </div>
-
-      <style>{`
-        @keyframes shimmer {
-          0% { background-position: 0% 0%; }
-          100% { background-position: 200% 0%; }
-        }
-      `}</style>
     </header>
   );
 };
