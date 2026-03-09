@@ -11,252 +11,152 @@ const MatSidebar = ({
   const sizeOptions = Object.entries(matSizes);
 
   return (
-    <div style={{
-      width: '360px',
-      background: 'linear-gradient(180deg, #FFF9F0 0%, #FFEAA7 100%)',
-      padding: '24px',
-      overflowY: 'auto',
-      maxHeight: 'calc(100vh - 82px)',
-      borderRight: '3px solid rgba(255, 107, 107, 0.2)'
-    }}>
-      <h2 style={{
-        color: '#2D3436',
-        marginBottom: '24px',
-        fontSize: '26px',
-        fontWeight: '800',
-        letterSpacing: '-0.5px'
-      }}>
-        Customize Your Mat
-      </h2>
+    <div
+      className="w-[340px] bg-white/70 backdrop-blur-sm border-r-2 border-border overflow-y-auto"
+      style={{
+        maxHeight: 'calc(100vh - 82px)',
+        fontFamily: "'Geist', system-ui, sans-serif",
+      }}
+    >
+      <div className="p-5">
+        <h2 className="text-lg font-bold tracking-tight text-text mb-5">
+          Customize Your Mat
+        </h2>
 
-      {/* Mat Size Section */}
-      <div style={{ marginBottom: '24px' }}>
-        <div style={{
-          fontSize: '12px',
-          fontWeight: '800',
-          color: '#636E72',
-          textTransform: 'uppercase',
-          letterSpacing: '1.5px',
-          marginBottom: '14px'
-        }}>
-          Mat Size
+        {/* Mat Size Section */}
+        <div className="mb-6">
+          <div className="text-[11px] font-bold text-text-muted uppercase tracking-widest mb-3">
+            Mat Size
+          </div>
+          <div className="flex flex-col gap-2.5">
+            {sizeOptions.map(([key, size]) => {
+              const isActive = matSize === key;
+              return (
+                <div
+                  key={key}
+                  onClick={() => setMatSize(key)}
+                  className={`
+                    flex items-center p-3.5 rounded-xl cursor-pointer transition-all duration-200
+                    border-2
+                    ${isActive
+                      ? 'border-primary bg-grass/50'
+                      : 'border-border bg-white hover:border-primary/40 hover:translate-x-1'
+                    }
+                  `}
+                  style={{
+                    boxShadow: isActive
+                      ? '0 2px 8px rgba(91, 140, 90, 0.15)'
+                      : '0 1px 2px rgba(0, 0, 0, 0.04)',
+                  }}
+                >
+                  {/* Radio circle */}
+                  <div className={`
+                    w-[18px] h-[18px] rounded-full border-2 mr-3 flex items-center justify-center shrink-0 transition-all duration-200
+                    ${isActive ? 'border-primary' : 'border-border-dark'}
+                  `}>
+                    {isActive && (
+                      <div className="w-2.5 h-2.5 rounded-full bg-primary" />
+                    )}
+                  </div>
+                  <div className="flex-1">
+                    <div className="text-sm font-bold text-text mb-0.5">
+                      {size.name}
+                    </div>
+                    <div className="text-[11px] text-text-light font-medium">
+                      {size.dimensions}
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
         </div>
-        {sizeOptions.map(([key, size]) => (
-          <div
-            key={key}
-            onClick={() => setMatSize(key)}
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              padding: '16px',
-              background: matSize === key ? 'rgba(255, 107, 107, 0.15)' : 'white',
-              border: `3px solid ${matSize === key ? '#FF6B6B' : 'rgba(255, 107, 107, 0.2)'}`,
-              borderRadius: '16px',
-              marginBottom: '12px',
-              cursor: 'pointer',
-              transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-              boxShadow: matSize === key ? '0 6px 25px rgba(255, 107, 107, 0.25)' : '0 2px 8px rgba(0, 0, 0, 0.05)'
-            }}
-            onMouseEnter={(e) => {
-              if (matSize !== key) {
-                e.currentTarget.style.transform = 'translateX(4px)';
-                e.currentTarget.style.boxShadow = '0 4px 15px rgba(255, 107, 107, 0.15)';
-              }
-            }}
-            onMouseLeave={(e) => {
-              if (matSize !== key) {
-                e.currentTarget.style.transform = 'translateX(0)';
-                e.currentTarget.style.boxShadow = '0 2px 8px rgba(0, 0, 0, 0.05)';
-              }
-            }}
-          >
+
+        {/* Rotation Section */}
+        <div className="mb-6">
+          <div className="text-[11px] font-bold text-text-muted uppercase tracking-widest mb-3">
+            Rotation
+          </div>
+          <div className="flex items-center gap-2.5">
+            <button
+              onClick={rotateLeft}
+              className="flex-1 py-3 bg-white border-2 border-border rounded-xl cursor-pointer font-semibold text-text-light text-sm transition-all duration-200 hover:border-primary hover:text-primary hover:-translate-y-0.5"
+              style={{ fontFamily: "'Geist', system-ui, sans-serif" }}
+            >
+              ↺ Left
+            </button>
+            <div
+              className="text-center text-lg font-bold min-w-[60px] text-primary"
+            >
+              {rotation}°
+            </div>
+            <button
+              onClick={rotateRight}
+              className="flex-1 py-3 bg-white border-2 border-border rounded-xl cursor-pointer font-semibold text-text-light text-sm transition-all duration-200 hover:border-primary hover:text-primary hover:-translate-y-0.5"
+              style={{ fontFamily: "'Geist', system-ui, sans-serif" }}
+            >
+              ↻ Right
+            </button>
+          </div>
+
+          {/* Rotation Slider */}
+          <div className="mt-3">
             <input
-              type="radio"
-              checked={matSize === key}
-              onChange={() => setMatSize(key)}
+              type="range"
+              min="0"
+              max="360"
+              step="1"
+              value={rotation}
+              onChange={(e) => setRotation(parseInt(e.target.value))}
+              className="w-full h-1.5 rounded-full outline-none cursor-pointer"
               style={{
-                marginRight: '14px',
-                width: '20px',
-                height: '20px',
-                cursor: 'pointer',
-                accentColor: '#FF6B6B'
+                WebkitAppearance: 'none',
+                appearance: 'none',
+                background: `linear-gradient(to right, #5B8C5A 0%, #7BAF7A ${(rotation / 360) * 100}%, #E2E8E4 ${(rotation / 360) * 100}%, #E2E8E4 100%)`,
               }}
             />
-            <div style={{ flex: 1 }}>
-              <div style={{
-                fontWeight: '800',
-                color: '#2D3436',
-                marginBottom: '4px',
-                fontSize: '16px'
-              }}>
-                {size.name}
-              </div>
-              <div style={{
-                fontSize: '12px',
-                color: '#636E72',
-                fontWeight: '600'
-              }}>
-                {size.dimensions}
-              </div>
-            </div>
           </div>
-        ))}
-      </div>
-
-      {/* Rotation Section */}
-      <div style={{ marginBottom: '24px' }}>
-        <div style={{
-          fontSize: '12px',
-          fontWeight: '800',
-          color: '#636E72',
-          textTransform: 'uppercase',
-          letterSpacing: '1.5px',
-          marginBottom: '14px'
-        }}>
-          Rotation
-        </div>
-        <div style={{
-          display: 'flex',
-          alignItems: 'center',
-          gap: '12px'
-        }}>
-          <button
-            onClick={rotateLeft}
-            style={{
-              flex: 1,
-              padding: '14px',
-              background: 'white',
-              border: '3px solid rgba(255, 107, 107, 0.3)',
-              borderRadius: '16px',
-              cursor: 'pointer',
-              fontWeight: '800',
-              color: '#636E72',
-              transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-              fontFamily: 'Inter, sans-serif',
-              fontSize: '14px'
-            }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.background = 'linear-gradient(135deg, #FF6B6B 0%, #FFD93D 100%)';
-              e.currentTarget.style.color = 'white';
-              e.currentTarget.style.borderColor = 'transparent';
-              e.currentTarget.style.transform = 'translateY(-2px)';
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.background = 'white';
-              e.currentTarget.style.color = '#636E72';
-              e.currentTarget.style.borderColor = 'rgba(255, 107, 107, 0.3)';
-              e.currentTarget.style.transform = 'translateY(0)';
-            }}
-          >
-            ↺ Left
-          </button>
-          <div style={{
-            textAlign: 'center',
-            fontSize: '22px',
-            fontWeight: '800',
-            background: 'linear-gradient(135deg, #FF6B6B 0%, #FFD93D 100%)',
-            WebkitBackgroundClip: 'text',
-            WebkitTextFillColor: 'transparent',
-            backgroundClip: 'text',
-            minWidth: '70px',
-            letterSpacing: '-0.5px'
-          }}>
-            {rotation}°
-          </div>
-          <button
-            onClick={rotateRight}
-            style={{
-              flex: 1,
-              padding: '14px',
-              background: 'white',
-              border: '3px solid rgba(255, 107, 107, 0.3)',
-              borderRadius: '16px',
-              cursor: 'pointer',
-              fontWeight: '800',
-              color: '#636E72',
-              transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-              fontFamily: 'Inter, sans-serif',
-              fontSize: '14px'
-            }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.background = 'linear-gradient(135deg, #FF6B6B 0%, #FFD93D 100%)';
-              e.currentTarget.style.color = 'white';
-              e.currentTarget.style.borderColor = 'transparent';
-              e.currentTarget.style.transform = 'translateY(-2px)';
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.background = 'white';
-              e.currentTarget.style.color = '#636E72';
-              e.currentTarget.style.borderColor = 'rgba(255, 107, 107, 0.3)';
-              e.currentTarget.style.transform = 'translateY(0)';
-            }}
-          >
-            ↻ Right
-          </button>
         </div>
 
-        {/* Rotation Slider */}
-        <div style={{ marginTop: '14px' }}>
-          <input
-            type="range"
-            min="0"
-            max="360"
-            step="1"
-            value={rotation}
-            onChange={(e) => setRotation(parseInt(e.target.value))}
-            style={{
-              width: '100%',
-              height: '8px',
-              borderRadius: '4px',
-              background: `linear-gradient(to right, #FF6B6B 0%, #FFD93D ${(rotation / 360) * 100}%, #e5e7eb ${(rotation / 360) * 100}%, #e5e7eb 100%)`,
-              outline: 'none',
-              cursor: 'pointer',
-              WebkitAppearance: 'none',
-              appearance: 'none'
-            }}
-          />
-        </div>
+        {/* Generate Button */}
+        <button
+          onClick={onGenerate}
+          className="w-full py-4 text-white border-none rounded-xl text-base font-bold cursor-pointer transition-all duration-200 hover:-translate-y-1"
+          style={{
+            fontFamily: "'Geist', system-ui, sans-serif",
+            background: 'linear-gradient(135deg, #5B8C5A, #7BAF7A)',
+            boxShadow: '0 4px 16px rgba(91, 140, 90, 0.3)',
+          }}
+        >
+          Create My Play Mat
+        </button>
+        <p className="mt-2.5 text-[11px] text-text-muted text-center font-medium">
+          Save your neighborhood for toy car adventures
+        </p>
       </div>
 
-      {/* Generate Button */}
-      <button
-        onClick={onGenerate}
-        style={{
-          width: '100%',
-          padding: '20px',
-          background: 'linear-gradient(135deg, #FF6B6B 0%, #FFD93D 100%)',
-          color: 'white',
-          border: 'none',
-          borderRadius: '18px',
-          fontSize: '18px',
-          fontWeight: '800',
-          cursor: 'pointer',
-          transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-          fontFamily: 'Inter, sans-serif',
-          letterSpacing: '0.3px',
-          boxShadow: '0 6px 25px rgba(255, 107, 107, 0.4)',
-          textShadow: '0 2px 4px rgba(0, 0, 0, 0.1)'
-        }}
-        onMouseEnter={(e) => {
-          e.currentTarget.style.transform = 'translateY(-3px)';
-          e.currentTarget.style.boxShadow = '0 8px 30px rgba(255, 107, 107, 0.5)';
-        }}
-        onMouseLeave={(e) => {
-          e.currentTarget.style.transform = 'translateY(0)';
-          e.currentTarget.style.boxShadow = '0 6px 25px rgba(255, 107, 107, 0.4)';
-        }}
-      >
-        Create My Play Mat!
-      </button>
-      <div style={{
-        marginTop: '12px',
-        fontSize: '12px',
-        color: '#636E72',
-        textAlign: 'center',
-        fontWeight: '600'
-      }}>
-        Save your neighborhood for toy car adventures
-      </div>
+      <style>{`
+        input[type="range"]::-webkit-slider-thumb {
+          -webkit-appearance: none;
+          appearance: none;
+          width: 16px;
+          height: 16px;
+          border-radius: 50%;
+          background: #5B8C5A;
+          cursor: pointer;
+          border: 3px solid white;
+          box-shadow: 0 1px 4px rgba(91, 140, 90, 0.4);
+        }
+        input[type="range"]::-moz-range-thumb {
+          width: 16px;
+          height: 16px;
+          border-radius: 50%;
+          background: #5B8C5A;
+          cursor: pointer;
+          border: 3px solid white;
+          box-shadow: 0 1px 4px rgba(91, 140, 90, 0.4);
+        }
+      `}</style>
     </div>
   );
 };
