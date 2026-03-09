@@ -29,16 +29,16 @@ const MatPreview = ({
       <div
         onClick={(e) => e.stopPropagation()}
         className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[90%] max-w-[1200px] max-h-[90vh] bg-white rounded-2xl z-[10000] overflow-hidden flex flex-col border-2 border-border animate-fade-in"
-        style={{ boxShadow: '0 16px 48px rgba(91, 140, 90, 0.16)' }}
+        style={{ boxShadow: '0 16px 48px rgba(0, 0, 0, 0.16)' }}
       >
         {/* Modal Header */}
         <div
           className="px-8 py-5 text-white relative"
-          style={{ background: 'linear-gradient(135deg, #5B8C5A, #7BAF7A)' }}
+          style={{ background: '#3B3B3B' }}
         >
           <h2
             className="m-0 text-2xl font-bold tracking-tight"
-            style={{ fontFamily: "'Geist', system-ui, sans-serif" }}
+            style={{ fontFamily: "'Poppins', 'DM Sans', sans-serif" }}
           >
             Preview Your Play Mat
           </h2>
@@ -67,9 +67,10 @@ const MatPreview = ({
           {/* Settings Panel */}
           <div
             className="w-[340px] bg-white p-7 overflow-y-auto border-l-2 border-border"
-            style={{ fontFamily: "'Geist', system-ui, sans-serif" }}
+            style={{ fontFamily: "'DM Sans', 'Poppins', sans-serif" }}
           >
-            <h2 className="text-xl font-bold text-text mb-5 tracking-tight">
+            <h2 className="text-xl font-bold text-text mb-5 tracking-tight"
+              style={{ fontFamily: "'Poppins', 'DM Sans', sans-serif" }}>
               Your Configuration
             </h2>
 
@@ -108,98 +109,81 @@ const MatPreview = ({
             <div className="flex flex-col gap-3">
               {/* Cart Controls */}
               {cartItem ? (
-                <div className="bg-grass/50 border-2 border-primary/30 rounded-xl p-4">
-                  <div className="text-xs font-bold text-primary uppercase tracking-wider mb-3 flex items-center gap-1.5">
+                <div className="border-2 rounded-xl p-4"
+                  style={{ background: '#D6EFFF40', borderColor: 'rgba(61, 174, 245, 0.3)' }}>
+                  <div className="text-xs font-bold uppercase tracking-wider mb-3 flex items-center gap-1.5"
+                    style={{ color: '#5EC269' }}>
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
                       <polyline points="20 6 9 17 4 12" />
                     </svg>
                     In Cart
                   </div>
                   <div className="flex items-center justify-between">
-                    <span className="text-sm font-semibold text-text">
-                      Quantity:
-                    </span>
+                    <span className="text-sm font-semibold text-text">Quantity:</span>
                     <div className="flex items-center gap-3">
                       <button
                         onClick={() => onUpdateQuantity(cartItem.quantity - 1)}
-                        className="w-8 h-8 bg-white border-2 border-border rounded-lg text-lg font-bold text-text cursor-pointer transition-all duration-150 hover:border-primary hover:bg-grass/30"
-                      >
-                        -
-                      </button>
-                      <span className="text-lg font-bold text-primary min-w-[32px] text-center">
+                        className="w-8 h-8 bg-white border-2 border-border rounded-lg text-lg font-bold text-text cursor-pointer transition-all duration-150 hover:border-primary"
+                      >-</button>
+                      <span className="text-lg font-bold min-w-[32px] text-center" style={{ color: '#3DAEF5' }}>
                         {cartItem.quantity}
                       </span>
                       <button
                         onClick={() => onUpdateQuantity(cartItem.quantity + 1)}
-                        className="w-8 h-8 bg-white border-2 border-border rounded-lg text-lg font-bold text-text cursor-pointer transition-all duration-150 hover:border-primary hover:bg-grass/30"
-                      >
-                        +
-                      </button>
+                        className="w-8 h-8 bg-white border-2 border-border rounded-lg text-lg font-bold text-text cursor-pointer transition-all duration-150 hover:border-primary"
+                      >+</button>
                     </div>
                   </div>
                 </div>
               ) : (
                 <button
-                  onClick={async () => {
-                    setIsAdding(true);
-                    await onAddToCart();
-                    setIsAdding(false);
-                  }}
+                  onClick={async () => { setIsAdding(true); await onAddToCart(); setIsAdding(false); }}
                   disabled={isAdding}
-                  className="w-full py-4 text-white border-none rounded-xl text-base font-bold cursor-pointer transition-all duration-200 hover:-translate-y-0.5 disabled:cursor-not-allowed disabled:opacity-60"
+                  className="w-full py-4 text-white border-none rounded-full text-base font-bold cursor-pointer transition-all duration-200 hover:-translate-y-0.5 disabled:cursor-not-allowed disabled:opacity-60"
                   style={{
-                    fontFamily: "'Geist', system-ui, sans-serif",
-                    background: isAdding ? '#9BA3A8' : 'linear-gradient(135deg, #5B8C5A, #7BAF7A)',
-                    boxShadow: isAdding ? 'none' : '0 4px 16px rgba(91, 140, 90, 0.3)',
+                    fontFamily: "'DM Sans', sans-serif",
+                    background: isAdding ? '#B0A999' : '#3DAEF5',
+                    boxShadow: isAdding ? 'none' : '0 0 0 4px rgba(61, 174, 245, 0.25)',
                   }}
                 >
                   {isAdding ? 'Added!' : 'Add to Cart'}
                 </button>
               )}
 
-              {/* Save for Later */}
+              {/* Save for Later / Rename */}
               {!savedMatId && (
-                <button
-                  onClick={onSave}
-                  className="w-full py-3 bg-white text-primary border-2 border-border rounded-xl text-sm font-semibold cursor-pointer transition-all duration-200 hover:border-primary hover:bg-grass/30"
-                  style={{ fontFamily: "'Geist', system-ui, sans-serif" }}
-                >
+                <button onClick={onSave}
+                  className="w-full py-3 bg-white border-2 border-border rounded-full text-sm font-bold cursor-pointer transition-all duration-200 hover:border-primary"
+                  style={{ fontFamily: "'DM Sans', sans-serif", color: '#3DAEF5' }}>
                   Save for Later
                 </button>
               )}
-
-              {/* Rename Mat */}
               {savedMatId && (
-                <button
-                  onClick={onSave}
-                  className="w-full py-3 bg-white text-primary border-2 border-border rounded-xl text-sm font-semibold cursor-pointer transition-all duration-200 hover:border-primary hover:bg-grass/30"
-                  style={{ fontFamily: "'Geist', system-ui, sans-serif" }}
-                >
+                <button onClick={onSave}
+                  className="w-full py-3 bg-white border-2 border-border rounded-full text-sm font-bold cursor-pointer transition-all duration-200 hover:border-primary"
+                  style={{ fontFamily: "'DM Sans', sans-serif", color: '#3DAEF5' }}>
                   Rename Mat
                 </button>
               )}
 
               {/* View Cart */}
-              <button
-                onClick={() => navigate('/cart')}
-                className="w-full py-3 bg-white text-text-light border-2 border-border rounded-xl text-sm font-semibold cursor-pointer transition-all duration-200 hover:border-primary hover:text-primary"
-                style={{ fontFamily: "'Geist', system-ui, sans-serif" }}
-              >
+              <button onClick={() => navigate('/cart')}
+                className="w-full py-3 bg-white text-text-light border-2 border-border rounded-full text-sm font-bold cursor-pointer transition-all duration-200 hover:border-primary hover:text-primary"
+                style={{ fontFamily: "'DM Sans', sans-serif" }}>
                 View Cart
               </button>
 
               {/* Back to Edit */}
-              <button
-                onClick={onBackToEdit}
-                className="w-full py-3 bg-white text-text-muted border-2 border-border/60 rounded-xl text-sm font-semibold cursor-pointer transition-all duration-200 hover:border-border-dark hover:text-text-light"
-                style={{ fontFamily: "'Geist', system-ui, sans-serif" }}
-              >
+              <button onClick={onBackToEdit}
+                className="w-full py-3 bg-white text-text-muted border-2 border-border/60 rounded-full text-sm font-bold cursor-pointer transition-all duration-200 hover:border-border-dark hover:text-text-light"
+                style={{ fontFamily: "'DM Sans', sans-serif" }}>
                 ← Back to Edit
               </button>
             </div>
 
             {/* Info box */}
-            <div className="mt-5 p-4 bg-grass/30 border border-border rounded-xl text-xs text-text-light font-medium leading-relaxed">
+            <div className="mt-5 p-4 border rounded-xl text-xs text-text-light font-medium leading-relaxed"
+              style={{ background: '#D6EFFF40', borderColor: '#E0DDD5' }}>
               <strong className="text-text">Ready to order?</strong><br />
               Add to cart to proceed to checkout, or save for later to come back and order anytime.
             </div>

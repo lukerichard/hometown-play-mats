@@ -15,11 +15,12 @@ const MatSidebar = ({
       className="w-[340px] bg-white/70 backdrop-blur-sm border-r-2 border-border overflow-y-auto"
       style={{
         maxHeight: 'calc(100vh - 82px)',
-        fontFamily: "'Geist', system-ui, sans-serif",
+        fontFamily: "'DM Sans', 'Poppins', sans-serif",
       }}
     >
       <div className="p-5">
-        <h2 className="text-lg font-bold tracking-tight text-text mb-5">
+        <h2 className="text-lg font-bold tracking-tight text-text mb-5"
+          style={{ fontFamily: "'Poppins', 'DM Sans', sans-serif" }}>
           Customize Your Mat
         </h2>
 
@@ -39,14 +40,14 @@ const MatSidebar = ({
                     flex items-center p-3.5 rounded-xl cursor-pointer transition-all duration-200
                     border-2
                     ${isActive
-                      ? 'border-primary bg-grass/50'
+                      ? 'border-primary bg-sky-light/40'
                       : 'border-border bg-white hover:border-primary/40 hover:translate-x-1'
                     }
                   `}
                   style={{
                     boxShadow: isActive
-                      ? '0 2px 8px rgba(91, 140, 90, 0.15)'
-                      : '0 1px 2px rgba(0, 0, 0, 0.04)',
+                      ? '0 0 0 4px rgba(61, 174, 245, 0.15)'
+                      : '0 1px 3px rgba(0, 0, 0, 0.08)',
                   }}
                 >
                   {/* Radio circle */}
@@ -80,20 +81,18 @@ const MatSidebar = ({
           <div className="flex items-center gap-2.5">
             <button
               onClick={rotateLeft}
-              className="flex-1 py-3 bg-white border-2 border-border rounded-xl cursor-pointer font-semibold text-text-light text-sm transition-all duration-200 hover:border-primary hover:text-primary hover:-translate-y-0.5"
-              style={{ fontFamily: "'Geist', system-ui, sans-serif" }}
+              className="flex-1 py-3 bg-white border-2 border-border rounded-full cursor-pointer font-bold text-text-light text-sm transition-all duration-200 hover:border-primary hover:text-primary hover:-translate-y-0.5"
+              style={{ fontFamily: "'DM Sans', sans-serif" }}
             >
               ↺ Left
             </button>
-            <div
-              className="text-center text-lg font-bold min-w-[60px] text-primary"
-            >
+            <div className="text-center text-lg font-bold min-w-[60px] text-primary">
               {rotation}°
             </div>
             <button
               onClick={rotateRight}
-              className="flex-1 py-3 bg-white border-2 border-border rounded-xl cursor-pointer font-semibold text-text-light text-sm transition-all duration-200 hover:border-primary hover:text-primary hover:-translate-y-0.5"
-              style={{ fontFamily: "'Geist', system-ui, sans-serif" }}
+              className="flex-1 py-3 bg-white border-2 border-border rounded-full cursor-pointer font-bold text-text-light text-sm transition-all duration-200 hover:border-primary hover:text-primary hover:-translate-y-0.5"
+              style={{ fontFamily: "'DM Sans', sans-serif" }}
             >
               ↻ Right
             </button>
@@ -112,7 +111,7 @@ const MatSidebar = ({
               style={{
                 WebkitAppearance: 'none',
                 appearance: 'none',
-                background: `linear-gradient(to right, #5B8C5A 0%, #7BAF7A ${(rotation / 360) * 100}%, #E2E8E4 ${(rotation / 360) * 100}%, #E2E8E4 100%)`,
+                background: `linear-gradient(to right, #3DAEF5 0%, #3DAEF5 ${(rotation / 360) * 100}%, #E0DDD5 ${(rotation / 360) * 100}%, #E0DDD5 100%)`,
               }}
             />
           </div>
@@ -121,11 +120,11 @@ const MatSidebar = ({
         {/* Generate Button */}
         <button
           onClick={onGenerate}
-          className="w-full py-4 text-white border-none rounded-xl text-base font-bold cursor-pointer transition-all duration-200 hover:-translate-y-1"
+          className="w-full py-4 text-white border-none rounded-full text-base font-bold cursor-pointer transition-all duration-200 hover:-translate-y-1"
           style={{
-            fontFamily: "'Geist', system-ui, sans-serif",
-            background: 'linear-gradient(135deg, #5B8C5A, #7BAF7A)',
-            boxShadow: '0 4px 16px rgba(91, 140, 90, 0.3)',
+            fontFamily: "'DM Sans', sans-serif",
+            background: '#3DAEF5',
+            boxShadow: '0 0 0 4px rgba(61, 174, 245, 0.25)',
           }}
         >
           Create My Play Mat
@@ -142,19 +141,19 @@ const MatSidebar = ({
           width: 16px;
           height: 16px;
           border-radius: 50%;
-          background: #5B8C5A;
+          background: #3DAEF5;
           cursor: pointer;
           border: 3px solid white;
-          box-shadow: 0 1px 4px rgba(91, 140, 90, 0.4);
+          box-shadow: 0 1px 4px rgba(61, 174, 245, 0.4);
         }
         input[type="range"]::-moz-range-thumb {
           width: 16px;
           height: 16px;
           border-radius: 50%;
-          background: #5B8C5A;
+          background: #3DAEF5;
           cursor: pointer;
           border: 3px solid white;
-          box-shadow: 0 1px 4px rgba(91, 140, 90, 0.4);
+          box-shadow: 0 1px 4px rgba(61, 174, 245, 0.4);
         }
       `}</style>
     </div>

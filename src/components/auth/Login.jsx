@@ -10,7 +10,6 @@ const Login = () => {
   const { login, loginWithGoogle, currentUser } = useAuth();
   const navigate = useNavigate();
 
-  // Redirect if already logged in (handles Google redirect result)
   useEffect(() => {
     if (currentUser) {
       navigate('/');
@@ -74,36 +73,39 @@ const Login = () => {
       display: 'flex',
       alignItems: 'center',
       justifyContent: 'center',
-      background: '#f8fafb',
+      background: '#FDF8F0',
       padding: '20px',
-      paddingTop: '80px'
+      paddingTop: '80px',
+      fontFamily: "'DM Sans', 'Poppins', sans-serif"
     }}>
       <div style={{
         width: '100%',
         maxWidth: '450px',
         background: 'white',
         borderRadius: '20px',
-        boxShadow: '0 10px 40px rgba(0, 0, 0, 0.1)',
+        boxShadow: '0 8px 30px rgba(0, 0, 0, 0.12)',
         overflow: 'hidden'
       }}>
         {/* Header */}
         <div style={{
-          background: 'linear-gradient(135deg, #C78880 0%, #A86E67 100%)',
+          background: '#3B3B3B',
           padding: '32px',
-          textAlign: 'center'
+          textAlign: 'center',
+          position: 'relative'
         }}>
           <h1 style={{
             margin: 0,
             fontSize: '32px',
             fontWeight: '800',
             color: 'white',
-            letterSpacing: '-0.5px'
+            letterSpacing: '-0.5px',
+            fontFamily: "'Poppins', 'DM Sans', sans-serif"
           }}>
             Welcome Back
           </h1>
           <p style={{
             margin: '8px 0 0 0',
-            color: 'rgba(255, 255, 255, 0.9)',
+            color: 'rgba(255, 255, 255, 0.85)',
             fontSize: '15px'
           }}>
             Login to continue designing your play mats
@@ -119,7 +121,7 @@ const Login = () => {
                 display: 'block',
                 fontSize: '14px',
                 fontWeight: '700',
-                color: '#3A3A3A',
+                color: '#2D2D2D',
                 marginBottom: '8px'
               }}>
                 Email Address
@@ -131,17 +133,24 @@ const Login = () => {
                 placeholder="you@example.com"
                 style={{
                   width: '100%',
-                  padding: '14px 16px',
-                  border: '2px solid rgba(121, 151, 127, 0.6)',
-                  borderRadius: '10px',
+                  padding: '12px 18px',
+                  border: '2.5px solid #E0DDD5',
+                  borderRadius: '12px',
                   fontSize: '15px',
-                  fontFamily: 'Inter, sans-serif',
+                  fontFamily: "'DM Sans', sans-serif",
                   outline: 'none',
-                  transition: 'border-color 0.2s',
-                  boxSizing: 'border-box'
+                  transition: 'border-color 0.2s, box-shadow 0.2s',
+                  boxSizing: 'border-box',
+                  color: '#2D2D2D'
                 }}
-                onFocus={(e) => e.currentTarget.style.borderColor = '#C78880'}
-                onBlur={(e) => e.currentTarget.style.borderColor = 'rgba(121, 151, 127, 0.6)'}
+                onFocus={(e) => {
+                  e.currentTarget.style.borderColor = '#3DAEF5';
+                  e.currentTarget.style.boxShadow = '0 0 0 4px rgba(61, 174, 245, 0.25)';
+                }}
+                onBlur={(e) => {
+                  e.currentTarget.style.borderColor = '#E0DDD5';
+                  e.currentTarget.style.boxShadow = 'none';
+                }}
               />
             </div>
 
@@ -151,7 +160,7 @@ const Login = () => {
                 display: 'block',
                 fontSize: '14px',
                 fontWeight: '700',
-                color: '#3A3A3A',
+                color: '#2D2D2D',
                 marginBottom: '8px'
               }}>
                 Password
@@ -163,17 +172,24 @@ const Login = () => {
                 placeholder="Enter your password"
                 style={{
                   width: '100%',
-                  padding: '14px 16px',
-                  border: '2px solid rgba(121, 151, 127, 0.6)',
-                  borderRadius: '10px',
+                  padding: '12px 18px',
+                  border: '2.5px solid #E0DDD5',
+                  borderRadius: '12px',
                   fontSize: '15px',
-                  fontFamily: 'Inter, sans-serif',
+                  fontFamily: "'DM Sans', sans-serif",
                   outline: 'none',
-                  transition: 'border-color 0.2s',
-                  boxSizing: 'border-box'
+                  transition: 'border-color 0.2s, box-shadow 0.2s',
+                  boxSizing: 'border-box',
+                  color: '#2D2D2D'
                 }}
-                onFocus={(e) => e.currentTarget.style.borderColor = '#C78880'}
-                onBlur={(e) => e.currentTarget.style.borderColor = 'rgba(121, 151, 127, 0.6)'}
+                onFocus={(e) => {
+                  e.currentTarget.style.borderColor = '#3DAEF5';
+                  e.currentTarget.style.boxShadow = '0 0 0 4px rgba(61, 174, 245, 0.25)';
+                }}
+                onBlur={(e) => {
+                  e.currentTarget.style.borderColor = '#E0DDD5';
+                  e.currentTarget.style.boxShadow = 'none';
+                }}
               />
             </div>
 
@@ -182,10 +198,10 @@ const Login = () => {
               <div style={{
                 marginBottom: '20px',
                 padding: '12px 16px',
-                background: 'rgba(220, 38, 38, 0.1)',
-                border: '1px solid rgba(220, 38, 38, 0.3)',
-                borderRadius: '10px',
-                color: '#dc2626',
+                background: '#fde8e8',
+                borderLeft: '5px solid #E84545',
+                borderRadius: '12px',
+                color: '#b71c1c',
                 fontSize: '14px',
                 fontWeight: '600'
               }}>
@@ -199,17 +215,17 @@ const Login = () => {
               disabled={loading}
               style={{
                 width: '100%',
-                padding: '16px',
-                background: loading ? '#9ca3af' : 'linear-gradient(135deg, #C78880 0%, #A86E67 100%)',
+                padding: '14px 28px',
+                background: loading ? '#B0A999' : '#3DAEF5',
                 color: 'white',
                 border: 'none',
-                borderRadius: '10px',
+                borderRadius: '999px',
                 fontSize: '16px',
-                fontWeight: '800',
+                fontWeight: '700',
                 cursor: loading ? 'not-allowed' : 'pointer',
-                fontFamily: 'Inter, sans-serif',
+                fontFamily: "'DM Sans', sans-serif",
                 letterSpacing: '0.3px',
-                boxShadow: loading ? 'none' : '0 4px 20px rgba(121, 151, 127, 0.5)',
+                boxShadow: loading ? 'none' : '0 0 0 4px rgba(61, 174, 245, 0.25)',
                 transition: 'all 0.2s'
               }}
             >
@@ -224,11 +240,11 @@ const Login = () => {
             margin: '24px 0',
             gap: '16px'
           }}>
-            <div style={{ flex: 1, height: '1px', background: 'rgba(121, 151, 127, 0.6)' }} />
-            <span style={{ color: '#64748b', fontSize: '14px', fontWeight: '600' }}>
+            <div style={{ flex: 1, height: '1px', background: '#E0DDD5' }} />
+            <span style={{ color: '#5A5A5A', fontSize: '14px', fontWeight: '600' }}>
               Or continue with
             </span>
-            <div style={{ flex: 1, height: '1px', background: 'rgba(121, 151, 127, 0.6)' }} />
+            <div style={{ flex: 1, height: '1px', background: '#E0DDD5' }} />
           </div>
 
           {/* Google Login */}
@@ -239,21 +255,22 @@ const Login = () => {
               width: '100%',
               padding: '14px',
               background: 'white',
-              border: '2px solid rgba(121, 151, 127, 0.6)',
-              borderRadius: '10px',
+              border: '2.5px solid #E0DDD5',
+              borderRadius: '999px',
               fontSize: '15px',
               fontWeight: '700',
               cursor: loading ? 'not-allowed' : 'pointer',
-              fontFamily: 'Inter, sans-serif',
+              fontFamily: "'DM Sans', sans-serif",
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
               gap: '12px',
               transition: 'all 0.2s',
-              opacity: loading ? 0.6 : 1
+              opacity: loading ? 0.6 : 1,
+              color: '#2D2D2D'
             }}
-            onMouseEnter={(e) => !loading && (e.currentTarget.style.borderColor = '#C78880')}
-            onMouseLeave={(e) => !loading && (e.currentTarget.style.borderColor = 'rgba(121, 151, 127, 0.6)')}
+            onMouseEnter={(e) => !loading && (e.currentTarget.style.borderColor = '#3DAEF5')}
+            onMouseLeave={(e) => !loading && (e.currentTarget.style.borderColor = '#E0DDD5')}
           >
             <svg width="20" height="20" viewBox="0 0 20 20">
               <path fill="#4285F4" d="M19.6 10.23c0-.82-.1-1.42-.25-2.05H10v3.72h5.5c-.15.96-.74 2.31-2.04 3.22v2.45h3.16c1.89-1.73 2.98-4.3 2.98-7.34z"/>
@@ -268,12 +285,12 @@ const Login = () => {
           <p style={{
             marginTop: '24px',
             textAlign: 'center',
-            color: '#64748b',
+            color: '#5A5A5A',
             fontSize: '15px'
           }}>
             Don't have an account?{' '}
             <Link to="/signup" style={{
-              color: '#C78880',
+              color: '#3DAEF5',
               fontWeight: '700',
               textDecoration: 'none'
             }}>
