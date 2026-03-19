@@ -21,6 +21,14 @@
 - **State Management:** Keep map state (zoom, center, pitch) in a top-level hook or context so we can export it later.
 
 ## Development Workflow
+- **Step 0 (UI tasks):** If a Stitch design exists, treat it as source-of-truth. Do not redesign from scratch.
 - **Step 1:** Explain the plan in 3 bullet points.
-- **Step 2:** Write the code.
+- **Step 2:** Write the code with minimal, high-fidelity changes.
 - **Step 3:** Suggest a verification step (e.g., "Check if the map renders at localhost:5173").
+
+## UI Fidelity Guardrail (Stitch-first)
+- Pixel-level implementers may only do minor tweaks to Stitch output:
+  - accessibility fixes (contrast, focus, semantics)
+  - token alignment and responsive fit
+  - tiny copy clarity edits
+- Any major layout/visual change requires explicit approval.
