@@ -1,172 +1,43 @@
-import { useState } from 'react';
-import MapCanvas from './MapCanvas';
+import { Link } from 'react-router-dom';
+import './LandingPage.css';
 
 const LandingPage = () => {
-  const [address, setAddress] = useState('');
-  const [isSearching, setIsSearching] = useState(false);
-  const [mapCenter, setMapCenter] = useState([-122.4194, 37.7749]);
-  const [mapZoom, setMapZoom] = useState(17);
-  const [mapBearing, setMapBearing] = useState(0);
-
-  const font = "'DM Sans', 'Poppins', sans-serif";
-  const fontDisplay = "'Poppins', 'DM Sans', sans-serif";
-
-  const handleSearch = async () => {
-    if (!address.trim()) return;
-    setIsSearching(true);
-    try {
-      const token = import.meta.env.VITE_MAPBOX_TOKEN;
-      const response = await fetch(
-        `https://api.mapbox.com/geocoding/v5/mapbox.places/${encodeURIComponent(address)}.json?access_token=${token}`
-      );
-      const data = await response.json();
-      if (data.features && data.features.length > 0) {
-        const [lng, lat] = data.features[0].center;
-        setMapCenter([lng, lat]);
-        setMapZoom(17);
-      } else {
-        alert('Address not found. Please try a different search.');
-      }
-    } catch (error) {
-      console.error('Geocoding error:', error);
-      alert('Error searching for address. Please try again.');
-    } finally {
-      setIsSearching(false);
-    }
-  };
-
-  const handleKeyPress = (e) => {
-    if (e.key === 'Enter') handleSearch();
-  };
-
   return (
-    <div style={{
-      padding: '2rem',
-      display: 'flex',
-      flexDirection: 'column',
-      alignItems: 'center',
-      gap: '2rem',
-      background: '#FDF8F0',
-      minHeight: '100vh',
-      fontFamily: font
-    }}>
-      <h1 style={{
-        fontSize: '2.8rem',
-        fontWeight: '900',
-        color: '#3B3B3B',
-        fontFamily: fontDisplay,
-        lineHeight: 1.2,
-        textAlign: 'center'
-      }}>
-        Your Neighborhood,<br />Your Adventure!
-      </h1>
+    <main className="landing" aria-labelledby="hero-title">
+      <section className="hero-card" role="region" aria-label="Hero">
+        <span className="hero-badge">Family-made • Premium print quality</span>
+        <p className="hero-kicker">Custom Hometown Play Mats</p>
+        <h1 id="hero-title">Turn your favorite streets into a play mat they’ll use every day.</h1>
+        <p className="hero-copy">
+          Create a personalized neighborhood map in minutes with clear roads, parks, and landmarks kids can recognize.
+        </p>
 
-      {/* Address Search */}
-      <div style={{ width: '500px', maxWidth: '100%' }}>
-        <label htmlFor="address" style={{
-          display: 'block', fontSize: '0.85rem', fontWeight: '700', color: '#2D2D2D', marginBottom: '0.5rem',
-          textTransform: 'uppercase', letterSpacing: '0.5px'
-        }}>
-          Enter an Address
-        </label>
-        <input
-          id="address"
-          type="text"
-          value={address}
-          onChange={(e) => setAddress(e.target.value)}
-          onKeyPress={handleKeyPress}
-          placeholder="e.g., Times Square, New York"
-          style={{
-            width: '100%',
-            padding: '12px 18px',
-            border: '2.5px solid #E0DDD5',
-            borderRadius: '12px',
-            outline: 'none',
-            fontSize: '1rem',
-            fontFamily: font,
-            color: '#2D2D2D',
-            transition: 'border-color 0.2s, box-shadow 0.2s'
-          }}
-          onFocus={(e) => {
-            e.currentTarget.style.borderColor = '#3DAEF5';
-            e.currentTarget.style.boxShadow = '0 0 0 4px rgba(61, 174, 245, 0.25)';
-          }}
-          onBlur={(e) => {
-            e.currentTarget.style.borderColor = '#E0DDD5';
-            e.currentTarget.style.boxShadow = 'none';
-          }}
-        />
-        <button
-          onClick={handleSearch}
-          disabled={isSearching}
-          style={{
-            width: '100%',
-            marginTop: '0.75rem',
-            padding: '14px 28px',
-            backgroundColor: isSearching ? '#B0A999' : '#3DAEF5',
-            color: 'white',
-            borderRadius: '999px',
-            border: 'none',
-            cursor: isSearching ? 'not-allowed' : 'pointer',
-            fontWeight: '700',
-            fontSize: '1rem',
-            fontFamily: font,
-            boxShadow: isSearching ? 'none' : '0 0 0 4px rgba(61, 174, 245, 0.25)',
-            transition: 'all 0.2s'
-          }}
-        >
-          {isSearching ? 'Searching...' : 'Search Location'}
-        </button>
-      </div>
-
-      {/* Map Canvas */}
-      <MapCanvas center={mapCenter} zoom={mapZoom} bearing={mapBearing} />
-
-      {/* Rotation Controls */}
-      <div style={{ width: '500px', maxWidth: '100%' }}>
-        <label style={{
-          display: 'block', fontSize: '0.85rem', fontWeight: '700', color: '#2D2D2D', marginBottom: '0.5rem',
-          textTransform: 'uppercase', letterSpacing: '0.5px'
-        }}>
-          Rotation: {mapBearing}°
-        </label>
-        <input
-          type="range"
-          min="0"
-          max="360"
-          value={mapBearing}
-          onChange={(e) => setMapBearing(Number(e.target.value))}
-          style={{ width: '100%', marginBottom: '0.5rem' }}
-        />
-        <div style={{ display: 'flex', gap: '0.5rem' }}>
-          {[
-            { label: '← 15°', action: () => setMapBearing((prev) => (prev - 15 + 360) % 360) },
-            { label: 'Reset', action: () => setMapBearing(0) },
-            { label: '15° →', action: () => setMapBearing((prev) => (prev + 15) % 360) },
-          ].map((btn) => (
-            <button
-              key={btn.label}
-              onClick={btn.action}
-              style={{
-                flex: 1,
-                padding: '10px',
-                backgroundColor: '#3B3B3B',
-                color: 'white',
-                borderRadius: '999px',
-                border: 'none',
-                cursor: 'pointer',
-                fontWeight: '700',
-                fontFamily: font,
-                fontSize: '0.875rem',
-                transition: 'all 0.2s'
-              }}
-            >
-              {btn.label}
-            </button>
-          ))}
+        <div className="hero-actions" role="group" aria-label="Primary actions">
+          <Link className="hero-btn hero-btn-primary" to="/create">Create Your Mat</Link>
+          <Link className="hero-btn hero-btn-secondary" to="/signup">Start Free Account</Link>
         </div>
-      </div>
-    </div>
+
+        <p className="hero-trust">No design skills needed • Secure checkout • Printed in 7–10 business days</p>
+      </section>
+
+      <section className="steps" aria-label="How it works">
+        <article className="step-card">
+          <p className="step-label">Step 1</p>
+          <h2>Map It</h2>
+          <p>Search your address and choose the exact area to include.</p>
+        </article>
+        <article className="step-card">
+          <p className="step-label">Step 2</p>
+          <h2>Customize</h2>
+          <p>Pick your size, visual style, and neighborhood details.</p>
+        </article>
+        <article className="step-card">
+          <p className="step-label">Step 3</p>
+          <h2>Preview &amp; Order</h2>
+          <p>Review your mat and check out with confidence.</p>
+        </article>
+      </section>
+    </main>
   );
 };
 

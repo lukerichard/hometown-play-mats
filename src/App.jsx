@@ -1,5 +1,6 @@
 import { Routes, Route } from 'react-router-dom';
 import ToyMatDesigner from './components/ToyMatDesigner';
+import LandingPage from './components/LandingPage';
 import ProtectedRoute from './components/layout/ProtectedRoute';
 import Header from './components/layout/Header';
 import Login from './components/auth/Login';
@@ -17,7 +18,8 @@ function App() {
         <Route path="/login" element={<Login />} />
         <Route path="/signup" element={<Signup />} />
         {/* Home page - no login required */}
-        <Route path="/" element={<ToyMatDesigner />} />
+        <Route path="/" element={<LandingPage />} />
+        <Route path="/create" element={<ToyMatDesigner />} />
         {/* Protected routes - require login */}
         <Route
           path="/account"
