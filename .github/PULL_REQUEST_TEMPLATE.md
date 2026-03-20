@@ -8,6 +8,9 @@
 - [ ] Lint/tests pass locally
 - [ ] Docs updated (if needed)
 - [ ] No secrets/keys added
+- [ ] Stitch-first followed for UI changes (include project/screen reference)
+- [ ] No direct deploy commands were used by agent(s)
+- [ ] Change is on a feature branch (not direct to main/master)
 
 ## Test Evidence
 - Commands run:

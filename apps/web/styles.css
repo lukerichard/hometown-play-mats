@@ -93,55 +93,157 @@ main {
   box-shadow: var(--shadow-soft);
 }
 
-.home-hero-wrap { margin-bottom: 12px; }
-
-.hero h1 {
-  margin: 8px 0;
-  font-size: 44px;
-  line-height: 1.15;
-  max-width: 18ch;
+.hero-v2 {
+  margin-bottom: 12px;
 }
 
-.hero p {
-  color: var(--color-text-muted);
-  font-size: 18px;
-  margin-top: 0;
-  max-width: 62ch;
-}
-
-.home-hero {
+.hero-v2-shell {
   padding: 28px;
   background:
-    radial-gradient(circle at 90% 10%, rgba(191, 227, 240, 0.55), transparent 42%),
-    linear-gradient(180deg, #ffffff 0%, #fbfdfd 100%);
+    radial-gradient(circle at 96% 8%, rgba(191, 227, 240, 0.7), transparent 32%),
+    radial-gradient(circle at 8% 88%, rgba(191, 229, 169, 0.42), transparent 36%),
+    linear-gradient(180deg, #ffffff 0%, #fdfefe 100%);
 }
 
-.hero-cta-row {
+.hero-v2-shell,
+.hero-v2-main,
+.hero-v2-side {
+  position: relative;
+}
+
+.hero-v2-shell {
+  display: grid;
+  grid-template-columns: minmax(0, 1.1fr) minmax(260px, 0.9fr);
+  gap: 20px;
+  align-items: stretch;
+}
+
+.hero-v2-main h1 {
+  margin: 6px 0 10px;
+  font-size: clamp(2rem, 4.4vw, 3.1rem);
+  line-height: 1.08;
+  letter-spacing: -0.01em;
+  max-width: 15ch;
+}
+
+.hero-v2-subhead {
+  margin: 0;
+  max-width: 56ch;
+  color: #3d4650;
+  font-size: 1.08rem;
+}
+
+.hero-v2-actions {
   display: flex;
   flex-wrap: wrap;
   gap: 10px;
-  margin: 18px 0 10px;
+  margin: 20px 0 14px;
 }
 
-.hero-trust {
+.hero-v2-proof {
   margin: 0;
-  font-size: 14px;
-  color: #3f4954;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  gap: 8px;
+}
+
+.hero-v2-proof li {
+  position: relative;
+  padding-left: 22px;
   font-weight: 700;
+  color: #1f2937;
 }
 
-.home-steps .step-card h3 { margin: 4px 0 8px; }
+.hero-v2-proof li::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 7px;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: #2f6f30;
+  box-shadow: 0 0 0 3px rgba(104, 178, 107, 0.2);
+}
 
-.step-eyebrow {
+.hero-v2-side {
+  background: #ffffff;
+  border: 1px solid #cad6df;
+  border-radius: var(--radius-md);
+  padding: 16px;
+}
+
+.hero-v2-side-title {
+  margin: 0 0 10px;
+  font-size: 1.02rem;
+}
+
+.hero-v2-steps {
   margin: 0;
-  font-size: 12px;
-  letter-spacing: .08em;
-  text-transform: uppercase;
-  color: #2f6f30;
-  font-weight: 800;
+  padding-left: 18px;
+  display: grid;
+  gap: 10px;
 }
 
-.nested-card { margin: 0; }
+.hero-v2-steps li {
+  color: #374151;
+  font-size: 14px;
+}
+
+.hero-v2-steps strong {
+  display: block;
+  color: #111827;
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: .05em;
+}
+
+.hero-v2-steps span {
+  display: block;
+  margin-top: 2px;
+}
+
+.hero-v2-mini-map {
+  margin-top: 14px;
+  min-height: 86px;
+  border: 1px dashed #93b2c8;
+  border-radius: 12px;
+  background:
+    linear-gradient(90deg, rgba(255,255,255,0.56) 1px, transparent 1px) 0 0 / 32px 100%,
+    linear-gradient(0deg, rgba(255,255,255,0.56) 1px, transparent 1px) 0 0 / 100% 32px,
+    linear-gradient(160deg, #accbe0 0%, #bfe3f0 55%, #cce8b8 100%);
+  position: relative;
+  overflow: hidden;
+}
+
+.hero-v2-mini-map span {
+  position: absolute;
+  display: block;
+  border-radius: var(--radius-pill);
+  background: #fff7;
+}
+
+.hero-v2-mini-map span:nth-child(1) {
+  width: 50%;
+  height: 8px;
+  left: 8%;
+  top: 22%;
+}
+
+.hero-v2-mini-map span:nth-child(2) {
+  width: 35%;
+  height: 8px;
+  right: 10%;
+  top: 52%;
+}
+
+.hero-v2-mini-map span:nth-child(3) {
+  width: 44%;
+  height: 8px;
+  left: 16%;
+  bottom: 18%;
+}
 
 .kicker {
   color: #4b5563;
@@ -343,14 +445,24 @@ footer { padding: 20px; text-align: center; color: #6b7280; }
 
 @media (max-width: 640px) {
   main { padding: 16px; }
-  .hero h1 { font-size: 34px; }
-  .hero p { font-size: 16px; }
-  .home-hero { padding: 20px; }
-  .hero-cta-row { flex-direction: column; }
-  .hero-cta-row .btn {
+  .hero-v2-shell {
+    grid-template-columns: 1fr;
+    padding: 20px;
+  }
+  .hero-v2-main h1 { font-size: 2.05rem; }
+  .hero-v2-subhead { font-size: 1rem; }
+  .hero-v2-side { padding: 12px; }
+  .hero-v2-actions { flex-direction: column; }
+  .hero-v2-actions .btn {
     width: 100%;
     margin-right: 0;
   }
+}
+
+@media (max-width: 420px) {
+  .hero-v2-main h1 { font-size: 1.82rem; }
+  .hero-v2-steps { padding-left: 16px; }
+  .hero-v2-proof li { line-height: 1.35; }
 }
 
 @media (max-width: 1024px) {

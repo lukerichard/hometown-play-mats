@@ -5,58 +5,37 @@ function link(href, text, cls='btn') { return `<a class="${cls}" href="${href}">
 
 function home() {
   return `
-    <header class="home-hero-wrap" aria-labelledby="home-hero-title">
+    <section class="hero-v2" aria-labelledby="home-hero-title">
       ${road}
-      <section class="card hero home-hero">
-        <span class="badge">Family-made • Premium print quality</span>
-        <p class="kicker">Custom Hometown Play Mats</p>
-        <h1 id="home-hero-title">Turn your favorite streets into a play mat they'll use every day.</h1>
-        <p>Create a personalized neighborhood map in minutes with clear roads, parks, and landmarks kids can recognize.</p>
-        <div class="hero-cta-row" role="group" aria-label="Primary actions">
-          ${link('/create/map','Create Your Mat')}
-          ${link('/style-guide','See Design Style','btn secondary')}
+      <div class="card hero-v2-shell">
+        <div class="hero-v2-main">
+          <p class="kicker">Hometown Play Mats</p>
+          <h1 id="home-hero-title">Turn your neighborhood into their favorite play world.</h1>
+          <p class="hero-v2-subhead">Design a custom map mat in minutes with your real streets, local landmarks, and colors that match your home.</p>
+
+          <div class="hero-v2-actions" role="group" aria-label="Primary actions">
+            ${link('/create/map','Build My Mat')}
+            ${link('/style-guide','See Style Options','btn secondary')}
+          </div>
+
+          <ul class="hero-v2-proof" aria-label="Trust signals">
+            <li>5,000+ families served</li>
+            <li>Kid-safe, non-toxic print materials</li>
+            <li>Ships in 7–10 business days</li>
+          </ul>
         </div>
-        <p class="hero-trust">No design skills needed • Secure checkout • Printed in 7–10 business days</p>
-      </section>
-    </header>
 
-    ${road}
-    <section class="home-support" aria-label="How it works">
-      <div class="grid home-steps">
-        <article class="card step-card">
-          <p class="step-eyebrow">Step 1</p>
-          <h3>Map It</h3>
-          <p class="muted">Search your address and choose the exact area to include.</p>
-        </article>
-        <article class="card step-card">
-          <p class="step-eyebrow">Step 2</p>
-          <h3>Customize</h3>
-          <p class="muted">Pick your size, visual style, and the details your family loves.</p>
-        </article>
-        <article class="card step-card">
-          <p class="step-eyebrow">Step 3</p>
-          <h3>Preview & Order</h3>
-          <p class="muted">Review your mat, personalize if needed, then check out securely.</p>
-        </article>
-      </div>
-    </section>
-
-    ${road}
-    <section class="card" aria-label="Starter pricing">
-      <h2 class="section-title">Starter pricing</h2>
-      <div class="grid">
-        <article class="card nested-card">
-          <h3>Small</h3>
-          <div class="price">$79</div>
-          <p class="muted">4x3 play mat</p>
-          <ul class="clean"><li>Neighborhood map style</li><li>Illustrated landmarks</li><li>Gift-ready packaging</li></ul>
-        </article>
-        <article class="card nested-card">
-          <h3>Best Seller</h3>
-          <div class="price">$149</div>
-          <p class="muted">8x5 family size</p>
-          <ul class="clean"><li>Larger play surface</li><li>More map detail</li><li>Great for siblings</li></ul>
-        </article>
+        <aside class="hero-v2-side" aria-label="How it works overview">
+          <h2 class="hero-v2-side-title">How it works</h2>
+          <ol class="hero-v2-steps">
+            <li><strong>Pick your area</strong><span>Type your address and lock in the exact streets you want.</span></li>
+            <li><strong>Choose your style</strong><span>Select mat size, theme details, and optional personalization text.</span></li>
+            <li><strong>Preview + order</strong><span>Review your final design and checkout securely in minutes.</span></li>
+          </ol>
+          <div class="hero-v2-mini-map" aria-hidden="true">
+            <span></span><span></span><span></span>
+          </div>
+        </aside>
       </div>
     </section>
   `;
