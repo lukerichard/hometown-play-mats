@@ -23,5 +23,6 @@ dist-ssr
 *.sln
 *.sw?
 .env
+.mcp.json
 .vercel
 .env*.local

@@ -18,7 +18,9 @@ export const useFirestore = (collectionName, queryConstraints = []) => {
   const [error, setError] = useState(null);
 
   useEffect(() => {
-    if (!collectionName) {
+    if (!collectionName || !db) {
+      setData([]);
+      setLoading(false);
       return;
     }
 

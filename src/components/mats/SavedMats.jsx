@@ -1,6 +1,5 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { where, orderBy } from 'firebase/firestore';
 import { useAuth } from '../../hooks/useAuth';
 import { useFirestore } from '../../hooks/useFirestore';
 import SavedMatCard from './SavedMatCard';
@@ -16,19 +15,15 @@ const SavedMats = () => {
   const fontDisplay = "'Poppins', 'DM Sans', sans-serif";
 
   const { data: mats, loading, error } = useFirestore(
-    currentUser?.uid ? 'savedMats' : null,
-    currentUser?.uid ? [
-      where('userId', '==', currentUser.uid),
-      orderBy('createdAt', 'desc')
-    ] : []
+    currentUser?.uid && !currentUser.isAnonymous ? `users/${currentUser.uid}/designs` : null
   );
 
   const { data: cartItems } = useFirestore(
-    currentUser?.uid ? 'cart' : null,
-    currentUser?.uid ? [where('userId', '==', currentUser.uid)] : []
+    currentUser?.uid && !currentUser.isAnonymous ? `users/${currentUser.uid}/cart` : null
   );
 
-  const matsInCart = new Set(cartItems.map(item => item.matId));
+  const matsInCart = new Set(cartItems.map(item => item.designId || item.matId));
+  const savedMats = mats.filter((mat) => mat.status !== 'in_cart');
 
   const matSizes = {
     small: { width: 1, height: 2, name: 'Small', dimensions: '39" × 79" (1m × 2m)' },
@@ -42,7 +37,9 @@ const SavedMats = () => {
     neon: { color: '#A76BDB', name: 'Neon Vibrant' }
   };
 
-  const previewingCartItem = previewingMat ? cartItems.find(item => item.matId === previewingMat.id) : null;
+  const previewingCartItem = previewingMat
+    ? cartItems.find(item => (item.designId || item.matId) === previewingMat.id)
+    : null;
 
   const handleAddToCart = async () => {
     if (!currentUser) {
@@ -53,7 +50,12 @@ const SavedMats = () => {
     try {
       const pricePerUnit = previewingMat.matSize === 'small' ? 29.99
         : previewingMat.matSize === 'medium' ? 39.99 : 49.99;
-      await addToCart(currentUser.uid, previewingMat.id, 1, pricePerUnit);
+      await addToCart(currentUser.uid, previewingMat.id, 1, pricePerUnit, {
+        matSize: previewingMat.matSize,
+        theme: previewingMat.colorScheme,
+        nameSnapshot: previewingMat.name,
+        previewImageUrlSnapshot: previewingMat.previewImageUrl
+      });
     } catch (error) {
       console.error('Error adding to cart:', error);
       alert('Failed to add to cart. Please try again.');
@@ -64,9 +66,9 @@ const SavedMats = () => {
     if (!previewingCartItem) return;
     try {
       if (newQuantity <= 0) {
-        await removeFromCart(previewingCartItem.id);
+        await removeFromCart(currentUser.uid, previewingCartItem.id);
       } else {
-        await updateCartQuantity(previewingCartItem.id, newQuantity);
+        await updateCartQuantity(currentUser.uid, previewingCartItem.id, newQuantity);
       }
     } catch (error) {
       console.error('Error updating quantity:', error);
@@ -77,7 +79,7 @@ const SavedMats = () => {
   if (loading) {
     return (
       <div style={{
-        minHeight: '100vh', background: '#FDF8F0', padding: '100px 20px 40px',
+        minHeight: '100vh', background: '#ffffff', padding: '100px 20px 40px',
         display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: font
       }}>
         <div style={{ textAlign: 'center' }}>
@@ -95,7 +97,7 @@ const SavedMats = () => {
 
   if (error) {
     return (
-      <div style={{ minHeight: '100vh', background: '#FDF8F0', padding: '100px 20px 40px', fontFamily: font }}>
+      <div style={{ minHeight: '100vh', background: '#ffffff', padding: '100px 20px 40px', fontFamily: font }}>
         <div style={{
           maxWidth: '600px', margin: '0 auto', background: 'white', padding: '32px',
           borderRadius: '20px', textAlign: 'center'
@@ -107,7 +109,7 @@ const SavedMats = () => {
   }
 
   return (
-    <div style={{ minHeight: '100vh', background: '#FDF8F0', padding: '100px 20px 40px', fontFamily: font }}>
+    <div style={{ minHeight: '100vh', background: '#ffffff', padding: '100px 20px 40px', fontFamily: font }}>
       <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
         {/* Header */}
         <div style={{
@@ -134,7 +136,7 @@ const SavedMats = () => {
           </Link>
         </div>
 
-        {mats.length === 0 ? (
+        {savedMats.length === 0 ? (
           <div style={{
             background: 'white', borderRadius: '20px', padding: '64px 32px',
             textAlign: 'center', boxShadow: '0 4px 12px rgba(0, 0, 0, 0.10)'
@@ -160,11 +162,17 @@ const SavedMats = () => {
         ) : (
           <>
             <p style={{ fontSize: '16px', color: '#5A5A5A', marginBottom: '24px', fontWeight: '600' }}>
-              {mats.length} {mats.length === 1 ? 'mat' : 'mats'} saved
+              {savedMats.length} {savedMats.length === 1 ? 'mat' : 'mats'} saved
             </p>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '24px' }}>
-              {mats.map((mat) => (
-                <SavedMatCard key={mat.id} mat={mat} onViewMat={setPreviewingMat} isInCart={matsInCart.has(mat.id)} />
+              {savedMats.map((mat) => (
+                <SavedMatCard
+                  key={mat.id}
+                  userId={currentUser.uid}
+                  mat={mat}
+                  onViewMat={setPreviewingMat}
+                  isInCart={matsInCart.has(mat.id)}
+                />
               ))}
             </div>
           </>

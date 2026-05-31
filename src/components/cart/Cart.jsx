@@ -1,10 +1,9 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { where, orderBy } from 'firebase/firestore';
 import { useAuth } from '../../hooks/useAuth';
 import { useFirestore } from '../../hooks/useFirestore';
 import { getMat } from '../../utils/matStorage';
-import { calculateCartTotal, addToCart, updateCartQuantity, removeFromCart } from '../../utils/cartUtils';
+import { calculateCartTotal, addToCart, updateCartQuantity, removeFromCart, createShopifyCartFromFirebaseCart } from '../../utils/cartUtils';
 import CartItem from './CartItem';
 import MatPreview from '../MatPreview';
 
@@ -29,31 +28,33 @@ const Cart = () => {
     neon: { color: '#A76BDB', name: 'Neon Vibrant' }
   };
 
-  const { data: cartItems, loading: loadingCart, error } = useFirestore('cart', [
-    where('userId', '==', currentUser?.uid || ''),
-    orderBy('addedAt', 'desc')
-  ]);
+  const { data: cartItems, loading: loadingCart, error } = useFirestore(
+    currentUser?.uid ? `users/${currentUser.uid}/cart` : null
+  );
 
   useEffect(() => {
     const fetchMats = async () => {
-      if (cartItems.length === 0) { setLoadingMats(false); return; }
+      if (!currentUser?.uid || cartItems.length === 0) { setLoadingMats(false); return; }
       setLoadingMats(true);
       const mats = {};
       try {
         await Promise.all(cartItems.map(async (item) => {
-          try { mats[item.matId] = await getMat(item.matId); }
-          catch (error) { console.error(`Error fetching mat ${item.matId}:`, error); mats[item.matId] = null; }
+          const designId = item.designId || item.matId;
+          try { mats[designId] = await getMat(currentUser.uid, designId); }
+          catch (error) { console.error(`Error fetching mat ${designId}:`, error); mats[designId] = null; }
         }));
         setMatsData(mats);
       } catch (error) { console.error('Error fetching mats:', error); }
       finally { setLoadingMats(false); }
     };
     fetchMats();
-  }, [cartItems]);
+  }, [cartItems, currentUser?.uid]);
 
   const loading = loadingCart || loadingMats;
   const total = calculateCartTotal(cartItems);
-  const previewingCartItem = previewingMat ? cartItems.find(item => item.matId === previewingMat.id) : null;
+  const previewingCartItem = previewingMat
+    ? cartItems.find(item => (item.designId || item.matId) === previewingMat.id)
+    : null;
 
   const handleAddToCart = async () => {
     if (!currentUser || !previewingMat) return;
@@ -66,15 +67,30 @@ const Cart = () => {
   const handleUpdateQuantity = async (newQuantity) => {
     if (!previewingCartItem) return;
     try {
-      if (newQuantity <= 0) { await removeFromCart(previewingCartItem.id); setPreviewingMat(null); }
-      else { await updateCartQuantity(previewingCartItem.id, newQuantity); }
+      if (newQuantity <= 0) { await removeFromCart(currentUser.uid, previewingCartItem.id); setPreviewingMat(null); }
+      else { await updateCartQuantity(currentUser.uid, previewingCartItem.id, newQuantity); }
     } catch (error) { console.error('Error updating quantity:', error); alert('Failed to update quantity. Please try again.'); }
+  };
+
+  const handleCheckout = async () => {
+    if (!currentUser?.uid) {
+      alert('Your cart is empty. Design a mat first, then add it to cart.');
+      return;
+    }
+
+    try {
+      const checkoutUrl = await createShopifyCartFromFirebaseCart(currentUser.uid);
+      window.location.href = checkoutUrl;
+    } catch (error) {
+      console.error('Checkout error:', error);
+      alert(error.message || 'Checkout is unavailable. Please try again.');
+    }
   };
 
   if (loading) {
     return (
       <div style={{
-        minHeight: '100vh', background: '#FDF8F0', padding: '100px 20px 40px',
+        minHeight: '100vh', background: '#ffffff', padding: '100px 20px 40px',
         display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: font
       }}>
         <div style={{ textAlign: 'center' }}>
@@ -92,7 +108,7 @@ const Cart = () => {
 
   if (error) {
     return (
-      <div style={{ minHeight: '100vh', background: '#FDF8F0', padding: '100px 20px 40px', fontFamily: font }}>
+      <div style={{ minHeight: '100vh', background: '#ffffff', padding: '100px 20px 40px', fontFamily: font }}>
         <div style={{ maxWidth: '600px', margin: '0 auto', background: 'white', padding: '32px', borderRadius: '20px', textAlign: 'center' }}>
           <p style={{ color: '#E84545', fontSize: '16px', fontWeight: '600' }}>Error loading cart: {error}</p>
         </div>
@@ -101,13 +117,13 @@ const Cart = () => {
   }
 
   return (
-    <div style={{ minHeight: '100vh', background: '#FDF8F0', padding: '100px 20px 40px', fontFamily: font }}>
+    <div style={{ minHeight: '100vh', background: '#ffffff', padding: '100px 20px 40px', fontFamily: font }}>
       <div style={{ maxWidth: '900px', margin: '0 auto' }}>
         <h1 style={{ fontSize: '32px', fontWeight: '800', color: '#2D2D2D', marginBottom: '32px', fontFamily: fontDisplay }}>
           Shopping Cart
         </h1>
 
-        {cartItems.length === 0 ? (
+        {!currentUser?.uid || cartItems.length === 0 ? (
           <div style={{
             background: 'white', borderRadius: '20px', padding: '64px 32px',
             textAlign: 'center', boxShadow: '0 4px 12px rgba(0, 0, 0, 0.10)'
@@ -134,7 +150,13 @@ const Cart = () => {
           <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '40px' }}>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
               {cartItems.map((item) => (
-                <CartItem key={item.id} cartItem={item} mat={matsData[item.matId]} onViewMat={setPreviewingMat} />
+                <CartItem
+                  key={item.id}
+                  userId={currentUser.uid}
+                  cartItem={item}
+                  mat={matsData[item.designId || item.matId]}
+                  onViewMat={setPreviewingMat}
+                />
               ))}
             </div>
 
@@ -161,7 +183,7 @@ const Cart = () => {
               </div>
 
               <button
-                onClick={() => alert('Checkout coming soon!')}
+                onClick={handleCheckout}
                 style={{
                   width: '100%', padding: '16px', background: '#3DAEF5', color: 'white',
                   border: 'none', borderRadius: '999px', fontSize: '16px', fontWeight: '700',
@@ -172,7 +194,7 @@ const Cart = () => {
                 onMouseEnter={(e) => e.currentTarget.style.background = '#2A9BE0'}
                 onMouseLeave={(e) => e.currentTarget.style.background = '#3DAEF5'}
               >
-                Proceed to Checkout
+                Checkout with Shopify
               </button>
 
               <Link to="/">

@@ -11,7 +11,7 @@ const Login = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    if (currentUser) {
+    if (currentUser && !currentUser.isAnonymous) {
       navigate('/');
     }
   }, [currentUser, navigate]);
@@ -40,8 +40,10 @@ const Login = () => {
         setError('Invalid email address');
       } else if (error.code === 'auth/invalid-credential') {
         setError('Invalid email or password');
+      } else if (error.code === 'auth/operation-not-allowed') {
+        setError('Email/password login is not enabled in Firebase Authentication.');
       } else {
-        setError('Failed to login. Please try again.');
+        setError(error.message || 'Failed to login. Please try again.');
       }
     } finally {
       setLoading(false);
@@ -59,8 +61,12 @@ const Login = () => {
       console.error('Google login error:', error);
       if (error.code === 'auth/popup-closed-by-user') {
         setError('Login cancelled');
+      } else if (error.code === 'auth/operation-not-allowed') {
+        setError('Google sign-in is not enabled in Firebase Authentication.');
+      } else if (error.code === 'auth/popup-blocked') {
+        setError('Google popup was blocked. Please allow popups and try again.');
       } else {
-        setError('Failed to login with Google. Please try again.');
+        setError(error.message || 'Failed to login with Google. Please try again.');
       }
     } finally {
       setLoading(false);
@@ -73,7 +79,7 @@ const Login = () => {
       display: 'flex',
       alignItems: 'center',
       justifyContent: 'center',
-      background: '#FDF8F0',
+      background: '#ffffff',
       padding: '20px',
       paddingTop: '80px',
       fontFamily: "'DM Sans', 'Poppins', sans-serif"

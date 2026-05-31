@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { updateCartQuantity, removeFromCart } from '../../utils/cartUtils';
 
-const CartItem = ({ cartItem, mat, onViewMat }) => {
+const CartItem = ({ userId, cartItem, mat, onViewMat }) => {
   const [updating, setUpdating] = useState(false);
 
   const font = "'DM Sans', 'Poppins', sans-serif";
@@ -9,7 +9,7 @@ const CartItem = ({ cartItem, mat, onViewMat }) => {
   const handleQuantityChange = async (newQuantity) => {
     if (newQuantity < 1) return;
     setUpdating(true);
-    try { await updateCartQuantity(cartItem.id, newQuantity); }
+    try { await updateCartQuantity(userId, cartItem.id, newQuantity); }
     catch (error) { console.error('Error updating quantity:', error); alert('Failed to update quantity. Please try again.'); }
     finally { setUpdating(false); }
   };
@@ -17,7 +17,7 @@ const CartItem = ({ cartItem, mat, onViewMat }) => {
   const handleRemove = async () => {
     if (!confirm('Remove this item from cart?')) return;
     setUpdating(true);
-    try { await removeFromCart(cartItem.id); }
+    try { await removeFromCart(userId, cartItem.id); }
     catch (error) { console.error('Error removing item:', error); alert('Failed to remove item. Please try again.'); }
     finally { setUpdating(false); }
   };
@@ -63,7 +63,7 @@ const CartItem = ({ cartItem, mat, onViewMat }) => {
           onMouseEnter={(e) => mat && (e.currentTarget.style.color = '#3DAEF5')}
           onMouseLeave={(e) => (e.currentTarget.style.color = '#2D2D2D')}
         >
-          {mat?.name || 'Mat'}
+          {mat?.name || cartItem.nameSnapshot || 'Mat'}
         </h3>
 
         <div style={{ display: 'flex', gap: '8px', marginBottom: '12px' }}>
@@ -71,7 +71,7 @@ const CartItem = ({ cartItem, mat, onViewMat }) => {
             padding: '4px 12px', background: '#D6EFFF', borderRadius: '999px',
             fontSize: '12px', fontWeight: '700', color: '#3DAEF5', textTransform: 'uppercase'
           }}>
-            {mat?.matSize || 'N/A'}
+            {mat?.matSize || cartItem.matSize || 'N/A'}
           </span>
         </div>
 

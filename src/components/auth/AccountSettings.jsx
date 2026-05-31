@@ -103,7 +103,7 @@ const AccountSettings = () => {
   return (
     <div style={{
       minHeight: '100vh',
-      background: '#FDF8F0',
+      background: '#ffffff',
       padding: '100px 20px 40px',
       fontFamily: font
     }}>

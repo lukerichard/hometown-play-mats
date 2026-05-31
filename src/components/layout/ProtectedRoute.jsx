@@ -12,7 +12,7 @@ const ProtectedRoute = ({ children }) => {
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
-        background: '#f8fafb'
+        background: '#ffffff'
       }}>
         <div style={{
           textAlign: 'center'
@@ -44,7 +44,7 @@ const ProtectedRoute = ({ children }) => {
     );
   }
 
-  if (!currentUser) {
+  if (!currentUser || currentUser.isAnonymous) {
     // Redirect to login if not authenticated
     return <Navigate to="/login" replace />;
   }

@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { deleteMat } from '../../utils/matStorage';
 
-const SavedMatCard = ({ mat, onViewMat, isInCart }) => {
+const SavedMatCard = ({ userId, mat, onViewMat, isInCart }) => {
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [deleting, setDeleting] = useState(false);
 
@@ -10,7 +10,7 @@ const SavedMatCard = ({ mat, onViewMat, isInCart }) => {
   const handleDelete = async () => {
     setDeleting(true);
     try {
-      await deleteMat(mat.id);
+      await deleteMat(userId, mat.id);
       setShowDeleteConfirm(false);
     } catch (error) {
       console.error('Error deleting mat:', error);

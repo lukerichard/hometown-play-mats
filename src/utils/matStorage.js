@@ -7,22 +7,35 @@ import {
   updateDoc,
   deleteDoc,
   query,
-  where,
   orderBy,
   serverTimestamp
 } from 'firebase/firestore';
-import { db } from '../config/firebase';
+import { ref, uploadString, getDownloadURL } from 'firebase/storage';
+import { db, storage } from '../config/firebase';
 
-// Save a new mat to Firestore
-export const saveMat = async (userId, matData) => {
+const designsCollection = (userId) => collection(db, 'users', userId, 'designs');
+const designDoc = (userId, designId) => doc(db, 'users', userId, 'designs', designId);
+
+const uploadPreviewImage = async (userId, designId, previewImageUrl) => {
+  if (!storage || !previewImageUrl?.startsWith('data:image')) {
+    return previewImageUrl || '';
+  }
+
+  const imageRef = ref(storage, `users/${userId}/design-previews/${designId}.png`);
+  await uploadString(imageRef, previewImageUrl, 'data_url');
+  return getDownloadURL(imageRef);
+};
+
+// Save a new design to a user's subcollection.
+export const saveMat = async (userId, matData, status = 'saved') => {
   try {
-    // Create a new document with auto-generated ID
-    const matsRef = collection(db, 'savedMats');
-    const newMatRef = doc(matsRef);
+    const newMatRef = doc(designsCollection(userId));
+    const previewImageUrl = await uploadPreviewImage(userId, newMatRef.id, matData.previewImageUrl);
 
     await setDoc(newMatRef, {
       ...matData,
-      userId,
+      previewImageUrl,
+      status,
       createdAt: serverTimestamp(),
       updatedAt: serverTimestamp()
     });
@@ -34,13 +47,16 @@ export const saveMat = async (userId, matData) => {
   }
 };
 
-// Update an existing mat
-export const updateMat = async (matId, updates) => {
+// Update an existing design.
+export const updateMat = async (userId, matId, updates) => {
   try {
-    const matRef = doc(db, 'savedMats', matId);
+    const previewImageUrl = updates.previewImageUrl
+      ? await uploadPreviewImage(userId, matId, updates.previewImageUrl)
+      : undefined;
 
-    await updateDoc(matRef, {
+    await updateDoc(designDoc(userId, matId), {
       ...updates,
+      ...(previewImageUrl !== undefined ? { previewImageUrl } : {}),
       updatedAt: serverTimestamp()
     });
 
@@ -51,11 +67,10 @@ export const updateMat = async (matId, updates) => {
   }
 };
 
-// Delete a mat
-export const deleteMat = async (matId) => {
+// Delete a design.
+export const deleteMat = async (userId, matId) => {
   try {
-    const matRef = doc(db, 'savedMats', matId);
-    await deleteDoc(matRef);
+    await deleteDoc(designDoc(userId, matId));
     return true;
   } catch (error) {
     console.error('Error deleting mat:', error);
@@ -63,43 +78,36 @@ export const deleteMat = async (matId) => {
   }
 };
 
-// Get a single mat by ID
-export const getMat = async (matId) => {
+// Get a single design by ID.
+export const getMat = async (userId, matId) => {
   try {
-    const matRef = doc(db, 'savedMats', matId);
-    const matSnap = await getDoc(matRef);
+    const matSnap = await getDoc(designDoc(userId, matId));
 
     if (matSnap.exists()) {
       return {
         id: matSnap.id,
         ...matSnap.data()
       };
-    } else {
-      throw new Error('Mat not found');
     }
+
+    throw new Error('Mat not found');
   } catch (error) {
     console.error('Error getting mat:', error);
     throw error;
   }
 };
 
-// Get all mats for a user
+// Get all designs for a user.
 export const getUserMats = async (userId) => {
   try {
-    const matsRef = collection(db, 'savedMats');
-    const q = query(
-      matsRef,
-      where('userId', '==', userId),
-      orderBy('createdAt', 'desc')
-    );
-
+    const q = query(designsCollection(userId), orderBy('createdAt', 'desc'));
     const querySnapshot = await getDocs(q);
     const mats = [];
 
-    querySnapshot.forEach((doc) => {
+    querySnapshot.forEach((mat) => {
       mats.push({
-        id: doc.id,
-        ...doc.data()
+        id: mat.id,
+        ...mat.data()
       });
     });
 

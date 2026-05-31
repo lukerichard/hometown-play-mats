@@ -27,30 +27,35 @@ const Header = () => {
   };
 
   return (
-    <header className="fixed top-0 left-0 right-0 z-[1000] bg-white/95 backdrop-blur-xl border-b-2 border-border"
-      style={{ boxShadow: '0 1px 8px rgba(0, 0, 0, 0.08)' }}>
-
-
-      <div className="flex items-center justify-between px-6 py-3">
+    <header
+      className="fixed left-0 right-0 top-0 z-[1000]"
+      style={{
+        height: '72px',
+        background: '#ffffff',
+        borderBottom: '1px solid #e3ded5',
+        color: '#00123a',
+      }}
+    >
+      <div className="flex h-full items-center justify-between px-6 md:px-8">
         {/* Logo */}
-        <Link to="/" className="no-underline flex items-center gap-2.5 group">
-          {/* Mini road icon */}
-          <div className="w-8 h-8 rounded-lg flex items-center justify-center"
-            style={{ background: 'linear-gradient(135deg, #3B3B3B, #6B6B6B)' }}>
-            <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-              <rect x="3" y="2" width="10" height="12" rx="1" fill="#6B6B6B" />
-              <line x1="8" y1="3" x2="8" y2="13" stroke="#FFCC00" strokeWidth="1.5" strokeDasharray="2 1.5" />
-            </svg>
-          </div>
-          <span className="text-lg font-bold tracking-tight text-text"
-            style={{ fontFamily: "'Poppins', 'DM Sans', sans-serif" }}>
+        <Link to="/" className="no-underline">
+          <span
+            className="text-2xl font-bold tracking-tight"
+            style={{ color: '#00123a', fontFamily: "'Poppins', 'DM Sans', sans-serif" }}
+          >
             Hometown Play Mats
           </span>
         </Link>
 
+        <nav className="hidden items-center gap-12 text-sm font-semibold md:flex">
+          <a href="#how-it-works" className="text-[#00123a] no-underline">How it Works</a>
+          <a href="#sizes" className="text-[#00123a] no-underline">Sizes</a>
+          <a href="#gift-guide" className="text-[#00123a] no-underline">Gift Guide</a>
+        </nav>
+
         {/* Right side */}
         <div className="flex items-center gap-3">
-          {currentUser ? (
+          {currentUser && !currentUser.isAnonymous ? (
             <div className="relative">
               <button
                 onClick={() => setShowDropdown(!showDropdown)}
@@ -111,24 +116,24 @@ const Header = () => {
             </div>
           ) : (
             <>
-              <Link to="/login">
+              <Link to="/login" className="hidden md:block">
                 <button
-                  className="px-5 py-2.5 bg-white text-text border-2 border-border rounded-full text-sm font-bold cursor-pointer transition-all duration-200 hover:border-primary hover:bg-sky-light/30 hover:-translate-y-0.5"
-                  style={{ fontFamily: "'DM Sans', sans-serif" }}
+                  className="cursor-pointer border-0 bg-transparent px-3 py-2 text-sm font-bold"
+                  style={{ color: '#00123a', fontFamily: "'DM Sans', sans-serif" }}
                 >
                   Login
                 </button>
               </Link>
-              <Link to="/signup">
+              <Link to="/create">
                 <button
-                  className="px-5 py-2.5 text-white border-none rounded-full text-sm font-bold cursor-pointer transition-all duration-200 hover:-translate-y-0.5"
+                  className="h-10 cursor-pointer rounded-md border-none px-6 text-sm font-bold text-white transition-all duration-200 hover:-translate-y-0.5"
                   style={{
                     fontFamily: "'DM Sans', sans-serif",
-                    background: '#3DAEF5',
-                    boxShadow: '0 2px 8px rgba(61, 174, 245, 0.3)',
+                    background: '#00123a',
+                    boxShadow: '0 2px 0 rgba(0, 0, 0, 0.16)',
                   }}
                 >
-                  Sign Up
+                  Create Your Mat
                 </button>
               </Link>
             </>

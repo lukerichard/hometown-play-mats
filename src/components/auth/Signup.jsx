@@ -13,7 +13,7 @@ const Signup = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    if (currentUser) {
+    if (currentUser && !currentUser.isAnonymous) {
       navigate('/');
     }
   }, [currentUser, navigate]);
@@ -50,8 +50,10 @@ const Signup = () => {
         setError('Invalid email address');
       } else if (error.code === 'auth/weak-password') {
         setError('Password is too weak. Use at least 6 characters');
+      } else if (error.code === 'auth/operation-not-allowed') {
+        setError('Email/password accounts are not enabled in Firebase Authentication.');
       } else {
-        setError('Failed to create account. Please try again.');
+        setError(error.message || 'Failed to create account. Please try again.');
       }
     } finally {
       setLoading(false);
@@ -69,8 +71,12 @@ const Signup = () => {
       console.error('Google signup error:', error);
       if (error.code === 'auth/popup-closed-by-user') {
         setError('Signup cancelled');
+      } else if (error.code === 'auth/operation-not-allowed') {
+        setError('Google sign-in is not enabled in Firebase Authentication.');
+      } else if (error.code === 'auth/popup-blocked') {
+        setError('Google popup was blocked. Please allow popups and try again.');
       } else {
-        setError('Failed to sign up with Google. Please try again.');
+        setError(error.message || 'Failed to sign up with Google. Please try again.');
       }
     } finally {
       setLoading(false);
@@ -115,7 +121,7 @@ const Signup = () => {
       display: 'flex',
       alignItems: 'center',
       justifyContent: 'center',
-      background: '#FDF8F0',
+      background: '#ffffff',
       padding: '20px',
       paddingTop: '80px',
       fontFamily: "'DM Sans', 'Poppins', sans-serif"

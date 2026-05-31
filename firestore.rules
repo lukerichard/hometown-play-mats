@@ -4,9 +4,17 @@ service cloud.firestore {
     // Users collection - users can read/write their own profile
     match /users/{userId} {
       allow read, write: if request.auth != null && request.auth.uid == userId;
+
+      match /designs/{designId} {
+        allow read, write: if request.auth != null && request.auth.uid == userId;
+      }
+
+      match /cart/{cartId} {
+        allow read, write: if request.auth != null && request.auth.uid == userId;
+      }
     }
 
-    // Saved mats - users can read/write their own mats
+    // Legacy top-level collections kept for old data only.
     match /savedMats/{matId} {
       allow read: if request.auth != null && request.auth.uid == resource.data.userId;
       allow create: if request.auth != null && request.auth.uid == request.resource.data.userId;

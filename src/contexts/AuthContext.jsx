@@ -7,15 +7,20 @@ import {
   updateProfile,
   updatePassword as firebaseUpdatePassword,
   EmailAuthProvider,
+  linkWithCredential,
+  linkWithPopup,
   reauthenticateWithCredential,
   deleteUser,
   GoogleAuthProvider,
-  signInWithPopup
+  signInWithPopup,
+  signInAnonymously
 } from 'firebase/auth';
 import { doc, setDoc, getDoc, serverTimestamp } from 'firebase/firestore';
-import { auth, db } from '../config/firebase';
+import { auth, db, isFirebaseConfigured } from '../config/firebase';
 
 const AuthContext = createContext({});
+const firebaseNotConfiguredMessage =
+  'Firebase is not configured for this local environment. Add VITE_FIREBASE_* values to .env to enable accounts.';
 
 // eslint-disable-next-line react-refresh/only-export-components
 export const useAuth = () => {
@@ -28,28 +33,94 @@ export const useAuth = () => {
 
 export const AuthProvider = ({ children }) => {
   const [currentUser, setCurrentUser] = useState(null);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(isFirebaseConfigured);
+
+  const requireFirebase = () => {
+    if (!auth || !db) {
+      throw new Error(firebaseNotConfiguredMessage);
+    }
+  };
+
+  const ensureUserProfile = async (user, overrides = {}) => {
+    requireFirebase();
+    if (!user) throw new Error('No user available');
+
+    const userRef = doc(db, 'users', user.uid);
+    const userDoc = await getDoc(userRef);
+    const baseProfile = {
+      email: user.email || '',
+      displayName: user.displayName || overrides.displayName || '',
+      photoURL: user.photoURL || '',
+      isAnonymous: user.isAnonymous,
+      authProvider: user.isAnonymous ? 'anonymous' : (user.providerData?.[0]?.providerId || 'password'),
+      lastLoginAt: serverTimestamp(),
+      updatedAt: serverTimestamp(),
+      preferences: {
+        defaultMatSize: 'medium',
+        defaultColorScheme: 'pastel'
+      },
+      ...overrides
+    };
+
+    if (!userDoc.exists()) {
+      await setDoc(userRef, {
+        ...baseProfile,
+        createdAt: serverTimestamp()
+      });
+    } else {
+      await setDoc(userRef, baseProfile, { merge: true });
+    }
+  };
+
+  const ensureGuestSession = async () => {
+    requireFirebase();
+    if (auth.currentUser) {
+      await ensureUserProfile(auth.currentUser);
+      return auth.currentUser;
+    }
+
+    const userCredential = await signInAnonymously(auth);
+    await ensureUserProfile(userCredential.user);
+    return userCredential.user;
+  };
+
+  const linkOrMigrateGuestSession = async () => {
+    // Anonymous accounts are linked in signup/login providers when possible.
+    return true;
+  };
 
   // Sign up with email and password
   const signup = async (email, password, displayName) => {
     try {
-      const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+      requireFirebase();
+      const credential = EmailAuthProvider.credential(email, password);
+      let userCredential;
+
+      if (auth.currentUser?.isAnonymous) {
+        try {
+          userCredential = await linkWithCredential(auth.currentUser, credential);
+        } catch (linkError) {
+          if (
+            linkError.code === 'auth/credential-already-in-use' ||
+            linkError.code === 'auth/email-already-in-use'
+          ) {
+            throw { ...linkError, code: 'auth/email-already-in-use' };
+          }
+          throw linkError;
+        }
+      } else {
+        userCredential = await createUserWithEmailAndPassword(auth, email, password);
+      }
+
       const user = userCredential.user;
 
       // Update profile with display name
       await updateProfile(user, { displayName });
 
-      // Create user document in Firestore
-      await setDoc(doc(db, 'users', user.uid), {
-        email: user.email,
-        displayName: displayName,
-        photoURL: user.photoURL || '',
-        createdAt: serverTimestamp(),
-        updatedAt: serverTimestamp(),
-        preferences: {
-          defaultMatSize: 'small',
-          defaultColorScheme: 'classic'
-        }
+      await ensureUserProfile(user, {
+        displayName,
+        isAnonymous: false,
+        authProvider: 'password'
       });
 
       return user;
@@ -62,7 +133,12 @@ export const AuthProvider = ({ children }) => {
   // Login with email and password
   const login = async (email, password) => {
     try {
+      requireFirebase();
       const userCredential = await signInWithEmailAndPassword(auth, email, password);
+      await ensureUserProfile(userCredential.user, {
+        isAnonymous: false,
+        authProvider: 'password'
+      });
       return userCredential.user;
     } catch (error) {
       console.error('Login error:', error);
@@ -73,25 +149,34 @@ export const AuthProvider = ({ children }) => {
   // Login with Google (using popup)
   const loginWithGoogle = async () => {
     try {
+      requireFirebase();
       const provider = new GoogleAuthProvider();
-      const userCredential = await signInWithPopup(auth, provider);
+      let userCredential;
+
+      if (auth.currentUser?.isAnonymous) {
+        try {
+          userCredential = await linkWithPopup(auth.currentUser, provider);
+        } catch (linkError) {
+          if (
+            linkError.code === 'auth/credential-already-in-use' ||
+            linkError.code === 'auth/email-already-in-use'
+          ) {
+            await signOut(auth);
+            userCredential = await signInWithPopup(auth, provider);
+          } else {
+            throw linkError;
+          }
+        }
+      } else {
+        userCredential = await signInWithPopup(auth, provider);
+      }
+
       const user = userCredential.user;
 
-      // Check if user document exists, if not create it
-      const userDoc = await getDoc(doc(db, 'users', user.uid));
-      if (!userDoc.exists()) {
-        await setDoc(doc(db, 'users', user.uid), {
-          email: user.email,
-          displayName: user.displayName,
-          photoURL: user.photoURL || '',
-          createdAt: serverTimestamp(),
-          updatedAt: serverTimestamp(),
-          preferences: {
-            defaultMatSize: 'small',
-            defaultColorScheme: 'classic'
-          }
-        });
-      }
+      await ensureUserProfile(user, {
+        isAnonymous: false,
+        authProvider: 'google.com'
+      });
 
       return user;
     } catch (error) {
@@ -103,6 +188,7 @@ export const AuthProvider = ({ children }) => {
   // Logout
   const logout = async () => {
     try {
+      if (!auth) return;
       await signOut(auth);
     } catch (error) {
       console.error('Logout error:', error);
@@ -113,6 +199,7 @@ export const AuthProvider = ({ children }) => {
   // Update user profile
   const updateUserProfile = async (updates) => {
     try {
+      requireFirebase();
       if (!currentUser) throw new Error('No user logged in');
 
       await updateProfile(currentUser, updates);
@@ -134,6 +221,7 @@ export const AuthProvider = ({ children }) => {
   // Update password
   const updatePassword = async (currentPassword, newPassword) => {
     try {
+      requireFirebase();
       if (!currentUser) throw new Error('No user logged in');
 
       // Re-authenticate user before password change
@@ -154,6 +242,7 @@ export const AuthProvider = ({ children }) => {
   // Delete account
   const deleteAccount = async () => {
     try {
+      requireFirebase();
       if (!currentUser) throw new Error('No user logged in');
 
       // Note: In a production app, you'd also want to delete user data from Firestore
@@ -167,6 +256,12 @@ export const AuthProvider = ({ children }) => {
 
   // Listen for auth state changes
   useEffect(() => {
+    if (!auth) {
+      setCurrentUser(null);
+      setLoading(false);
+      return undefined;
+    }
+
     const unsubscribe = onAuthStateChanged(auth, (user) => {
       setCurrentUser(user);
       setLoading(false);
@@ -178,6 +273,9 @@ export const AuthProvider = ({ children }) => {
   const value = {
     currentUser,
     loading,
+    ensureGuestSession,
+    ensureUserProfile,
+    linkOrMigrateGuestSession,
     signup,
     login,
     loginWithGoogle,
