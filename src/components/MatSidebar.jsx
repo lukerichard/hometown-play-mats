@@ -10,7 +10,7 @@ const MatSidebar = ({
   const sizeOptions = Object.entries(matSizes);
 
   return (
-    <aside className="flex flex-col gap-5">
+    <aside className="flex flex-col gap-3">
       <section className="builder-card">
         <h2 className="builder-card-title">
           <span className="builder-card-icon icon-edit" aria-hidden="true" />
@@ -48,7 +48,7 @@ const MatSidebar = ({
           Select Size
         </h2>
 
-        <div className="flex flex-col gap-3">
+        <div className="flex flex-col gap-2">
           {sizeOptions.map(([key, size]) => {
             const isActive = matSize === key;
 
