@@ -6,6 +6,7 @@ import {
   onAuthStateChanged,
   updateProfile,
   updatePassword as firebaseUpdatePassword,
+  sendEmailVerification,
   EmailAuthProvider,
   linkWithCredential,
   linkWithPopup,
@@ -17,6 +18,7 @@ import {
 } from 'firebase/auth';
 import { doc, setDoc, getDoc, serverTimestamp } from 'firebase/firestore';
 import { auth, db, isFirebaseConfigured } from '../config/firebase';
+import { isPasswordUser } from '../utils/authStatus';
 
 const AuthContext = createContext({});
 const firebaseNotConfiguredMessage =
@@ -52,6 +54,7 @@ export const AuthProvider = ({ children }) => {
       displayName: user.displayName || overrides.displayName || '',
       photoURL: user.photoURL || '',
       isAnonymous: user.isAnonymous,
+      emailVerified: user.emailVerified,
       authProvider: user.isAnonymous ? 'anonymous' : (user.providerData?.[0]?.providerId || 'password'),
       lastLoginAt: serverTimestamp(),
       updatedAt: serverTimestamp(),
@@ -72,6 +75,17 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
+  const getEmailVerificationSettings = () => ({
+    url: `${window.location.origin}/login?verified=1`,
+    handleCodeInApp: false
+  });
+
+  const sendVerificationEmail = async (user = auth?.currentUser) => {
+    requireFirebase();
+    if (!user) throw new Error('No user available');
+    await sendEmailVerification(user, getEmailVerificationSettings());
+  };
+
   const ensureGuestSession = async () => {
     requireFirebase();
     if (auth.currentUser) {
@@ -90,7 +104,7 @@ export const AuthProvider = ({ children }) => {
   };
 
   // Sign up with email and password
-  const signup = async (email, password, displayName) => {
+  const signup = async (email, password, displayName = '') => {
     try {
       requireFirebase();
       const credential = EmailAuthProvider.credential(email, password);
@@ -114,14 +128,20 @@ export const AuthProvider = ({ children }) => {
 
       const user = userCredential.user;
 
-      // Update profile with display name
-      await updateProfile(user, { displayName });
+      if (displayName) {
+        await updateProfile(user, { displayName });
+      }
+
+      await sendVerificationEmail(user);
 
       await ensureUserProfile(user, {
         displayName,
         isAnonymous: false,
+        emailVerified: user.emailVerified,
         authProvider: 'password'
       });
+
+      await signOut(auth);
 
       return user;
     } catch (error) {
@@ -135,8 +155,17 @@ export const AuthProvider = ({ children }) => {
     try {
       requireFirebase();
       const userCredential = await signInWithEmailAndPassword(auth, email, password);
+      if (isPasswordUser(userCredential.user) && !userCredential.user.emailVerified) {
+        await sendVerificationEmail(userCredential.user);
+        await signOut(auth);
+        throw {
+          code: 'auth/email-not-verified',
+          message: 'Please verify your email before logging in. We sent you a new verification link.'
+        };
+      }
       await ensureUserProfile(userCredential.user, {
         isAnonymous: false,
+        emailVerified: userCredential.user.emailVerified,
         authProvider: 'password'
       });
       return userCredential.user;
@@ -282,6 +311,7 @@ export const AuthProvider = ({ children }) => {
     logout,
     updateUserProfile,
     updatePassword,
+    sendVerificationEmail,
     deleteAccount
   };
 

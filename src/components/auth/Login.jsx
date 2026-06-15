@@ -1,20 +1,29 @@
 import { useState, useEffect } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../../hooks/useAuth';
+import { isVerifiedAccount } from '../../utils/authStatus';
 
 const Login = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
+  const [success, setSuccess] = useState('');
   const [loading, setLoading] = useState(false);
   const { login, loginWithGoogle, currentUser } = useAuth();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
 
   useEffect(() => {
-    if (currentUser && !currentUser.isAnonymous) {
+    if (isVerifiedAccount(currentUser)) {
       navigate('/');
     }
   }, [currentUser, navigate]);
+
+  useEffect(() => {
+    if (searchParams.get('verified') === '1') {
+      setSuccess('Email verified. You can log in now.');
+    }
+  }, [searchParams]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -25,10 +34,11 @@ const Login = () => {
     }
 
     setError('');
+    setSuccess('');
     setLoading(true);
 
     try {
-      await login(email, password);
+      await login(email.trim(), password);
       navigate('/');
     } catch (error) {
       console.error('Login error:', error);
@@ -42,6 +52,8 @@ const Login = () => {
         setError('Invalid email or password');
       } else if (error.code === 'auth/operation-not-allowed') {
         setError('Email/password login is not enabled in Firebase Authentication.');
+      } else if (error.code === 'auth/email-not-verified') {
+        setError(error.message);
       } else {
         setError(error.message || 'Failed to login. Please try again.');
       }
@@ -52,6 +64,7 @@ const Login = () => {
 
   const handleGoogleLogin = async () => {
     setError('');
+    setSuccess('');
     setLoading(true);
 
     try {
@@ -114,7 +127,7 @@ const Login = () => {
             color: 'rgba(255, 255, 255, 0.85)',
             fontSize: '15px'
           }}>
-            Login to continue designing your play mats
+            Login after verifying your email
           </p>
         </div>
 
@@ -212,6 +225,20 @@ const Login = () => {
                 fontWeight: '600'
               }}>
                 {error}
+              </div>
+            )}
+            {success && (
+              <div style={{
+                marginBottom: '20px',
+                padding: '12px 16px',
+                background: '#e4f5e7',
+                borderLeft: '5px solid #5EC269',
+                borderRadius: '12px',
+                color: '#2e7d32',
+                fontSize: '14px',
+                fontWeight: '600'
+              }}>
+                {success}
               </div>
             )}
 

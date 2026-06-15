@@ -21,9 +21,14 @@ const uploadPreviewImage = async (userId, designId, previewImageUrl) => {
     return previewImageUrl || '';
   }
 
-  const imageRef = ref(storage, `users/${userId}/design-previews/${designId}.png`);
-  await uploadString(imageRef, previewImageUrl, 'data_url');
-  return getDownloadURL(imageRef);
+  try {
+    const imageRef = ref(storage, `users/${userId}/design-previews/${designId}.png`);
+    await uploadString(imageRef, previewImageUrl, 'data_url');
+    return getDownloadURL(imageRef);
+  } catch (error) {
+    console.warn('Preview image upload failed; saving mat without preview image.', error);
+    return '';
+  }
 };
 
 // Save a new design to a user's subcollection.

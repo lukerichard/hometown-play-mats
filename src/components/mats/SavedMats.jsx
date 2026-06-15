@@ -5,6 +5,7 @@ import { useFirestore } from '../../hooks/useFirestore';
 import SavedMatCard from './SavedMatCard';
 import MatPreview from '../MatPreview';
 import { addToCart, updateCartQuantity, removeFromCart } from '../../utils/cartUtils';
+import { isVerifiedAccount } from '../../utils/authStatus';
 
 const SavedMats = () => {
   const { currentUser } = useAuth();
@@ -13,13 +14,14 @@ const SavedMats = () => {
 
   const font = "'DM Sans', 'Poppins', sans-serif";
   const fontDisplay = "'Poppins', 'DM Sans', sans-serif";
+  const isSignedIn = isVerifiedAccount(currentUser);
 
   const { data: mats, loading, error } = useFirestore(
-    currentUser?.uid && !currentUser.isAnonymous ? `users/${currentUser.uid}/designs` : null
+    isSignedIn && currentUser?.uid ? `users/${currentUser.uid}/designs` : null
   );
 
   const { data: cartItems } = useFirestore(
-    currentUser?.uid && !currentUser.isAnonymous ? `users/${currentUser.uid}/cart` : null
+    isSignedIn && currentUser?.uid ? `users/${currentUser.uid}/cart` : null
   );
 
   const matsInCart = new Set(cartItems.map(item => item.designId || item.matId));
@@ -42,8 +44,8 @@ const SavedMats = () => {
     : null;
 
   const handleAddToCart = async () => {
-    if (!currentUser) {
-      const shouldSignup = confirm('You need an account to add items to cart. Create an account now?');
+    if (!isSignedIn) {
+      const shouldSignup = confirm('You need a verified account to add saved mats to cart. Create or verify an account now?');
       if (shouldSignup) navigate('/signup');
       return;
     }

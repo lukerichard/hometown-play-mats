@@ -1,19 +1,20 @@
 import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../hooks/useAuth';
+import { isVerifiedAccount } from '../../utils/authStatus';
 
 const Signup = () => {
-  const [displayName, setDisplayName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [error, setError] = useState('');
+  const [success, setSuccess] = useState('');
   const [loading, setLoading] = useState(false);
   const { signup, loginWithGoogle, currentUser } = useAuth();
   const navigate = useNavigate();
 
   useEffect(() => {
-    if (currentUser && !currentUser.isAnonymous) {
+    if (isVerifiedAccount(currentUser)) {
       navigate('/');
     }
   }, [currentUser, navigate]);
@@ -21,7 +22,7 @@ const Signup = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    if (!displayName || !email || !password || !confirmPassword) {
+    if (!email || !password || !confirmPassword) {
       setError('Please fill in all fields');
       return;
     }
@@ -37,11 +38,15 @@ const Signup = () => {
     }
 
     setError('');
+    setSuccess('');
     setLoading(true);
 
     try {
-      await signup(email, password, displayName);
-      navigate('/');
+      await signup(email.trim(), password);
+      setSuccess('Account created. Check your email for a verification link, then log in.');
+      setEmail('');
+      setPassword('');
+      setConfirmPassword('');
     } catch (error) {
       console.error('Signup error:', error);
       if (error.code === 'auth/email-already-in-use') {
@@ -62,6 +67,7 @@ const Signup = () => {
 
   const handleGoogleSignup = async () => {
     setError('');
+    setSuccess('');
     setLoading(true);
 
     try {
@@ -156,22 +162,13 @@ const Signup = () => {
             color: 'rgba(255, 255, 255, 0.85)',
             fontSize: '15px'
           }}>
-            Start designing custom play mats today
+            Verify your email to start saving custom play mats
           </p>
         </div>
 
         {/* Form */}
         <div style={{ padding: '32px' }}>
           <form onSubmit={handleSubmit}>
-            {/* Display Name */}
-            <div style={{ marginBottom: '20px' }}>
-              <label style={{ display: 'block', fontSize: '14px', fontWeight: '700', color: '#2D2D2D', marginBottom: '8px' }}>
-                Full Name
-              </label>
-              <input type="text" value={displayName} onChange={(e) => setDisplayName(e.target.value)}
-                placeholder="John Doe" style={inputStyle} onFocus={handleFocus} onBlur={handleBlur} />
-            </div>
-
             {/* Email */}
             <div style={{ marginBottom: '20px' }}>
               <label style={{ display: 'block', fontSize: '14px', fontWeight: '700', color: '#2D2D2D', marginBottom: '8px' }}>
@@ -217,6 +214,20 @@ const Signup = () => {
                 fontWeight: '600'
               }}>
                 {error}
+              </div>
+            )}
+            {success && (
+              <div style={{
+                marginBottom: '20px',
+                padding: '12px 16px',
+                background: '#e4f5e7',
+                borderLeft: '5px solid #5EC269',
+                borderRadius: '12px',
+                color: '#2e7d32',
+                fontSize: '14px',
+                fontWeight: '600'
+              }}>
+                {success}
               </div>
             )}
 

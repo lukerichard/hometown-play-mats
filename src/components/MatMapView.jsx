@@ -4,10 +4,12 @@ import 'mapbox-gl/dist/mapbox-gl.css';
 
 // Physical mat dimensions in inches per size name
 const MAT_INCHES = {
-  Small:  { w: 24, h: 36 },
-  Medium: { w: 36, h: 48 },
-  Large:  { w: 48, h: 60 },
+  Small:  { w: 36, h: 24 },
+  Medium: { w: 48, h: 36 },
+  Large:  { w: 60, h: 48 },
 };
+
+const MAT_FRAME_FILL = 0.8;
 
 const MAP_PALETTE = {
   roads: '#B0B3B8',
@@ -26,14 +28,17 @@ const MAP_PALETTE = {
 // Reference scale for road detail. Higher numbers make a feature appear later
 // when zooming in, so they disappear earlier when zooming out.
 const ROAD_ZOOM_SCALE = {
-  major: 8,
-  medium: 11,
-  local: 13,
-  service: 15,
+  major: 9,
+  medium: 12,
+  local: 14,
+  service: 15.5,
   majorLabels: 10,
   mediumLabels: 12,
-  localLabels: 15,
+  localLabels: 14,
+  serviceLabels: 15,
 };
+
+const ROAD_CASING_SCALE = 1.34;
 
 const classIn = (...classes) => ['in', ['get', 'class'], ['literal', classes]];
 const typeIn = (...types) => ['in', ['get', 'type'], ['literal', types]];
@@ -64,22 +69,17 @@ const MatMapView = ({
     return () => ro.disconnect();
   }, []);
 
-  // Compute mat frame pixel dimensions at a consistent physical scale.
-  // Reference: the large mat (60" tall) occupies 72% of the container height.
+  // Compute mat frame pixel dimensions using the available map viewport.
   const getFrame = () => {
     const { w: cw, h: ch } = containerSize;
     if (cw === 0 || ch === 0) return null;
 
     const spec = MAT_INCHES[matSize.name] || MAT_INCHES.Medium;
-    const ppi = (ch * 0.72) / 60;
+    const largeSpec = MAT_INCHES.Large;
+    const ppi = Math.min((cw * MAT_FRAME_FILL) / largeSpec.w, (ch * MAT_FRAME_FILL) / largeSpec.h);
 
-    let fw = spec.w * ppi;
-    let fh = spec.h * ppi;
-
-    // Scale down if the frame would overflow the container
-    const scale = Math.min(1, (cw * 0.90) / fw, (ch * 0.90) / fh);
-    fw *= scale;
-    fh *= scale;
+    const fw = spec.w * ppi;
+    const fh = spec.h * ppi;
 
     const fl = (cw - fw) / 2;
     const ft = (ch - fh) / 2;
@@ -95,21 +95,24 @@ const MatMapView = ({
     onFrameChange({ width: frame.fw, height: frame.fh });
   }, [frame?.fw, frame?.fh]); // eslint-disable-line react-hooks/exhaustive-deps
 
+  useEffect(() => {
+    if (!mapRef.current || !containerSize.w || !containerSize.h) return;
+    mapRef.current.resize();
+  }, [containerSize.w, containerSize.h]);
+
   // Calculate road width based on physical mat size
   const getRoadWidth = () => {
-    const { w: cw } = containerSize;
-    if (cw === 0) return { base: 20, highway: 30, street: 20 };
-
+    if (!frame) return null;
     const spec = MAT_INCHES[matSize.name] || MAT_INCHES.Medium;
-    const ppi = (containerSize.h * 0.72) / 60;
-    const matPixelWidth = spec.w * ppi;
-    const pixelsPerMeter = matPixelWidth / matSize.width;
-    const roadWidthPixels = 0.04445 * pixelsPerMeter; // 1.75 inches in meters
+    const physicalWidthMeters = spec.w * 0.0254;
+    const pixelsPerMeter = frame.fw / physicalWidthMeters;
+    const totalRoadWidthPixels = 0.0508 * pixelsPerMeter; // 2 inches including sidewalk/casing
+    const roadBaseWidthPixels = totalRoadWidthPixels / ROAD_CASING_SCALE;
 
     return {
-      base: roadWidthPixels,
-      highway: roadWidthPixels * 1.5,
-      street: roadWidthPixels,
+      base: roadBaseWidthPixels,
+      highway: roadBaseWidthPixels,
+      street: roadBaseWidthPixels,
     };
   };
 
@@ -138,6 +141,7 @@ const MatMapView = ({
       'pastel-road-major-labels',
       'pastel-road-medium-labels',
       'pastel-road-local-labels',
+      'pastel-road-service-labels',
     ];
 
     layerIds.forEach((id) => {
@@ -148,6 +152,9 @@ const MatMapView = ({
   function applyPastelMatStyle() {
     const map = mapRef.current;
     if (!map || !map.isStyleLoaded() || !map.getSource('composite')) return;
+
+    const roadWidth = getRoadWidth();
+    if (!roadWidth) return;
 
     removePastelLayers();
 
@@ -244,8 +251,6 @@ const MatMapView = ({
       },
     });
 
-    const roadWidth = getRoadWidth();
-
     const lineString = ['==', ['geometry-type'], 'LineString'];
     const majorRoadFilter = ['all', lineString, classIn('motorway', 'trunk', 'primary')];
     const mediumRoadFilter = ['all', lineString, classIn('secondary', 'tertiary')];
@@ -266,7 +271,7 @@ const MatMapView = ({
         minzoom,
         paint: {
           'line-color': MAP_PALETTE.roadDetail,
-          'line-width': width + Math.max(width * 0.38, 5),
+          'line-width': width * ROAD_CASING_SCALE,
           'line-opacity': 1,
         },
         layout: { 'line-join': 'round', 'line-cap': 'round' },
@@ -310,19 +315,22 @@ const MatMapView = ({
 
     const roadGroups = [
       { id: 'major', filter: majorRoadFilter, minzoom: ROAD_ZOOM_SCALE.major, width: roadWidth.highway },
-      { id: 'medium', filter: mediumRoadFilter, minzoom: ROAD_ZOOM_SCALE.medium, width: roadWidth.street * 1.18 },
+      { id: 'medium', filter: mediumRoadFilter, minzoom: ROAD_ZOOM_SCALE.medium, width: roadWidth.street },
       { id: 'local', filter: localRoadFilter, minzoom: ROAD_ZOOM_SCALE.local, width: roadWidth.street },
-      { id: 'service', filter: serviceRoadFilter, minzoom: ROAD_ZOOM_SCALE.service, width: roadWidth.street * 0.72 },
+      { id: 'service', filter: serviceRoadFilter, minzoom: ROAD_ZOOM_SCALE.service, width: roadWidth.street },
     ];
 
     roadGroups.forEach(addRoadCasing);
     roadGroups.forEach(addRoadBase);
 
     addCenterline({ id: 'major', filter: majorRoadFilter, minzoom: ROAD_ZOOM_SCALE.major, width: roadWidth.highway });
-    addCenterline({ id: 'medium', filter: mediumRoadFilter, minzoom: ROAD_ZOOM_SCALE.medium, width: roadWidth.street * 1.18 });
+    addCenterline({ id: 'medium', filter: mediumRoadFilter, minzoom: ROAD_ZOOM_SCALE.medium, width: roadWidth.street });
 
     if (showStreetNames) {
-      const addRoadLabels = ({ id, filter, minzoom }) => {
+      const addRoadLabels = ({ id, filter, minzoom, width, spacing = 160 }) => {
+        const textSize = Math.min(Math.max(width * ROAD_CASING_SCALE * 0.42, 12), 22);
+        const textMaskWidth = Math.max(textSize * 0.22, 3);
+
         map.addLayer({
           id: `pastel-road-${id}-labels`,
           type: 'symbol',
@@ -332,39 +340,33 @@ const MatMapView = ({
           minzoom,
           layout: {
             'symbol-placement': 'line',
-            'symbol-spacing': 280,
+            'symbol-spacing': spacing,
             'text-field': ['get', 'name'],
             'text-font': ['DIN Pro Regular', 'Arial Unicode MS Regular'],
-            'text-size': [
-              'interpolate',
-              ['linear'],
-              ['zoom'],
-              13, 8,
-              16, 10,
-              18, 12,
-            ],
+            'text-size': textSize,
             'text-letter-spacing': 0.02,
             'text-rotation-alignment': 'map',
             'text-pitch-alignment': 'viewport',
             'text-keep-upright': true,
             'text-max-angle': 35,
-            'text-padding': 2,
+            'text-padding': 1,
             'text-allow-overlap': false,
             'text-ignore-placement': false,
           },
           paint: {
             'text-color': '#FFFFFF',
-            'text-halo-color': MAP_PALETTE.roadDetail,
-            'text-halo-width': 1.25,
-            'text-halo-blur': 0.35,
+            'text-halo-color': MAP_PALETTE.roads,
+            'text-halo-width': textMaskWidth,
+            'text-halo-blur': 0.15,
             'text-opacity': 0.82,
           },
         });
       };
 
-      addRoadLabels({ id: 'major', filter: majorRoadFilter, minzoom: ROAD_ZOOM_SCALE.majorLabels });
-      addRoadLabels({ id: 'medium', filter: mediumRoadFilter, minzoom: ROAD_ZOOM_SCALE.mediumLabels });
-      addRoadLabels({ id: 'local', filter: localRoadFilter, minzoom: ROAD_ZOOM_SCALE.localLabels });
+      addRoadLabels({ id: 'major', filter: majorRoadFilter, minzoom: ROAD_ZOOM_SCALE.majorLabels, width: roadWidth.highway });
+      addRoadLabels({ id: 'medium', filter: mediumRoadFilter, minzoom: ROAD_ZOOM_SCALE.mediumLabels, width: roadWidth.street });
+      addRoadLabels({ id: 'local', filter: localRoadFilter, minzoom: ROAD_ZOOM_SCALE.localLabels, width: roadWidth.street, spacing: 130 });
+      addRoadLabels({ id: 'service', filter: serviceRoadFilter, minzoom: ROAD_ZOOM_SCALE.serviceLabels, width: roadWidth.street, spacing: 120 });
     }
 
   }
@@ -400,7 +402,12 @@ const MatMapView = ({
           center,
           zoom,
           pitch: 0,
+          minPitch: 0,
+          maxPitch: 0,
+          pitchWithRotate: false,
+          touchPitch: false,
           bearing: 0,
+          dragRotate: true,
           preserveDrawingBuffer: true,
         });
       } catch (error) {
@@ -442,9 +449,9 @@ const MatMapView = ({
 
   useEffect(() => {
     const map = mapRef.current;
-    if (!map?.isStyleLoaded() || !map.getLayer('pastel-background')) return;
+    if (!map?.isStyleLoaded() || !map.getSource('composite')) return;
     applyPastelMatStyle();
-  }, [matSize, showStreetNames]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [containerSize.w, containerSize.h, matSize, showStreetNames]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const OVERLAY = 'rgba(20, 27, 41, 0.46)';
 
