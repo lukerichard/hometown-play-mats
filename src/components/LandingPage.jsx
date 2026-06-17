@@ -159,7 +159,7 @@ const LandingPage = () => {
               value={heroAddress}
               onChange={setHeroAddress}
               onSubmit={goToDesigner(heroAddress)}
-              cta="Create My Mat"
+              cta="Create Your Mat"
             />
 
             <div className="lp-trust">

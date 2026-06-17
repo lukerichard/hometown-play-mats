@@ -7,8 +7,8 @@
   --lp-blue-card: #2f6fe0;    /* "Learning" feature card         */
   --lp-cta-from: #2350cf;     /* final CTA gradient (top)        */
   --lp-cta-to: #16307f;       /* final CTA gradient (bottom)     */
-  --lp-amber: #f5a623;        /* primary buttons                 */
-  --lp-amber-dark: #d8881a;   /* button 3D edge / hover          */
+  --lp-amber: #facc15;        /* primary buttons                 */
+  --lp-amber-dark: #d9a800;   /* button 3D edge / hover          */
   --lp-green: #22c55e;        /* safety card / success           */
   --lp-green-deep: #16a34a;
   --lp-muted: #5b6573;        /* body copy                       */
@@ -28,6 +28,7 @@
 .lp h3 {
   font-family: 'Poppins', 'DM Sans', sans-serif;
   margin: 0;
+  text-wrap: balance;
 }
 
 .lp-container {
@@ -57,6 +58,7 @@
   color: var(--lp-muted);
   font-size: 16px;
   line-height: 1.6;
+  text-wrap: pretty;
 }
 
 /* ── Buttons & form fields ───────────────────────────────────────── */
@@ -116,6 +118,12 @@
   background: #ffffff;
   border: 1.5px solid var(--lp-border);
   border-radius: 12px;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.lp-field:focus-within {
+  border-color: var(--lp-blue);
+  box-shadow: 0 0 0 3px rgba(44, 91, 214, 0.15);
 }
 
 .lp-field svg {
@@ -194,6 +202,7 @@
   color: var(--lp-muted);
   font-size: 17px;
   line-height: 1.6;
+  text-wrap: pretty;
 }
 
 .lp-hero .lp-form {
@@ -399,6 +408,12 @@
   border: 1px solid var(--lp-border);
   border-radius: 16px;
   box-shadow: 0 8px 22px rgba(21, 41, 77, 0.05);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.lp-step:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 14px 30px rgba(21, 41, 77, 0.10);
 }
 
 .lp-step.is-feature {
@@ -453,6 +468,12 @@
 .lp-feature {
   padding: 32px;
   border-radius: 20px;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.lp-feature:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 16px 32px rgba(21, 41, 77, 0.12);
 }
 
 .lp-feature h3 {
@@ -615,6 +636,12 @@
   border: 1px solid var(--lp-border);
   border-radius: 16px;
   box-shadow: 0 8px 22px rgba(21, 41, 77, 0.05);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.lp-quote:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 14px 30px rgba(21, 41, 77, 0.10);
 }
 
 .lp-stars {
@@ -685,6 +712,7 @@
   color: rgba(255, 255, 255, 0.86);
   font-size: 16px;
   line-height: 1.6;
+  text-wrap: pretty;
 }
 
 .lp-cta .lp-form {

@@ -242,6 +242,7 @@ const Cart = () => {
         onClose={() => setShowComingSoon(false)}
         userId={currentUser?.uid || ''}
         defaultEmail={currentUser?.email || ''}
+        source="cart-checkout"
         cartItems={waitlistCartItems}
       />
     </div>

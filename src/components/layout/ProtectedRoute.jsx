@@ -1,5 +1,6 @@
 import { Navigate } from 'react-router-dom';
 import { useAuth } from '../../hooks/useAuth';
+import { isVerifiedAccount } from '../../utils/authStatus';
 
 const ProtectedRoute = ({ children }) => {
   const { currentUser, loading } = useAuth();
@@ -44,7 +45,7 @@ const ProtectedRoute = ({ children }) => {
     );
   }
 
-  if (!currentUser || currentUser.isAnonymous) {
+  if (!isVerifiedAccount(currentUser)) {
     // Redirect to login if not authenticated
     return <Navigate to="/login" replace />;
   }

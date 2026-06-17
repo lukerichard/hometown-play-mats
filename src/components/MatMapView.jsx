@@ -4,14 +4,16 @@ import 'mapbox-gl/dist/mapbox-gl.css';
 
 // Physical mat dimensions in inches per size name
 const MAT_INCHES = {
-  Small:  { w: 24, h: 36 },
-  Medium: { w: 36, h: 48 },
-  Large:  { w: 48, h: 60 },
+  Small:  { w: 36, h: 24 },
+  Medium: { w: 48, h: 36 },
+  Large:  { w: 60, h: 48 },
 };
+
+const MAT_FRAME_FILL = 0.8;
 
 const MAP_PALETTE = {
   roads: '#B0B3B8',
-  sidewalks: '#EAE6E1',
+  roadDetail: '#EAE6E1',
   parks: '#C2D5C4',
   forests: '#9EAD95',
   water: '#A8CEDB',
@@ -23,19 +25,33 @@ const MAP_PALETTE = {
   buildingBlue: '#B3C6E6',
 };
 
+// Reference scale for road detail. Higher numbers make a feature appear later
+// when zooming in, so they disappear earlier when zooming out.
+const ROAD_ZOOM_SCALE = {
+  major: 9,
+  medium: 12,
+  local: 14,
+  service: 15.5,
+  majorLabels: 10,
+  mediumLabels: 12,
+  localLabels: 14,
+  serviceLabels: 15,
+};
+
+const ROAD_CASING_SCALE = 1.34;
+
 const classIn = (...classes) => ['in', ['get', 'class'], ['literal', classes]];
 const typeIn = (...types) => ['in', ['get', 'type'], ['literal', types]];
-const typeIs = (type) => ['==', ['get', 'type'], type];
 
 const MatMapView = ({
   center,
   zoom,
   matSize,
   rotation,
-  colorScheme,
   showStreetNames = true,
   onMapReady,
   onFrameChange,
+  safeInsets = { top: 0, right: 0 },
 }) => {
   const wrapperRef = useRef(null);
   const mapContainerRef = useRef(null);
@@ -54,113 +70,58 @@ const MatMapView = ({
     return () => ro.disconnect();
   }, []);
 
-  // Compute mat frame pixel dimensions at a consistent physical scale.
-  // Reference: the large mat (60" tall) occupies 72% of the container height.
+  // Compute mat frame pixel dimensions centered within the UI-safe zone.
   const getFrame = () => {
     const { w: cw, h: ch } = containerSize;
     if (cw === 0 || ch === 0) return null;
 
     const spec = MAT_INCHES[matSize.name] || MAT_INCHES.Medium;
-    const ppi = (ch * 0.72) / 60;
+    const largeSpec = MAT_INCHES.Large;
 
-    let fw = spec.w * ppi;
-    let fh = spec.h * ppi;
+    // Available viewport after subtracting address bar (top) and sidebar (right)
+    const safeW = cw - safeInsets.right;
+    const safeH = ch - safeInsets.top;
 
-    // Scale down if the frame would overflow the container
-    const scale = Math.min(1, (cw * 0.90) / fw, (ch * 0.90) / fh);
-    fw *= scale;
-    fh *= scale;
+    const ppi = Math.min((safeW * MAT_FRAME_FILL) / largeSpec.w, (safeH * MAT_FRAME_FILL) / largeSpec.h);
 
-    const fl = (cw - fw) / 2;
-    const ft = (ch - fh) / 2;
+    const fw = spec.w * ppi;
+    const fh = spec.h * ppi;
+
+    // Center within the safe zone
+    const fl = (safeW - fw) / 2;
+    const ft = safeInsets.top + (safeH - fh) / 2;
 
     return { fw, fh, fl, ft, fr: fl + fw, fb: ft + fh };
   };
 
   const frame = getFrame();
 
-  // Notify parent of frame pixel dimensions so crop logic stays in sync
+  // Notify parent of frame pixel dimensions + position so crop logic stays in sync
   useEffect(() => {
     if (!onFrameChange || !frame) return;
-    onFrameChange({ width: frame.fw, height: frame.fh });
-  }, [frame?.fw, frame?.fh]); // eslint-disable-line react-hooks/exhaustive-deps
+    onFrameChange({ width: frame.fw, height: frame.fh, x: frame.fl, y: frame.ft });
+  }, [frame?.fw, frame?.fh, frame?.fl, frame?.ft]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  useEffect(() => {
+    if (!mapRef.current || !containerSize.w || !containerSize.h) return;
+    mapRef.current.resize();
+  }, [containerSize.w, containerSize.h]);
 
   // Calculate road width based on physical mat size
   const getRoadWidth = () => {
-    const { w: cw } = containerSize;
-    if (cw === 0) return { base: 20, highway: 30, street: 20 };
-
+    if (!frame) return null;
     const spec = MAT_INCHES[matSize.name] || MAT_INCHES.Medium;
-    const ppi = (containerSize.h * 0.72) / 60;
-    const matPixelWidth = spec.w * ppi;
-    const pixelsPerMeter = matPixelWidth / matSize.width;
-    const roadWidthPixels = 0.0508 * pixelsPerMeter; // 2 inches in meters
+    const physicalWidthMeters = spec.w * 0.0254;
+    const pixelsPerMeter = frame.fw / physicalWidthMeters;
+    const totalRoadWidthPixels = 0.0508 * pixelsPerMeter; // 2 inches including sidewalk/casing
+    const roadBaseWidthPixels = totalRoadWidthPixels / ROAD_CASING_SCALE;
 
     return {
-      base: roadWidthPixels,
-      highway: roadWidthPixels * 1.5,
-      street: roadWidthPixels,
+      base: roadBaseWidthPixels,
+      highway: roadBaseWidthPixels,
+      street: roadBaseWidthPixels,
     };
   };
-
-  useEffect(() => {
-    if (!mapRef.current) {
-      const token = import.meta.env.VITE_MAPBOX_TOKEN;
-      if (token) mapboxgl.accessToken = token;
-
-      try {
-        mapRef.current = new mapboxgl.Map({
-          container: mapContainerRef.current,
-          style: token ? 'mapbox://styles/mapbox/streets-v12' : {
-            version: 8,
-            sources: {
-              osm: {
-                type: 'raster',
-                tiles: ['https://tile.openstreetmap.org/{z}/{x}/{y}.png'],
-                tileSize: 256,
-                attribution: '(c) OpenStreetMap contributors',
-              },
-            },
-            layers: [
-              {
-                id: 'osm-tiles',
-                type: 'raster',
-                source: 'osm',
-                minzoom: 0,
-                maxzoom: 19,
-              },
-            ],
-          },
-          center,
-          zoom,
-          pitch: 0,
-          bearing: 0,
-          preserveDrawingBuffer: true,
-        });
-      } catch (error) {
-        console.error('Error initializing map:', error);
-        setMapUnavailable(true);
-        return;
-      }
-
-      mapRef.current.addControl(
-        new mapboxgl.NavigationControl({ showCompass: true, showZoom: true }),
-        'bottom-left'
-      );
-
-      mapRef.current.on('load', () => {
-        applyPastelMatStyle();
-        if (onMapReady) onMapReady(mapRef.current);
-      });
-    }
-
-    return () => {
-      if (mapRef.current) {
-        mapRef.current.remove();
-        mapRef.current = null;
-      }
-    };
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   const removePastelLayers = () => {
     const map = mapRef.current;
@@ -174,12 +135,20 @@ const MatMapView = ({
       'pastel-water',
       'pastel-water-outline',
       'pastel-buildings',
-      'pastel-sidewalks',
-      'pastel-road-casing',
-      'pastel-road-base',
-      'pastel-road-centerline',
-      'pastel-crosswalks',
-      'pastel-road-labels',
+      'pastel-road-major-casing',
+      'pastel-road-major-base',
+      'pastel-road-major-centerline',
+      'pastel-road-medium-casing',
+      'pastel-road-medium-base',
+      'pastel-road-medium-centerline',
+      'pastel-road-local-casing',
+      'pastel-road-local-base',
+      'pastel-road-service-casing',
+      'pastel-road-service-base',
+      'pastel-road-major-labels',
+      'pastel-road-medium-labels',
+      'pastel-road-local-labels',
+      'pastel-road-service-labels',
     ];
 
     layerIds.forEach((id) => {
@@ -187,9 +156,12 @@ const MatMapView = ({
     });
   };
 
-  const applyPastelMatStyle = () => {
+  function applyPastelMatStyle() {
     const map = mapRef.current;
     if (!map || !map.isStyleLoaded() || !map.getSource('composite')) return;
+
+    const roadWidth = getRoadWidth();
+    if (!roadWidth) return;
 
     removePastelLayers();
 
@@ -286,69 +258,189 @@ const MatMapView = ({
       },
     });
 
-    const roadWidth = getRoadWidth();
-
     const lineString = ['==', ['geometry-type'], 'LineString'];
-    const roadFilter = ['all', lineString, ['!', classIn('path', 'pedestrian')], ['!', typeIs('sidewalk')]];
-    const linePaintFilter = [
+    const majorRoadFilter = ['all', lineString, classIn('motorway', 'trunk', 'primary')];
+    const mediumRoadFilter = ['all', lineString, classIn('secondary', 'tertiary')];
+    const localRoadFilter = ['all', lineString, classIn('street', 'street_limited', 'residential')];
+    const serviceRoadFilter = [
       'all',
       lineString,
-      classIn('motorway', 'trunk', 'primary', 'secondary', 'tertiary', 'street', 'street_limited'),
-      ['!', typeIn('service', 'link', 'turning_loop', 'turning_circle')],
-    ];
-    const sidewalkFilter = [
-      'any',
-      typeIn('sidewalk', 'footway'),
-      ['all', classIn('path'), ['!', typeIs('crossing')]],
-      ['all', classIn('pedestrian'), ['!', typeIs('crossing')]],
+      ['any', classIn('service'), typeIn('service', 'driveway', 'parking_aisle')],
     ];
 
-    map.addLayer({ id: 'pastel-sidewalks', type: 'line', source: 'composite', 'source-layer': 'road', filter: sidewalkFilter, paint: { 'line-color': MAP_PALETTE.sidewalks, 'line-width': roadWidth.street * 0.32, 'line-opacity': 0.95 }, layout: { 'line-join': 'round', 'line-cap': 'round' } });
-    map.addLayer({ id: 'pastel-road-casing', type: 'line', source: 'composite', 'source-layer': 'road', filter: roadFilter, paint: { 'line-color': MAP_PALETTE.sidewalks, 'line-width': roadWidth.street + Math.max(roadWidth.street * 0.38, 5), 'line-opacity': 1 }, layout: { 'line-join': 'round', 'line-cap': 'round' } });
-    map.addLayer({ id: 'pastel-road-base', type: 'line', source: 'composite', 'source-layer': 'road', filter: roadFilter, paint: { 'line-color': MAP_PALETTE.roads, 'line-width': roadWidth.street, 'line-opacity': 1 }, layout: { 'line-join': 'round', 'line-cap': 'round' } });
-    map.addLayer({ id: 'pastel-road-centerline', type: 'line', source: 'composite', 'source-layer': 'road', filter: linePaintFilter, paint: { 'line-color': MAP_PALETTE.sidewalks, 'line-width': Math.max(roadWidth.street * 0.12, 1), 'line-dasharray': [3, 2], 'line-opacity': 0.9 }, layout: { 'line-join': 'miter', 'line-cap': 'butt' } });
-    map.addLayer({ id: 'pastel-crosswalks', type: 'line', source: 'composite', 'source-layer': 'road', filter: ['all', classIn('pedestrian'), typeIs('crossing')], paint: { 'line-color': MAP_PALETTE.sidewalks, 'line-width': roadWidth.street * 0.6, 'line-dasharray': [0.3, 0.3], 'line-opacity': 0.9 }, layout: { 'line-join': 'miter', 'line-cap': 'butt' } });
-
-    if (showStreetNames) {
+    const addRoadCasing = ({ id, filter, minzoom, width }) => {
       map.addLayer({
-        id: 'pastel-road-labels',
-        type: 'symbol',
+        id: `pastel-road-${id}-casing`,
+        type: 'line',
         source: 'composite',
         'source-layer': 'road',
-        filter: ['all', lineString, ['has', 'name'], classIn('motorway', 'trunk', 'primary', 'secondary', 'tertiary', 'street', 'street_limited')],
-        layout: {
-          'symbol-placement': 'line',
-          'symbol-spacing': 280,
-          'text-field': ['get', 'name'],
-          'text-font': ['DIN Pro Medium', 'Arial Unicode MS Regular'],
-          'text-size': [
-            'interpolate',
-            ['linear'],
-            ['zoom'],
-            13, 10,
-            16, 12,
-            18, 14,
-          ],
-          'text-letter-spacing': 0.02,
-          'text-rotation-alignment': 'map',
-          'text-pitch-alignment': 'viewport',
-          'text-keep-upright': true,
-          'text-max-angle': 35,
-          'text-padding': 2,
-          'text-allow-overlap': false,
-          'text-ignore-placement': false,
-        },
+        filter,
+        minzoom,
         paint: {
-          'text-color': '#4F555C',
-          'text-halo-color': MAP_PALETTE.sidewalks,
-          'text-halo-width': 1.25,
-          'text-halo-blur': 0.35,
-          'text-opacity': 0.82,
+          'line-color': MAP_PALETTE.roadDetail,
+          'line-width': width * ROAD_CASING_SCALE,
+          'line-opacity': 1,
         },
+        layout: { 'line-join': 'round', 'line-cap': 'round' },
+      });
+    };
+
+    const addRoadBase = ({ id, filter, minzoom, width }) => {
+      map.addLayer({
+        id: `pastel-road-${id}-base`,
+        type: 'line',
+        source: 'composite',
+        'source-layer': 'road',
+        filter,
+        minzoom,
+        paint: {
+          'line-color': MAP_PALETTE.roads,
+          'line-width': width,
+          'line-opacity': 1,
+        },
+        layout: { 'line-join': 'round', 'line-cap': 'round' },
+      });
+    };
+
+    const addCenterline = ({ id, filter, minzoom, width }) => {
+      map.addLayer({
+        id: `pastel-road-${id}-centerline`,
+        type: 'line',
+        source: 'composite',
+        'source-layer': 'road',
+        filter,
+        minzoom,
+        paint: {
+          'line-color': MAP_PALETTE.roadDetail,
+          'line-width': Math.max(width * 0.12, 1),
+          'line-dasharray': [3, 2],
+          'line-opacity': 0.9,
+        },
+        layout: { 'line-join': 'miter', 'line-cap': 'butt' },
+      });
+    };
+
+    const roadGroups = [
+      { id: 'major', filter: majorRoadFilter, minzoom: ROAD_ZOOM_SCALE.major, width: roadWidth.highway },
+      { id: 'medium', filter: mediumRoadFilter, minzoom: ROAD_ZOOM_SCALE.medium, width: roadWidth.street },
+      { id: 'local', filter: localRoadFilter, minzoom: ROAD_ZOOM_SCALE.local, width: roadWidth.street },
+      { id: 'service', filter: serviceRoadFilter, minzoom: ROAD_ZOOM_SCALE.service, width: roadWidth.street },
+    ];
+
+    roadGroups.forEach(addRoadCasing);
+    roadGroups.forEach(addRoadBase);
+
+    addCenterline({ id: 'major', filter: majorRoadFilter, minzoom: ROAD_ZOOM_SCALE.major, width: roadWidth.highway });
+    addCenterline({ id: 'medium', filter: mediumRoadFilter, minzoom: ROAD_ZOOM_SCALE.medium, width: roadWidth.street });
+
+    if (showStreetNames) {
+      const addRoadLabels = ({ id, filter, minzoom, width, spacing = 160 }) => {
+        const textSize = Math.min(Math.max(width * ROAD_CASING_SCALE * 0.42, 12), 22);
+        const textMaskWidth = Math.max(textSize * 0.22, 3);
+
+        map.addLayer({
+          id: `pastel-road-${id}-labels`,
+          type: 'symbol',
+          source: 'composite',
+          'source-layer': 'road',
+          filter: ['all', filter, ['has', 'name']],
+          minzoom,
+          layout: {
+            'symbol-placement': 'line',
+            'symbol-spacing': spacing,
+            'text-field': ['get', 'name'],
+            'text-font': ['DIN Pro Regular', 'Arial Unicode MS Regular'],
+            'text-size': textSize,
+            'text-letter-spacing': 0.02,
+            'text-rotation-alignment': 'map',
+            'text-pitch-alignment': 'viewport',
+            'text-keep-upright': true,
+            'text-max-angle': 35,
+            'text-padding': 1,
+            'text-allow-overlap': false,
+            'text-ignore-placement': false,
+          },
+          paint: {
+            'text-color': '#FFFFFF',
+            'text-halo-color': MAP_PALETTE.roads,
+            'text-halo-width': textMaskWidth,
+            'text-halo-blur': 0.15,
+            'text-opacity': 0.82,
+          },
+        });
+      };
+
+      addRoadLabels({ id: 'major', filter: majorRoadFilter, minzoom: ROAD_ZOOM_SCALE.majorLabels, width: roadWidth.highway });
+      addRoadLabels({ id: 'medium', filter: mediumRoadFilter, minzoom: ROAD_ZOOM_SCALE.mediumLabels, width: roadWidth.street });
+      addRoadLabels({ id: 'local', filter: localRoadFilter, minzoom: ROAD_ZOOM_SCALE.localLabels, width: roadWidth.street, spacing: 130 });
+      addRoadLabels({ id: 'service', filter: serviceRoadFilter, minzoom: ROAD_ZOOM_SCALE.serviceLabels, width: roadWidth.street, spacing: 120 });
+    }
+
+  }
+
+  useEffect(() => {
+    if (!mapRef.current) {
+      const token = import.meta.env.VITE_MAPBOX_TOKEN;
+      if (token) mapboxgl.accessToken = token;
+
+      try {
+        mapRef.current = new mapboxgl.Map({
+          container: mapContainerRef.current,
+          style: token ? 'mapbox://styles/mapbox/streets-v12' : {
+            version: 8,
+            sources: {
+              osm: {
+                type: 'raster',
+                tiles: ['https://tile.openstreetmap.org/{z}/{x}/{y}.png'],
+                tileSize: 256,
+                attribution: '(c) OpenStreetMap contributors',
+              },
+            },
+            layers: [
+              {
+                id: 'osm-tiles',
+                type: 'raster',
+                source: 'osm',
+                minzoom: 0,
+                maxzoom: 19,
+              },
+            ],
+          },
+          center,
+          zoom,
+          pitch: 0,
+          minPitch: 0,
+          maxPitch: 0,
+          pitchWithRotate: false,
+          touchPitch: false,
+          bearing: 0,
+          dragRotate: true,
+          preserveDrawingBuffer: true,
+        });
+      } catch (error) {
+        console.error('Error initializing map:', error);
+        setMapUnavailable(true); // eslint-disable-line react-hooks/set-state-in-effect
+        return;
+      }
+
+      mapRef.current.addControl(
+        new mapboxgl.NavigationControl({ showCompass: true, showZoom: true }),
+        'bottom-left'
+      );
+
+      mapRef.current.on('load', () => {
+        applyPastelMatStyle();
+        if (onMapReady) onMapReady(mapRef.current);
       });
     }
 
-  };
+    return () => {
+      if (mapRef.current) {
+        mapRef.current.remove();
+        mapRef.current = null;
+      }
+    };
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
     if (mapRef.current?.isStyleLoaded()) {
@@ -364,9 +456,9 @@ const MatMapView = ({
 
   useEffect(() => {
     const map = mapRef.current;
-    if (!map?.isStyleLoaded() || !map.getLayer('pastel-background')) return;
+    if (!map?.isStyleLoaded() || !map.getSource('composite')) return;
     applyPastelMatStyle();
-  }, [matSize, showStreetNames]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [containerSize.w, containerSize.h, matSize, showStreetNames]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const OVERLAY = 'rgba(20, 27, 41, 0.46)';
 

@@ -6,6 +6,8 @@ const ComingSoonCheckoutModal = ({
   onClose,
   userId = '',
   defaultEmail = '',
+  source = 'checkout',
+  selectedItem = null,
   cartItems = []
 }) => {
   const [email, setEmail] = useState(defaultEmail);
@@ -25,7 +27,8 @@ const ComingSoonCheckoutModal = ({
       const savedEmail = await joinLaunchWaitlist({
         email,
         userId,
-        source: 'cart-checkout',
+        source,
+        selectedItem,
         cartItems
       });
       setSuccess(`You're on the launch list at ${savedEmail}.`);
@@ -38,50 +41,62 @@ const ComingSoonCheckoutModal = ({
 
   return (
     <>
-      <div className="coming-soon-scrim" onClick={onClose} />
+      <div className="cart-confirmation-scrim" onClick={onClose} />
       <section
-        className="coming-soon-modal"
+        className="cart-confirmation-modal coming-soon-modal"
         role="dialog"
         aria-modal="true"
         aria-labelledby="coming-soon-title"
       >
-        <div className="coming-soon-header">
+        <div className="cart-confirmation-header">
           <div>
             <span>Checkout Coming Soon</span>
             <h2 id="coming-soon-title">We are almost ready to launch.</h2>
           </div>
-          <button type="button" onClick={onClose} aria-label="Close">
+          <button type="button" className="cart-confirmation-close" onClick={onClose} aria-label="Close">
             X
           </button>
         </div>
 
-        <form className="coming-soon-form" onSubmit={handleSubmit}>
+        <div className="coming-soon-content">
           <p>
             Leave your email and we will let you know as soon as Hometown Play Mats is ready to take orders.
           </p>
 
-          <label htmlFor="launch-email">Email address</label>
-          <input
-            id="launch-email"
-            type="email"
-            value={email}
-            onChange={(event) => setEmail(event.target.value)}
-            placeholder="you@example.com"
-            required
-          />
+          {selectedItem?.previewImage && (
+            <div className="coming-soon-preview">
+              <img src={selectedItem.previewImage} alt={`${selectedItem.name || 'Custom play mat'} preview`} />
+              <div>
+                <strong>{selectedItem.name || 'Custom Play Mat'}</strong>
+                <span>{selectedItem.sizeName || selectedItem.matSize || 'Custom size'}</span>
+              </div>
+            </div>
+          )}
 
-          {error && <p className="coming-soon-error" role="alert">{error}</p>}
-          {success && <p className="coming-soon-success" role="status">{success}</p>}
+          <form className="coming-soon-form" onSubmit={handleSubmit}>
+            <label htmlFor="launch-email">Email address</label>
+            <input
+              id="launch-email"
+              type="email"
+              value={email}
+              onChange={(event) => setEmail(event.target.value)}
+              placeholder="you@example.com"
+              required
+            />
 
-          <div className="coming-soon-actions">
-            <button type="button" className="secondary-action" onClick={onClose} disabled={submitting}>
-              Close
-            </button>
-            <button type="submit" className="primary-action" disabled={submitting}>
-              {submitting ? 'Joining...' : 'Notify Me'}
-            </button>
-          </div>
-        </form>
+            {error && <p className="cart-confirmation-error" role="alert">{error}</p>}
+            {success && <p className="cart-confirmation-success" role="status">{success}</p>}
+
+            <div className="cart-confirmation-actions">
+              <button type="button" className="secondary-action" onClick={onClose} disabled={submitting}>
+                Close
+              </button>
+              <button type="submit" className="primary-action" disabled={submitting}>
+                {submitting ? 'Joining...' : 'Notify Me'}
+              </button>
+            </div>
+          </form>
+        </div>
       </section>
     </>
   );

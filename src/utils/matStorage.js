@@ -17,13 +17,18 @@ const designsCollection = (userId) => collection(db, 'users', userId, 'designs')
 const designDoc = (userId, designId) => doc(db, 'users', userId, 'designs', designId);
 
 const uploadPreviewImage = async (userId, designId, previewImageUrl) => {
-  if (!storage || !previewImageUrl?.startsWith('data:image')) {
-    return previewImageUrl || '';
-  }
+  if (!previewImageUrl) return '';
+  if (!previewImageUrl.startsWith('data:image')) return previewImageUrl;
+  if (!storage) return '';
 
-  const imageRef = ref(storage, `users/${userId}/design-previews/${designId}.png`);
-  await uploadString(imageRef, previewImageUrl, 'data_url');
-  return getDownloadURL(imageRef);
+  try {
+    const imageRef = ref(storage, `users/${userId}/design-previews/${designId}.jpg`);
+    await uploadString(imageRef, previewImageUrl, 'data_url');
+    return getDownloadURL(imageRef);
+  } catch (error) {
+    console.warn('Preview image upload failed; saving mat without preview image.', error);
+    return '';
+  }
 };
 
 // Save a new design to a user's subcollection.

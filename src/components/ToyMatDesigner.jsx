@@ -4,9 +4,13 @@ import { useAuth } from '../hooks/useAuth';
 import { useFirestore } from '../hooks/useFirestore';
 import { saveMat, updateMat } from '../utils/matStorage';
 import { addToCart, updateCartQuantity, removeFromCart } from '../utils/cartUtils';
+import { isVerifiedAccount } from '../utils/authStatus';
+import { getShopifyVariantId } from '../config/shopify';
 import MatSidebar from './MatSidebar';
 import MatMapView from './MatMapView';
 import MatPreview from './MatPreview';
+import CartConfirmationModal from './cart/CartConfirmationModal';
+import ComingSoonCheckoutModal from './cart/ComingSoonCheckoutModal';
 
 const ToyMatDesigner = () => {
   const { currentUser, ensureGuestSession } = useAuth();
@@ -32,37 +36,55 @@ const ToyMatDesigner = () => {
   const [saving, setSaving] = useState(false);
   const [showStreetNames, setShowStreetNames] = useState(true);
   const [framePixels, setFramePixels] = useState(null);
+  const [isMobileCustomizeOpen, setIsMobileCustomizeOpen] = useState(false);
+  const [isAddingToCart, setIsAddingToCart] = useState(false);
+  const [cartConfirmation, setCartConfirmation] = useState(null);
+  const [checkoutLoading, setCheckoutLoading] = useState(false);
+  const [isComingSoonOpen, setIsComingSoonOpen] = useState(false);
+  const [safeInsets, setSafeInsets] = useState({ top: 94, right: 310 });
+  const isSignedIn = isVerifiedAccount(currentUser);
+
+  useEffect(() => {
+    const update = () => setSafeInsets(
+      window.innerWidth <= 720
+        ? { top: 94, right: 0 }
+        : { top: 94, right: 310 }
+    );
+    update();
+    window.addEventListener('resize', update);
+    return () => window.removeEventListener('resize', update);
+  }, []);
 
   const matSizes = {
-    medium: {
-      width: 1.5,
-      height: 2,
-      name: 'Medium',
-      label: 'Medium Mat',
-      dimensions: '36" x 48"',
-      description: '36" x 48" - Perfect for bedroom',
-      price: 149,
-      shopifyVariantId: import.meta.env.VITE_SHOPIFY_MEDIUM_VARIANT_ID || ''
-    },
     large: {
-      width: 2,
-      height: 3,
+      width: 3,
+      height: 2,
       name: 'Large',
       label: 'Large Mat',
-      dimensions: '48" x 60"',
-      description: '48" x 60" - Best for playrooms',
+      dimensions: '60" x 48"',
+      description: '60" x 48" - Best for playrooms',
       price: 189,
-      shopifyVariantId: import.meta.env.VITE_SHOPIFY_LARGE_VARIANT_ID || ''
+      shopifyVariantId: getShopifyVariantId('large')
+    },
+    medium: {
+      width: 2,
+      height: 1.5,
+      name: 'Medium',
+      label: 'Medium Mat',
+      dimensions: '48" x 36"',
+      description: '48" x 36" - Perfect for bedroom',
+      price: 149,
+      shopifyVariantId: getShopifyVariantId('medium')
     },
     small: {
-      width: 1,
-      height: 2,
+      width: 1.5,
+      height: 1,
       name: 'Small',
       label: 'Small Mat',
-      dimensions: '24" x 36"',
-      description: '24" x 36" - Cozy reading nook',
+      dimensions: '36" x 24"',
+      description: '36" x 24" - Cozy reading nook',
       price: 89,
-      shopifyVariantId: import.meta.env.VITE_SHOPIFY_SMALL_VARIANT_ID || ''
+      shopifyVariantId: getShopifyVariantId('small')
     }
   };
 
@@ -72,13 +94,24 @@ const ToyMatDesigner = () => {
     classic: { color: '#111827', name: 'Classic City', preview: '#3d4048' }
   };
 
+  const canReadCart = Boolean(currentUser?.uid && (isSignedIn || currentUser.isAnonymous));
+
   const { data: cartItems } = useFirestore(
-    currentUser?.uid ? `users/${currentUser.uid}/cart` : null
+    canReadCart ? `users/${currentUser.uid}/cart` : null
   );
 
   const currentCartItem = savedMatId ? cartItems.find((item) => item.designId === savedMatId || item.matId === savedMatId) : null;
   const selectedSize = matSizes[matSize];
   const selectedTheme = colorSchemes[colorScheme];
+
+  const withTimeout = (promise, message, timeoutMs = 15000) => {
+    let timeoutId;
+    const timeout = new Promise((_, reject) => {
+      timeoutId = window.setTimeout(() => reject(new Error(message)), timeoutMs);
+    });
+
+    return Promise.race([promise, timeout]).finally(() => window.clearTimeout(timeoutId));
+  };
 
   const fetchSuggestions = async (query) => {
     if (!query.trim() || query.length < 3) {
@@ -146,30 +179,41 @@ const ToyMatDesigner = () => {
     }
   };
 
-  const handleGenerateMat = () => {
+  const captureMatPreview = () => {
     if (!mapInstance) {
-      alert('Map is still loading. Please wait a moment and try again.');
-      return;
+      throw new Error('Map is still loading. Please wait a moment and try again.');
     }
+
+    const canvas = mapInstance.getCanvas();
+    const pixelRatio = window.devicePixelRatio || 1;
+    const dims = framePixels || { width: 384, height: 512, x: null, y: null };
+    const scaledWidth = dims.width * pixelRatio;
+    const scaledHeight = dims.height * pixelRatio;
+    // Use the frame's actual pixel position if available, otherwise fall back to center
+    const cropX = dims.x != null ? dims.x * pixelRatio : (canvas.width - scaledWidth) / 2;
+    const cropY = dims.y != null ? dims.y * pixelRatio : (canvas.height - scaledHeight) / 2;
+    const croppedCanvas = document.createElement('canvas');
+    croppedCanvas.width = dims.width;
+    croppedCanvas.height = dims.height;
+    const ctx = croppedCanvas.getContext('2d');
+
+    if (!ctx) {
+      throw new Error('Error creating preview. Please try again.');
+    }
+
+    // Scale down to a compact thumbnail — small enough to store in Firestore directly
+    ctx.drawImage(canvas, cropX, cropY, scaledWidth, scaledHeight, 0, 0, dims.width, dims.height);
+    return croppedCanvas.toDataURL('image/jpeg', 0.65);
+  };
+
+  const _handleGenerateMat = () => {
     try {
-      const canvas = mapInstance.getCanvas();
-      const pixelRatio = window.devicePixelRatio || 1;
-      const dims = framePixels || { width: 384, height: 512 };
-      const scaledWidth = dims.width * pixelRatio;
-      const scaledHeight = dims.height * pixelRatio;
-      const cropX = (canvas.width - scaledWidth) / 2;
-      const cropY = (canvas.height - scaledHeight) / 2;
-      const croppedCanvas = document.createElement('canvas');
-      croppedCanvas.width = scaledWidth;
-      croppedCanvas.height = scaledHeight;
-      const ctx = croppedCanvas.getContext('2d');
-      if (!ctx) { alert('Error creating preview. Please try again.'); return; }
-      ctx.drawImage(canvas, cropX, cropY, scaledWidth, scaledHeight, 0, 0, scaledWidth, scaledHeight);
-      setPreviewImage(croppedCanvas.toDataURL('image/png'));
+      const capturedPreview = captureMatPreview();
+      setPreviewImage(capturedPreview);
       setShowPreview(true);
     } catch (error) {
       console.error('Error capturing map:', error);
-      alert('Error capturing map. Please try again.');
+      alert(error.message || 'Error capturing map. Please try again.');
     }
   };
 
@@ -190,15 +234,38 @@ const ToyMatDesigner = () => {
   }, [location]);
 
   const handleSaveMat = async () => {
-    if (!currentUser || currentUser.isAnonymous) {
-      const shouldSignup = confirm('You need an account to save mats. Create an account now?');
+    if (!isSignedIn) {
+      const shouldSignup = confirm('You need a verified account to save mats. Create or verify an account now?');
       if (shouldSignup) navigate('/signup');
       return;
     }
     if (!matName.trim()) { alert('Please enter a name for your mat'); return; }
     setSaving(true);
     try {
-      const matData = { name: matName.trim(), matSize, colorScheme, rotation, mapCenter, mapZoom, address, previewImageUrl: previewImage };
+      let previewImageUrl = previewImage;
+
+      if (!previewImageUrl) {
+        try {
+          previewImageUrl = captureMatPreview();
+          setPreviewImage(previewImageUrl);
+        } catch (previewError) {
+          console.warn('Preview capture failed; saving mat without preview image.', previewError);
+          previewImageUrl = '';
+        }
+      }
+
+      const matData = {
+        name: matName.trim(),
+        matSize,
+        colorScheme,
+        rotation,
+        mapCenter,
+        mapZoom,
+        address,
+        showStreetNames,
+        previewImageUrl
+      };
+
       if (savedMatId) {
         await updateMat(currentUser.uid, savedMatId, matData);
         alert('Mat updated successfully!');
@@ -217,28 +284,90 @@ const ToyMatDesigner = () => {
   };
 
   const handleAddToCart = async () => {
+    if (isAddingToCart) return;
+
     try {
-      const user = currentUser || await ensureGuestSession();
+      if (currentUser && !isSignedIn && !currentUser.isAnonymous) {
+        alert('Please verify your email before adding this mat to your cart.');
+        navigate('/login');
+        return;
+      }
+
+      const capturedPreview = captureMatPreview();
+      setIsAddingToCart(true);
+
+      const user = currentUser || await withTimeout(
+        ensureGuestSession(),
+        'Guest checkout is taking too long. Please check your connection and try again.'
+      );
       let matIdToAdd = savedMatId;
+      const normalizedName = matName.trim() || 'Custom Play Mat';
+      const matData = {
+        name: normalizedName,
+        matSize,
+        colorScheme,
+        rotation,
+        mapCenter,
+        mapZoom,
+        address,
+        showStreetNames,
+        previewImageUrl: capturedPreview,
+        status: 'in_cart'
+      };
+
       if (!matIdToAdd) {
-        const matData = { name: matName.trim() || 'Custom Play Mat', matSize, colorScheme, rotation, mapCenter, mapZoom, address, previewImageUrl: previewImage };
-        matIdToAdd = await saveMat(user.uid, matData, 'in_cart');
+        matIdToAdd = await withTimeout(
+          saveMat(user.uid, matData, 'in_cart'),
+          'Saving your mat is taking too long. Please try again.'
+        );
         setSavedMatId(matIdToAdd);
       } else {
-        await updateMat(user.uid, matIdToAdd, { status: 'in_cart' });
+        await withTimeout(
+          updateMat(user.uid, matIdToAdd, matData),
+          'Updating your mat is taking too long. Please try again.'
+        );
       }
-      await addToCart(user.uid, matIdToAdd, 1, selectedSize.price, {
-        matSize,
-        theme: colorScheme,
-        nameSnapshot: matName.trim() || 'Custom Play Mat',
-        previewImageUrlSnapshot: previewImage || '',
-        shopifyVariantId: selectedSize.shopifyVariantId
+
+      const existingCartItem = cartItems.find((item) => item.designId === matIdToAdd || item.matId === matIdToAdd);
+      await withTimeout(
+        addToCart(user.uid, matIdToAdd, 1, selectedSize.price, {
+          matSize,
+          theme: colorScheme,
+          nameSnapshot: normalizedName,
+          previewImageUrlSnapshot: capturedPreview,
+          shopifyVariantId: selectedSize.shopifyVariantId
+        }),
+        'Adding this mat to your cart is taking too long. Please try again.'
+      );
+
+      setPreviewImage(capturedPreview);
+      setCartConfirmation({
+        userId: user.uid,
+        designId: matIdToAdd,
+        name: normalizedName,
+        previewImage: capturedPreview,
+        sizeName: selectedSize.name,
+        dimensions: selectedSize.dimensions,
+        themeName: selectedTheme.name,
+        address,
+        showStreetNames,
+        price: selectedSize.price,
+        quantity: (existingCartItem?.quantity || 0) + 1
       });
-      alert('Added to cart.');
+      setIsMobileCustomizeOpen(false);
     } catch (error) {
       console.error('Error adding to cart:', error);
-      alert('Failed to add to cart. Please try again.');
+      alert(error.message || 'Failed to add to cart. Please try again.');
+    } finally {
+      setIsAddingToCart(false);
     }
+  };
+
+  const handleCheckoutFromConfirmation = async () => {
+    if (!cartConfirmation?.userId || checkoutLoading) return;
+    setCheckoutLoading(true);
+    setIsComingSoonOpen(true);
+    setCheckoutLoading(false);
   };
 
   const handleUpdateQuantity = async (newQuantity) => {
@@ -268,6 +397,7 @@ const ToyMatDesigner = () => {
             showStreetNames={showStreetNames}
             onMapReady={setMapInstance}
             onFrameChange={setFramePixels}
+            safeInsets={safeInsets}
           />
         </div>
 
@@ -308,43 +438,70 @@ const ToyMatDesigner = () => {
             </button>
           </div>
 
-          <p className="privacy-note">
-            <span className="lock-icon" aria-hidden="true" />
-            We only use your address for mapping. Your exact house number is not printed by default.
-          </p>
         </div>
 
         {/* Floating right sidebar */}
         <div className="editor-sidebar-float">
-          <p className="editor-mat-title">{matName || 'Custom Play Mat'}</p>
           <MatSidebar
             matSize={matSize}
             setMatSize={setMatSize}
             matName={matName}
             setMatName={setMatName}
             matSizes={matSizes}
+            selectedSize={selectedSize}
+            idPrefix="desktop-mat"
             showStreetNames={showStreetNames}
             setShowStreetNames={setShowStreetNames}
+            onSaveForLater={() => setShowSaveDialog(true)}
+            onAddToCart={handleAddToCart}
+            isAddingToCart={isAddingToCart}
           />
         </div>
       </div>
 
       {/* Checkout bar — already position: fixed z-index: 900 */}
-      <div className="checkout-bar">
-        <div>
+      {isMobileCustomizeOpen && (
+        <>
+          <div className="mobile-customize-scrim" onClick={() => setIsMobileCustomizeOpen(false)} />
+          <div className="mobile-customize-sheet">
+            <MatSidebar
+              matSize={matSize}
+              setMatSize={setMatSize}
+              matName={matName}
+              setMatName={setMatName}
+              matSizes={matSizes}
+              selectedSize={selectedSize}
+              idPrefix="mobile-mat"
+              showStreetNames={showStreetNames}
+              setShowStreetNames={setShowStreetNames}
+              onSaveForLater={() => setShowSaveDialog(true)}
+              onAddToCart={handleAddToCart}
+              isAddingToCart={isAddingToCart}
+              onClose={() => setIsMobileCustomizeOpen(false)}
+            />
+          </div>
+        </>
+      )}
+
+      <div className={`mobile-cart-bar ${isMobileCustomizeOpen ? 'is-menu-open' : ''}`}>
+        <button
+          type="button"
+          className="mobile-menu-button"
+          onClick={() => setIsMobileCustomizeOpen((isOpen) => !isOpen)}
+          aria-label={isMobileCustomizeOpen ? 'Close customization menu' : 'Open customization menu'}
+          aria-expanded={isMobileCustomizeOpen}
+        >
+          <span />
+          <span />
+          <span />
+        </button>
+        <div className="mobile-cart-summary">
           <span>TOTAL PRICE</span>
           <strong>${selectedSize.price.toFixed(2)}</strong>
         </div>
-        <div className="delivery-estimate">
-          <span>Delivery Estimate</span>
-          <strong>Oct 24 - Oct 28</strong>
-        </div>
-        <div className="checkout-actions">
-          <button type="button" className="secondary-action" onClick={() => setShowSaveDialog(true)}>
-            Save for Later
-          </button>
-          <button type="button" className="primary-action" onClick={handleAddToCart}>
-            Add to Cart
+        <div className="mobile-cart-actions">
+          <button type="button" className="primary-action" onClick={handleAddToCart} disabled={isAddingToCart}>
+            {isAddingToCart ? 'Adding...' : 'Add to Cart'}
           </button>
         </div>
       </div>
@@ -365,6 +522,26 @@ const ToyMatDesigner = () => {
           onSave={() => setShowSaveDialog(true)}
         />
       )}
+
+      <CartConfirmationModal
+        item={cartConfirmation}
+        onClose={() => {
+          if (!checkoutLoading) {
+            setCartConfirmation(null);
+          }
+        }}
+        onCheckout={handleCheckoutFromConfirmation}
+        checkoutLoading={checkoutLoading}
+      />
+
+      <ComingSoonCheckoutModal
+        open={isComingSoonOpen}
+        onClose={() => setIsComingSoonOpen(false)}
+        userId={cartConfirmation?.userId || currentUser?.uid || ''}
+        defaultEmail={currentUser?.email || ''}
+        source="designer-checkout"
+        selectedItem={cartConfirmation}
+      />
 
       {showSaveDialog && (
         <>
