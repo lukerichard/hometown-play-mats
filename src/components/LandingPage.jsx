@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import './LandingPage.css';
 
@@ -82,24 +82,108 @@ const Stars = () => (
 );
 
 /* ── Address capture form (reused in hero + final CTA) ───────────── */
-const AddressForm = ({ value, onChange, onSubmit, cta, label }) => (
-  <form className="lp-form" onSubmit={onSubmit}>
-    <label className="lp-field">
-      <span className="lp-sr-only">{label}</span>
-      <PinIcon />
-      <input
-        type="text"
-        placeholder="Enter your home address"
-        value={value}
-        onChange={(e) => onChange(e.target.value)}
-        autoComplete="street-address"
-      />
-    </label>
-    <button type="submit" className="lp-btn lp-btn-amber">
-      {cta}
-    </button>
-  </form>
-);
+const AddressForm = ({ value, onChange, onSubmit, cta, label }) => {
+  const [suggestions, setSuggestions] = useState([]);
+  const [showSuggestions, setShowSuggestions] = useState(false);
+  const [selectedSuggestion, setSelectedSuggestion] = useState(null);
+
+  useEffect(() => {
+    const query = value.trim();
+
+    if (selectedSuggestion?.place_name === value) {
+      return undefined;
+    }
+
+    if (query.length < 3) {
+      return undefined;
+    }
+
+    const timeoutId = window.setTimeout(async () => {
+      try {
+        const token = import.meta.env.VITE_MAPBOX_TOKEN;
+        if (!token) return;
+
+        const response = await fetch(
+          `https://api.mapbox.com/geocoding/v5/mapbox.places/${encodeURIComponent(query)}.json?access_token=${token}&autocomplete=true&limit=5`
+        );
+        const data = await response.json();
+        const nextSuggestions = data.features || [];
+        setSuggestions(nextSuggestions);
+        setShowSuggestions(nextSuggestions.length > 0);
+      } catch (error) {
+        console.error('Landing address autocomplete error:', error);
+        setSuggestions([]);
+        setShowSuggestions(false);
+      }
+    }, 300);
+
+    return () => window.clearTimeout(timeoutId);
+  }, [selectedSuggestion, value]);
+
+  const handleChange = (event) => {
+    const nextValue = event.target.value;
+
+    setSelectedSuggestion(null);
+    if (nextValue.trim().length < 3) {
+      setSuggestions([]);
+      setShowSuggestions(false);
+    }
+    onChange(nextValue);
+  };
+
+  const handleSelectSuggestion = (suggestion) => {
+    setSelectedSuggestion(suggestion);
+    onChange(suggestion.place_name);
+    setSuggestions([]);
+    setShowSuggestions(false);
+  };
+
+  return (
+    <form
+      className="lp-form"
+      onSubmit={(event) => {
+        event.preventDefault();
+        onSubmit(value, selectedSuggestion);
+      }}
+    >
+      <label className="lp-field">
+        <span className="lp-sr-only">{label}</span>
+        <PinIcon />
+        <span className="lp-address-input-wrap">
+          <input
+            type="text"
+            placeholder="Enter your home address"
+            value={value}
+            onChange={handleChange}
+            onFocus={() => suggestions.length > 0 && setShowSuggestions(true)}
+            onBlur={() => setTimeout(() => setShowSuggestions(false), 200)}
+            autoComplete="street-address"
+          />
+          {showSuggestions && suggestions.length > 0 && (
+            <span className="lp-address-suggestions">
+              {suggestions.map((suggestion, index) => (
+                <button
+                  key={suggestion.id || index}
+                  type="button"
+                  onMouseDown={(event) => {
+                    event.preventDefault();
+                    handleSelectSuggestion(suggestion);
+                  }}
+                >
+                  <strong>{suggestion.text}</strong>
+                  <small>{suggestion.place_name}</small>
+                </button>
+              ))}
+            </span>
+          )}
+        </span>
+      </label>
+      <button type="submit" className="lp-btn lp-btn-amber">
+        {cta}
+      </button>
+    </form>
+  );
+};
 
 const testimonials = [
   {
@@ -133,9 +217,20 @@ const LandingPage = () => {
   const [heroAddress, setHeroAddress] = useState('');
   const [ctaAddress, setCtaAddress] = useState('');
 
-  const goToDesigner = (prefillAddress) => (e) => {
-    e.preventDefault();
-    navigate('/create', prefillAddress ? { state: { prefillAddress } } : undefined);
+  const goToDesigner = (prefillAddress, suggestion) => {
+    const trimmedAddress = prefillAddress.trim();
+
+    if (!trimmedAddress) {
+      navigate('/create');
+      return;
+    }
+
+    navigate('/create', {
+      state: {
+        prefillAddress: suggestion?.place_name || trimmedAddress,
+        prefillCenter: suggestion?.center || null,
+      },
+    });
   };
 
   return (
@@ -158,7 +253,7 @@ const LandingPage = () => {
               label="Your home address"
               value={heroAddress}
               onChange={setHeroAddress}
-              onSubmit={goToDesigner(heroAddress)}
+              onSubmit={goToDesigner}
               cta="Create Your Mat"
             />
 
@@ -319,7 +414,7 @@ const LandingPage = () => {
             label="Your address"
             value={ctaAddress}
             onChange={setCtaAddress}
-            onSubmit={goToDesigner(ctaAddress)}
+            onSubmit={goToDesigner}
             cta="Get Started"
           />
           <p className="lp-cta-note">No credit card required to design. Starting at $89.</p>

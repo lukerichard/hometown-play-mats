@@ -109,6 +109,7 @@
 }
 
 .lp-field {
+  position: relative;
   display: flex;
   align-items: center;
   gap: 10px;
@@ -143,6 +144,61 @@
 
 .lp-field input::placeholder {
   color: #97a0ad;
+}
+
+.lp-address-input-wrap {
+  position: relative;
+  flex: 1;
+  min-width: 0;
+}
+
+.lp-address-suggestions {
+  position: absolute;
+  top: calc(100% + 10px);
+  left: -44px;
+  right: -16px;
+  z-index: 30;
+  display: grid;
+  overflow: hidden;
+  background: #ffffff;
+  border: 1px solid var(--lp-border);
+  border-radius: 14px;
+  box-shadow: 0 18px 38px rgba(21, 41, 77, 0.16);
+}
+
+.lp-address-suggestions button {
+  display: grid;
+  gap: 3px;
+  width: 100%;
+  padding: 12px 14px;
+  background: #ffffff;
+  border: 0;
+  border-bottom: 1px solid var(--lp-border);
+  color: var(--lp-ink);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.lp-address-suggestions button:last-child {
+  border-bottom: 0;
+}
+
+.lp-address-suggestions button:hover,
+.lp-address-suggestions button:focus-visible {
+  background: #f5f8ff;
+  outline: none;
+}
+
+.lp-address-suggestions strong {
+  font-size: 14px;
+  font-weight: 800;
+}
+
+.lp-address-suggestions small {
+  color: var(--lp-muted);
+  font-size: 12px;
+  line-height: 1.35;
 }
 
 .lp-sr-only {

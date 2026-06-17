@@ -163,6 +163,31 @@ const ToyMatDesigner = () => {
     }
   };
 
+  const geocodeAddress = async (query, showErrors = true) => {
+    const token = import.meta.env.VITE_MAPBOX_TOKEN;
+    if (!token) {
+      if (showErrors) {
+        alert('Mapbox token is missing. Add VITE_MAPBOX_TOKEN to .env to enable address search.');
+      }
+      return false;
+    }
+
+    const response = await fetch(`https://api.mapbox.com/geocoding/v5/mapbox.places/${encodeURIComponent(query)}.json?access_token=${token}`);
+    const data = await response.json();
+
+    if (data.features?.length > 0) {
+      const [lng, lat] = data.features[0].center;
+      setMapCenter([lng, lat]);
+      setMapZoom(17);
+      return true;
+    }
+
+    if (showErrors) {
+      alert('Address not found. Please try a different address.');
+    }
+    return false;
+  };
+
   const handleAddressChange = (event) => {
     const value = event.target.value;
     setAddress(value);
@@ -187,20 +212,7 @@ const ToyMatDesigner = () => {
     setIsSearching(true);
     setShowSuggestions(false);
     try {
-      const token = import.meta.env.VITE_MAPBOX_TOKEN;
-      if (!token) {
-        alert('Mapbox token is missing. Add VITE_MAPBOX_TOKEN to .env to enable address search.');
-        return;
-      }
-      const response = await fetch(`https://api.mapbox.com/geocoding/v5/mapbox.places/${encodeURIComponent(address)}.json?access_token=${token}`);
-      const data = await response.json();
-      if (data.features?.length > 0) {
-        const [lng, lat] = data.features[0].center;
-        setMapCenter([lng, lat]);
-        setMapZoom(17);
-      } else {
-        alert('Address not found. Please try a different address.');
-      }
+      await geocodeAddress(address);
     } catch (error) {
       console.error('Geocoding error:', error);
       alert('Error searching for address. Please try again.');
@@ -265,6 +277,29 @@ const ToyMatDesigner = () => {
       setSavedMatId(mat.id || null);
       setMatName(mat.name || '');
       setSavedMatName(mat.name || '');
+      window.history.replaceState({}, document.title);
+      return;
+    }
+
+    const prefillAddress = location.state?.prefillAddress?.trim();
+    if (prefillAddress) {
+      const center = location.state?.prefillCenter;
+      const lng = Number(center?.[0]);
+      const lat = Number(center?.[1]);
+
+      setAddress(prefillAddress);
+      setSavedMatId(null);
+      setSavedMatName('');
+
+      if (Number.isFinite(lng) && Number.isFinite(lat)) {
+        setMapCenter([lng, lat]);
+        setMapZoom(17);
+      } else {
+        geocodeAddress(prefillAddress, false).catch((error) => {
+          console.error('Prefill geocoding error:', error);
+        });
+      }
+
       window.history.replaceState({}, document.title);
     }
   }, [location]);
