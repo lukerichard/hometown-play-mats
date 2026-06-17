@@ -17,12 +17,12 @@ const designsCollection = (userId) => collection(db, 'users', userId, 'designs')
 const designDoc = (userId, designId) => doc(db, 'users', userId, 'designs', designId);
 
 const uploadPreviewImage = async (userId, designId, previewImageUrl) => {
-  if (!storage || !previewImageUrl?.startsWith('data:image')) {
-    return previewImageUrl || '';
-  }
+  if (!previewImageUrl) return '';
+  if (!previewImageUrl.startsWith('data:image')) return previewImageUrl;
+  if (!storage) return '';
 
   try {
-    const imageRef = ref(storage, `users/${userId}/design-previews/${designId}.png`);
+    const imageRef = ref(storage, `users/${userId}/design-previews/${designId}.jpg`);
     await uploadString(imageRef, previewImageUrl, 'data_url');
     return getDownloadURL(imageRef);
   } catch (error) {

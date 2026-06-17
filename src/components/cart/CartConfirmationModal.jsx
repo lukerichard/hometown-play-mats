@@ -2,8 +2,7 @@ const CartConfirmationModal = ({
   item,
   onClose,
   onCheckout,
-  checkoutLoading,
-  checkoutError
+  checkoutLoading
 }) => {
   if (!item) return null;
 
@@ -64,11 +63,9 @@ const CartConfirmationModal = ({
               </div>
             </div>
 
-            {checkoutError && (
-              <p className="cart-confirmation-error" role="alert">
-                {checkoutError}
-              </p>
-            )}
+            <p className="cart-confirmation-note">
+              Checkout is opening soon. Join the launch list and we will email you when orders go live.
+            </p>
           </div>
         </div>
 
@@ -77,7 +74,7 @@ const CartConfirmationModal = ({
             Close
           </button>
           <button type="button" className="primary-action" onClick={onCheckout} disabled={checkoutLoading}>
-            {checkoutLoading ? 'Opening Checkout...' : 'Checkout'}
+            {checkoutLoading ? 'Opening...' : 'Notify Me'}
           </button>
         </div>
       </section>

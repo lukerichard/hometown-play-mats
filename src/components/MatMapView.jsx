@@ -51,6 +51,7 @@ const MatMapView = ({
   showStreetNames = true,
   onMapReady,
   onFrameChange,
+  safeInsets = { top: 0, right: 0 },
 }) => {
   const wrapperRef = useRef(null);
   const mapContainerRef = useRef(null);
@@ -69,31 +70,37 @@ const MatMapView = ({
     return () => ro.disconnect();
   }, []);
 
-  // Compute mat frame pixel dimensions using the available map viewport.
+  // Compute mat frame pixel dimensions centered within the UI-safe zone.
   const getFrame = () => {
     const { w: cw, h: ch } = containerSize;
     if (cw === 0 || ch === 0) return null;
 
     const spec = MAT_INCHES[matSize.name] || MAT_INCHES.Medium;
     const largeSpec = MAT_INCHES.Large;
-    const ppi = Math.min((cw * MAT_FRAME_FILL) / largeSpec.w, (ch * MAT_FRAME_FILL) / largeSpec.h);
+
+    // Available viewport after subtracting address bar (top) and sidebar (right)
+    const safeW = cw - safeInsets.right;
+    const safeH = ch - safeInsets.top;
+
+    const ppi = Math.min((safeW * MAT_FRAME_FILL) / largeSpec.w, (safeH * MAT_FRAME_FILL) / largeSpec.h);
 
     const fw = spec.w * ppi;
     const fh = spec.h * ppi;
 
-    const fl = (cw - fw) / 2;
-    const ft = (ch - fh) / 2;
+    // Center within the safe zone
+    const fl = (safeW - fw) / 2;
+    const ft = safeInsets.top + (safeH - fh) / 2;
 
     return { fw, fh, fl, ft, fr: fl + fw, fb: ft + fh };
   };
 
   const frame = getFrame();
 
-  // Notify parent of frame pixel dimensions so crop logic stays in sync
+  // Notify parent of frame pixel dimensions + position so crop logic stays in sync
   useEffect(() => {
     if (!onFrameChange || !frame) return;
-    onFrameChange({ width: frame.fw, height: frame.fh });
-  }, [frame?.fw, frame?.fh]); // eslint-disable-line react-hooks/exhaustive-deps
+    onFrameChange({ width: frame.fw, height: frame.fh, x: frame.fl, y: frame.ft });
+  }, [frame?.fw, frame?.fh, frame?.fl, frame?.ft]); // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
     if (!mapRef.current || !containerSize.w || !containerSize.h) return;

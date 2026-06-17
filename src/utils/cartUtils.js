@@ -11,10 +11,16 @@ import {
   serverTimestamp
 } from 'firebase/firestore';
 import { db } from '../config/firebase';
+import { assertShopifyConfigured, getShopifyVariantId, shopifyConfig } from '../config/shopify';
 import { getMat } from './matStorage';
 
 const cartCollection = (userId) => collection(db, 'users', userId, 'cart');
 const cartDoc = (userId, cartItemId) => doc(db, 'users', userId, 'cart', cartItemId);
+
+const compactPreviewSnapshot = (previewImageUrl) => {
+  if (!previewImageUrl || previewImageUrl.startsWith('data:image')) return '';
+  return previewImageUrl;
+};
 
 export const getCartItemByDesignId = async (userId, designId) => {
   try {
@@ -57,7 +63,7 @@ export const addToCart = async (userId, designId, quantity = 1, pricePerUnit, it
       pricePerUnit,
       shopifyVariantId: itemData.shopifyVariantId || '',
       nameSnapshot: itemData.nameSnapshot || '',
-      previewImageUrlSnapshot: itemData.previewImageUrlSnapshot || '',
+      previewImageUrlSnapshot: compactPreviewSnapshot(itemData.previewImageUrlSnapshot),
       matSize: itemData.matSize || '',
       theme: itemData.theme || '',
       addedAt: serverTimestamp(),
@@ -134,23 +140,22 @@ export const calculateCartTotal = (cartItems) => {
   return cartItems.reduce((total, item) => total + (item.quantity * item.pricePerUnit), 0);
 };
 
-const getShopifyVariantId = (matSize) => {
-  const variantMap = {
-    small: import.meta.env.VITE_SHOPIFY_SMALL_VARIANT_ID,
-    medium: import.meta.env.VITE_SHOPIFY_MEDIUM_VARIANT_ID,
-    large: import.meta.env.VITE_SHOPIFY_LARGE_VARIANT_ID
-  };
+const themeLabels = {
+  pastel: 'Pastel Park',
+  modern: 'Modern Mini',
+  classic: 'Classic City',
+  muted: 'Muted',
+  neon: 'Neon Vibrant'
+};
 
-  return variantMap[matSize] || import.meta.env.VITE_SHOPIFY_DEFAULT_VARIANT_ID || '';
+const sizeLabels = {
+  small: 'Small',
+  medium: 'Medium',
+  large: 'Large'
 };
 
 export const createShopifyCartFromFirebaseCart = async (userId) => {
-  const shopDomain = import.meta.env.VITE_SHOPIFY_STORE_DOMAIN;
-  const storefrontToken = import.meta.env.VITE_SHOPIFY_STOREFRONT_TOKEN;
-
-  if (!shopDomain || !storefrontToken) {
-    throw new Error('Shopify is not configured. Add VITE_SHOPIFY_STORE_DOMAIN and VITE_SHOPIFY_STOREFRONT_TOKEN.');
-  }
+  assertShopifyConfigured();
 
   const cartItems = await getCartItems(userId);
   if (cartItems.length === 0) {
@@ -175,21 +180,21 @@ export const createShopifyCartFromFirebaseCart = async (userId) => {
       merchandiseId,
       quantity: item.quantity,
       attributes: [
-        { key: 'designId', value: design.id },
-        { key: 'firebaseUid', value: userId },
-        { key: 'matName', value: design.name || item.nameSnapshot || 'Custom Play Mat' },
-        { key: 'matSize', value: design.matSize || item.matSize || '' },
-        { key: 'theme', value: design.colorScheme || item.theme || '' },
-        { key: 'previewImageUrl', value: design.previewImageUrl || item.previewImageUrlSnapshot || '' }
+        { key: 'Design', value: design.name || item.nameSnapshot || 'Custom Play Mat' },
+        { key: 'Size', value: sizeLabels[design.matSize || item.matSize] || design.matSize || item.matSize || '' },
+        { key: 'Theme', value: themeLabels[design.colorScheme || item.theme] || design.colorScheme || item.theme || '' },
+        { key: '_designId', value: design.id },
+        { key: '_firebaseUid', value: userId },
+        { key: '_previewImageUrl', value: design.previewImageUrl || item.previewImageUrlSnapshot || '' }
       ].filter((attribute) => attribute.value !== '')
     };
   });
 
-  const response = await fetch(`https://${shopDomain}/api/2026-01/graphql.json`, {
+  const response = await fetch(`https://${shopifyConfig.storeDomain}/api/${shopifyConfig.apiVersion}/graphql.json`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
-      'X-Shopify-Storefront-Access-Token': storefrontToken
+      'X-Shopify-Storefront-Access-Token': shopifyConfig.storefrontToken
     },
     body: JSON.stringify({
       query: `

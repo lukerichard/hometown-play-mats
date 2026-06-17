@@ -3,12 +3,14 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 import { useFirestore } from '../hooks/useFirestore';
 import { saveMat, updateMat } from '../utils/matStorage';
-import { addToCart, updateCartQuantity, removeFromCart, createShopifyCartFromFirebaseCart } from '../utils/cartUtils';
+import { addToCart, updateCartQuantity, removeFromCart } from '../utils/cartUtils';
 import { isVerifiedAccount } from '../utils/authStatus';
+import { getShopifyVariantId } from '../config/shopify';
 import MatSidebar from './MatSidebar';
 import MatMapView from './MatMapView';
 import MatPreview from './MatPreview';
 import CartConfirmationModal from './cart/CartConfirmationModal';
+import ComingSoonCheckoutModal from './cart/ComingSoonCheckoutModal';
 
 const ToyMatDesigner = () => {
   const { currentUser, ensureGuestSession } = useAuth();
@@ -38,8 +40,20 @@ const ToyMatDesigner = () => {
   const [isAddingToCart, setIsAddingToCart] = useState(false);
   const [cartConfirmation, setCartConfirmation] = useState(null);
   const [checkoutLoading, setCheckoutLoading] = useState(false);
-  const [checkoutError, setCheckoutError] = useState('');
+  const [isComingSoonOpen, setIsComingSoonOpen] = useState(false);
+  const [safeInsets, setSafeInsets] = useState({ top: 94, right: 310 });
   const isSignedIn = isVerifiedAccount(currentUser);
+
+  useEffect(() => {
+    const update = () => setSafeInsets(
+      window.innerWidth <= 720
+        ? { top: 94, right: 0 }
+        : { top: 94, right: 310 }
+    );
+    update();
+    window.addEventListener('resize', update);
+    return () => window.removeEventListener('resize', update);
+  }, []);
 
   const matSizes = {
     large: {
@@ -50,7 +64,7 @@ const ToyMatDesigner = () => {
       dimensions: '60" x 48"',
       description: '60" x 48" - Best for playrooms',
       price: 189,
-      shopifyVariantId: import.meta.env.VITE_SHOPIFY_LARGE_VARIANT_ID || ''
+      shopifyVariantId: getShopifyVariantId('large')
     },
     medium: {
       width: 2,
@@ -60,7 +74,7 @@ const ToyMatDesigner = () => {
       dimensions: '48" x 36"',
       description: '48" x 36" - Perfect for bedroom',
       price: 149,
-      shopifyVariantId: import.meta.env.VITE_SHOPIFY_MEDIUM_VARIANT_ID || ''
+      shopifyVariantId: getShopifyVariantId('medium')
     },
     small: {
       width: 1.5,
@@ -70,7 +84,7 @@ const ToyMatDesigner = () => {
       dimensions: '36" x 24"',
       description: '36" x 24" - Cozy reading nook',
       price: 89,
-      shopifyVariantId: import.meta.env.VITE_SHOPIFY_SMALL_VARIANT_ID || ''
+      shopifyVariantId: getShopifyVariantId('small')
     }
   };
 
@@ -172,22 +186,24 @@ const ToyMatDesigner = () => {
 
     const canvas = mapInstance.getCanvas();
     const pixelRatio = window.devicePixelRatio || 1;
-    const dims = framePixels || { width: 384, height: 512 };
+    const dims = framePixels || { width: 384, height: 512, x: null, y: null };
     const scaledWidth = dims.width * pixelRatio;
     const scaledHeight = dims.height * pixelRatio;
-    const cropX = (canvas.width - scaledWidth) / 2;
-    const cropY = (canvas.height - scaledHeight) / 2;
+    // Use the frame's actual pixel position if available, otherwise fall back to center
+    const cropX = dims.x != null ? dims.x * pixelRatio : (canvas.width - scaledWidth) / 2;
+    const cropY = dims.y != null ? dims.y * pixelRatio : (canvas.height - scaledHeight) / 2;
     const croppedCanvas = document.createElement('canvas');
-    croppedCanvas.width = scaledWidth;
-    croppedCanvas.height = scaledHeight;
+    croppedCanvas.width = dims.width;
+    croppedCanvas.height = dims.height;
     const ctx = croppedCanvas.getContext('2d');
 
     if (!ctx) {
       throw new Error('Error creating preview. Please try again.');
     }
 
-    ctx.drawImage(canvas, cropX, cropY, scaledWidth, scaledHeight, 0, 0, scaledWidth, scaledHeight);
-    return croppedCanvas.toDataURL('image/png');
+    // Scale down to a compact thumbnail — small enough to store in Firestore directly
+    ctx.drawImage(canvas, cropX, cropY, scaledWidth, scaledHeight, 0, 0, dims.width, dims.height);
+    return croppedCanvas.toDataURL('image/jpeg', 0.65);
   };
 
   const _handleGenerateMat = () => {
@@ -279,7 +295,6 @@ const ToyMatDesigner = () => {
 
       const capturedPreview = captureMatPreview();
       setIsAddingToCart(true);
-      setCheckoutError('');
 
       const user = currentUser || await withTimeout(
         ensureGuestSession(),
@@ -351,17 +366,8 @@ const ToyMatDesigner = () => {
   const handleCheckoutFromConfirmation = async () => {
     if (!cartConfirmation?.userId || checkoutLoading) return;
     setCheckoutLoading(true);
-    setCheckoutError('');
-
-    try {
-      const checkoutUrl = await createShopifyCartFromFirebaseCart(cartConfirmation.userId);
-      window.location.href = checkoutUrl;
-    } catch (error) {
-      console.error('Checkout error:', error);
-      setCheckoutError(error.message || 'Checkout is unavailable. Please try again.');
-    } finally {
-      setCheckoutLoading(false);
-    }
+    setIsComingSoonOpen(true);
+    setCheckoutLoading(false);
   };
 
   const handleUpdateQuantity = async (newQuantity) => {
@@ -391,6 +397,7 @@ const ToyMatDesigner = () => {
             showStreetNames={showStreetNames}
             onMapReady={setMapInstance}
             onFrameChange={setFramePixels}
+            safeInsets={safeInsets}
           />
         </div>
 
@@ -521,12 +528,19 @@ const ToyMatDesigner = () => {
         onClose={() => {
           if (!checkoutLoading) {
             setCartConfirmation(null);
-            setCheckoutError('');
           }
         }}
         onCheckout={handleCheckoutFromConfirmation}
         checkoutLoading={checkoutLoading}
-        checkoutError={checkoutError}
+      />
+
+      <ComingSoonCheckoutModal
+        open={isComingSoonOpen}
+        onClose={() => setIsComingSoonOpen(false)}
+        userId={cartConfirmation?.userId || currentUser?.uid || ''}
+        defaultEmail={currentUser?.email || ''}
+        source="designer-checkout"
+        selectedItem={cartConfirmation}
       />
 
       {showSaveDialog && (

@@ -3,15 +3,17 @@ import { Link } from 'react-router-dom';
 import { useAuth } from '../../hooks/useAuth';
 import { useFirestore } from '../../hooks/useFirestore';
 import { getMat } from '../../utils/matStorage';
-import { calculateCartTotal, addToCart, updateCartQuantity, removeFromCart, createShopifyCartFromFirebaseCart } from '../../utils/cartUtils';
+import { calculateCartTotal, addToCart, updateCartQuantity, removeFromCart } from '../../utils/cartUtils';
 import CartItem from './CartItem';
 import MatPreview from '../MatPreview';
+import ComingSoonCheckoutModal from './ComingSoonCheckoutModal';
 
 const Cart = () => {
   const { currentUser } = useAuth();
   const [matsData, setMatsData] = useState({});
   const [loadingMats, setLoadingMats] = useState(true);
   const [previewingMat, setPreviewingMat] = useState(null);
+  const [showComingSoon, setShowComingSoon] = useState(false);
 
   const font = "'DM Sans', 'Poppins', sans-serif";
   const fontDisplay = "'Poppins', 'DM Sans', sans-serif";
@@ -72,19 +74,22 @@ const Cart = () => {
     } catch (error) { console.error('Error updating quantity:', error); alert('Failed to update quantity. Please try again.'); }
   };
 
-  const handleCheckout = async () => {
-    if (!currentUser?.uid) {
-      alert('Your cart is empty. Design a mat first, then add it to cart.');
-      return;
-    }
+  const waitlistCartItems = cartItems.map((item) => {
+    const mat = matsData[item.designId || item.matId];
 
-    try {
-      const checkoutUrl = await createShopifyCartFromFirebaseCart(currentUser.uid);
-      window.location.href = checkoutUrl;
-    } catch (error) {
-      console.error('Checkout error:', error);
-      alert(error.message || 'Checkout is unavailable. Please try again.');
-    }
+    return {
+      designId: item.designId || item.matId,
+      name: mat?.name || item.nameSnapshot || 'Custom Play Mat',
+      matSize: mat?.matSize || item.matSize || '',
+      theme: mat?.colorScheme || item.theme || '',
+      quantity: item.quantity,
+      pricePerUnit: item.pricePerUnit,
+      previewImageUrl: mat?.previewImageUrl || item.previewImageUrlSnapshot || ''
+    };
+  });
+
+  const handleCheckout = () => {
+    setShowComingSoon(true);
   };
 
   if (loading) {
@@ -194,7 +199,7 @@ const Cart = () => {
                 onMouseEnter={(e) => e.currentTarget.style.background = '#2A9BE0'}
                 onMouseLeave={(e) => e.currentTarget.style.background = '#3DAEF5'}
               >
-                Checkout with Shopify
+                Checkout Coming Soon
               </button>
 
               <Link to="/">
@@ -231,6 +236,15 @@ const Cart = () => {
           onSave={() => {}}
         />
       )}
+
+      <ComingSoonCheckoutModal
+        open={showComingSoon}
+        onClose={() => setShowComingSoon(false)}
+        userId={currentUser?.uid || ''}
+        defaultEmail={currentUser?.email || ''}
+        source="cart-checkout"
+        cartItems={waitlistCartItems}
+      />
     </div>
   );
 };
