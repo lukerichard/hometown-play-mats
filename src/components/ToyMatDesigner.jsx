@@ -32,6 +32,7 @@ const ToyMatDesigner = () => {
   const [previewImage, setPreviewImage] = useState(null);
   const [matName, setMatName] = useState("Leo's Little London");
   const [savedMatId, setSavedMatId] = useState(null);
+  const [savedMatName, setSavedMatName] = useState('');
   const [showSaveDialog, setShowSaveDialog] = useState(false);
   const [saving, setSaving] = useState(false);
   const [showStreetNames, setShowStreetNames] = useState(true);
@@ -94,6 +95,16 @@ const ToyMatDesigner = () => {
     classic: { color: '#111827', name: 'Classic City', preview: '#3d4048' }
   };
 
+  const normalizeMapCenter = (value) => {
+    if (!Array.isArray(value) || value.length < 2) {
+      return [-79.7990, 43.3255];
+    }
+
+    const lng = Number(value[0]);
+    const lat = Number(value[1]);
+    return Number.isFinite(lng) && Number.isFinite(lat) ? [lng, lat] : [-79.7990, 43.3255];
+  };
+
   const canReadCart = Boolean(currentUser?.uid && (isSignedIn || currentUser.isAnonymous));
 
   const { data: cartItems } = useFirestore(
@@ -111,6 +122,25 @@ const ToyMatDesigner = () => {
     });
 
     return Promise.race([promise, timeout]).finally(() => window.clearTimeout(timeoutId));
+  };
+
+  const getCurrentMapCamera = () => {
+    if (!mapInstance) {
+      return { mapCenter, mapZoom, rotation };
+    }
+
+    const center = mapInstance.getCenter();
+    return {
+      mapCenter: [center.lng, center.lat],
+      mapZoom: mapInstance.getZoom(),
+      rotation: mapInstance.getBearing(),
+    };
+  };
+
+  const handleMapCameraChange = ({ center, zoom, rotation: nextRotation }) => {
+    setMapCenter(center);
+    setMapZoom(zoom);
+    setRotation(nextRotation);
   };
 
   const fetchSuggestions = async (query) => {
@@ -192,18 +222,22 @@ const ToyMatDesigner = () => {
     // Use the frame's actual pixel position if available, otherwise fall back to center
     const cropX = dims.x != null ? dims.x * pixelRatio : (canvas.width - scaledWidth) / 2;
     const cropY = dims.y != null ? dims.y * pixelRatio : (canvas.height - scaledHeight) / 2;
+    const outputWidth = Math.round(scaledWidth);
+    const outputHeight = Math.round(scaledHeight);
     const croppedCanvas = document.createElement('canvas');
-    croppedCanvas.width = dims.width;
-    croppedCanvas.height = dims.height;
+    croppedCanvas.width = outputWidth;
+    croppedCanvas.height = outputHeight;
     const ctx = croppedCanvas.getContext('2d');
 
     if (!ctx) {
       throw new Error('Error creating preview. Please try again.');
     }
 
-    // Scale down to a compact thumbnail — small enough to store in Firestore directly
-    ctx.drawImage(canvas, cropX, cropY, scaledWidth, scaledHeight, 0, 0, dims.width, dims.height);
-    return croppedCanvas.toDataURL('image/jpeg', 0.65);
+    // Preserve the map canvas' backing-pixel resolution for saved previews.
+    ctx.imageSmoothingEnabled = true;
+    ctx.imageSmoothingQuality = 'high';
+    ctx.drawImage(canvas, cropX, cropY, scaledWidth, scaledHeight, 0, 0, outputWidth, outputHeight);
+    return croppedCanvas.toDataURL('image/jpeg', 0.92);
   };
 
   const _handleGenerateMat = () => {
@@ -221,14 +255,16 @@ const ToyMatDesigner = () => {
     if (location.state?.loadMat) {
       const mat = location.state.loadMat;
       setMatSize(mat.matSize || 'medium');
-      setRotation(mat.rotation || 0);
+      setRotation(Number(mat.rotation) || 0);
       setColorScheme(mat.colorScheme || 'pastel');
-      setMapCenter(mat.mapCenter || [-79.7990, 43.3255]);
-      setMapZoom(mat.mapZoom || 15);
+      setMapCenter(normalizeMapCenter(mat.mapCenter));
+      setMapZoom(Number(mat.mapZoom) || 15);
       setAddress(mat.address || '');
+      setShowStreetNames(mat.showStreetNames ?? true);
       setPreviewImage(mat.previewImageUrl || null);
       setSavedMatId(mat.id || null);
       setMatName(mat.name || '');
+      setSavedMatName(mat.name || '');
       window.history.replaceState({}, document.title);
     }
   }, [location]);
@@ -254,25 +290,31 @@ const ToyMatDesigner = () => {
         }
       }
 
+      const currentCamera = getCurrentMapCamera();
       const matData = {
         name: matName.trim(),
         matSize,
         colorScheme,
-        rotation,
-        mapCenter,
-        mapZoom,
+        rotation: currentCamera.rotation,
+        mapCenter: currentCamera.mapCenter,
+        mapZoom: currentCamera.mapZoom,
         address,
         showStreetNames,
         previewImageUrl
       };
 
-      if (savedMatId) {
+      const normalizedName = matName.trim();
+      const shouldUpdateExistingMat = savedMatId && normalizedName === savedMatName;
+
+      if (shouldUpdateExistingMat) {
         await updateMat(currentUser.uid, savedMatId, matData);
+        setSavedMatName(normalizedName);
         alert('Mat updated successfully!');
       } else {
         const newMatId = await saveMat(currentUser.uid, matData, 'saved');
         setSavedMatId(newMatId);
-        alert('Mat saved successfully!');
+        setSavedMatName(normalizedName);
+        alert(savedMatId ? 'Saved as a new mat.' : 'Mat saved successfully!');
       }
       setShowSaveDialog(false);
     } catch (error) {
@@ -302,13 +344,14 @@ const ToyMatDesigner = () => {
       );
       let matIdToAdd = savedMatId;
       const normalizedName = matName.trim() || 'Custom Play Mat';
+      const currentCamera = getCurrentMapCamera();
       const matData = {
         name: normalizedName,
         matSize,
         colorScheme,
-        rotation,
-        mapCenter,
-        mapZoom,
+        rotation: currentCamera.rotation,
+        mapCenter: currentCamera.mapCenter,
+        mapZoom: currentCamera.mapZoom,
         address,
         showStreetNames,
         previewImageUrl: capturedPreview,
@@ -397,6 +440,7 @@ const ToyMatDesigner = () => {
             showStreetNames={showStreetNames}
             onMapReady={setMapInstance}
             onFrameChange={setFramePixels}
+            onCameraChange={handleMapCameraChange}
             safeInsets={safeInsets}
           />
         </div>

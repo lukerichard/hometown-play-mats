@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { deleteMat } from '../../utils/matStorage';
 
-const SavedMatCard = ({ userId, mat, onViewMat, isInCart }) => {
+const SavedMatCard = ({ userId, mat, onLoadMat, isInCart }) => {
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [deleting, setDeleting] = useState(false);
 
@@ -107,7 +107,7 @@ const SavedMatCard = ({ userId, mat, onViewMat, isInCart }) => {
 
           {/* Actions */}
           <div style={{ display: 'flex', gap: '8px' }}>
-            <button onClick={() => onViewMat(mat)} style={{
+            <button onClick={() => onLoadMat(mat)} style={{
               flex: 1, padding: '12px', background: '#3DAEF5', color: 'white',
               border: 'none', borderRadius: '999px', fontSize: '14px', fontWeight: '700',
               cursor: 'pointer', fontFamily: font, transition: 'all 0.2s'

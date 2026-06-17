@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import mapboxgl from 'mapbox-gl';
 import 'mapbox-gl/dist/mapbox-gl.css';
 
@@ -51,13 +51,24 @@ const MatMapView = ({
   showStreetNames = true,
   onMapReady,
   onFrameChange,
+  onCameraChange,
   safeInsets = { top: 0, right: 0 },
 }) => {
   const wrapperRef = useRef(null);
   const mapContainerRef = useRef(null);
   const mapRef = useRef(null);
+  const latestViewRef = useRef({ center, zoom, rotation });
+  const onCameraChangeRef = useRef(onCameraChange);
   const [mapUnavailable, setMapUnavailable] = useState(false);
   const [containerSize, setContainerSize] = useState({ w: 0, h: 0 });
+
+  useLayoutEffect(() => {
+    latestViewRef.current = { center, zoom, rotation };
+  }, [center, zoom, rotation]);
+
+  useLayoutEffect(() => {
+    onCameraChangeRef.current = onCameraChange;
+  }, [onCameraChange]);
 
   // Track container size so the overlay panels stay accurate
   useEffect(() => {
@@ -378,6 +389,20 @@ const MatMapView = ({
 
   }
 
+  const applyPastelMatStyleWhenReady = (attempt = 0) => {
+    const map = mapRef.current;
+    if (!map) return;
+
+    if (map.isStyleLoaded() && map.getSource('composite')) {
+      applyPastelMatStyle();
+      return;
+    }
+
+    if (attempt < 30) {
+      window.setTimeout(() => applyPastelMatStyleWhenReady(attempt + 1), 100);
+    }
+  };
+
   useEffect(() => {
     if (!mapRef.current) {
       const token = import.meta.env.VITE_MAPBOX_TOKEN;
@@ -419,7 +444,7 @@ const MatMapView = ({
         });
       } catch (error) {
         console.error('Error initializing map:', error);
-        setMapUnavailable(true); // eslint-disable-line react-hooks/set-state-in-effect
+        queueMicrotask(() => setMapUnavailable(true));
         return;
       }
 
@@ -429,9 +454,29 @@ const MatMapView = ({
       );
 
       mapRef.current.on('load', () => {
-        applyPastelMatStyle();
+        const latestView = latestViewRef.current;
+        mapRef.current.jumpTo({
+          center: latestView.center,
+          zoom: latestView.zoom,
+          bearing: latestView.rotation || 0,
+        });
+        applyPastelMatStyleWhenReady();
         if (onMapReady) onMapReady(mapRef.current);
       });
+
+      mapRef.current.on('moveend', () => {
+        const map = mapRef.current;
+        const handleCameraChange = onCameraChangeRef.current;
+        if (!map || !handleCameraChange) return;
+
+        const center = map.getCenter();
+        handleCameraChange({
+          center: [center.lng, center.lat],
+          zoom: map.getZoom(),
+          rotation: map.getBearing(),
+        });
+      });
+
     }
 
     return () => {
@@ -456,8 +501,8 @@ const MatMapView = ({
 
   useEffect(() => {
     const map = mapRef.current;
-    if (!map?.isStyleLoaded() || !map.getSource('composite')) return;
-    applyPastelMatStyle();
+    if (!map) return;
+    applyPastelMatStyleWhenReady();
   }, [containerSize.w, containerSize.h, matSize, showStreetNames]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const OVERLAY = 'rgba(20, 27, 41, 0.46)';

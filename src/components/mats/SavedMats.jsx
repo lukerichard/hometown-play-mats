@@ -43,6 +43,25 @@ const SavedMats = () => {
     ? cartItems.find(item => (item.designId || item.matId) === previewingMat.id)
     : null;
 
+  const handleLoadMat = (mat) => {
+    navigate('/create', {
+      state: {
+        loadMat: {
+          id: mat.id,
+          name: mat.name || '',
+          matSize: mat.matSize || 'medium',
+          colorScheme: mat.colorScheme || 'pastel',
+          rotation: mat.rotation || 0,
+          mapCenter: mat.mapCenter || [-79.7990, 43.3255],
+          mapZoom: mat.mapZoom || 15,
+          address: mat.address || '',
+          showStreetNames: mat.showStreetNames ?? true,
+          previewImageUrl: mat.previewImageUrl || ''
+        }
+      }
+    });
+  };
+
   const handleAddToCart = async () => {
     if (!isSignedIn) {
       const shouldSignup = confirm('You need a verified account to add saved mats to cart. Create or verify an account now?');
@@ -172,6 +191,7 @@ const SavedMats = () => {
                   key={mat.id}
                   userId={currentUser.uid}
                   mat={mat}
+                  onLoadMat={handleLoadMat}
                   onViewMat={setPreviewingMat}
                   isInCart={matsInCart.has(mat.id)}
                 />
