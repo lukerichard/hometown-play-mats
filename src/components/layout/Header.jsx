@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../hooks/useAuth';
+import { useFirestore } from '../../hooks/useFirestore';
 import { isVerifiedAccount } from '../../utils/authStatus';
 
 const Header = () => {
@@ -9,6 +10,13 @@ const Header = () => {
   const [showDropdown, setShowDropdown] = useState(false);
   const [failedAvatarUrl, setFailedAvatarUrl] = useState('');
   const isSignedIn = isVerifiedAccount(currentUser);
+  const { data: cartItems } = useFirestore(
+    isSignedIn && currentUser?.uid ? `users/${currentUser.uid}/cart` : null
+  );
+  const cartItemCount = cartItems.reduce(
+    (total, item) => total + (Number(item.quantity) || 1),
+    0
+  );
 
   const handleLogout = async () => {
     try {
@@ -39,14 +47,15 @@ const Header = () => {
         color: '#00123a',
       }}
     >
-      <div className="flex h-full items-center justify-between px-6 md:px-8">
+      <div className="flex h-full items-center justify-between px-3 sm:px-6 md:px-8">
         {/* Logo */}
         <Link to="/" className="no-underline">
           <span
-            className="text-2xl font-bold tracking-tight"
+            className="text-lg font-bold tracking-tight sm:text-2xl"
             style={{ color: '#00123a', fontFamily: "'Poppins', 'DM Sans', sans-serif" }}
           >
-            Hometown Play Mats
+            <span className="hidden min-[361px]:inline">Hometown Play Mats</span>
+            <span className="min-[361px]:hidden">Hometown</span>
           </span>
         </Link>
 
@@ -57,12 +66,12 @@ const Header = () => {
         </nav>
 
         {/* Right side */}
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2 sm:gap-3">
           {isSignedIn ? (
             <>
               <Link to="/create">
                 <button
-                  className="h-10 cursor-pointer rounded-md border-none px-6 text-sm font-bold text-white transition-all duration-200 hover:-translate-y-0.5"
+                  className="h-10 cursor-pointer rounded-md border-none px-4 text-sm font-bold text-white transition-all duration-200 hover:-translate-y-0.5 sm:px-6"
                   style={{
                     fontFamily: "'DM Sans', sans-serif",
                     background: 'var(--builder-orange)',
@@ -70,15 +79,44 @@ const Header = () => {
                     boxShadow: '0 2px 0 var(--builder-orange-edge), 0 6px 14px rgba(0, 0, 0, 0.12)',
                   }}
                 >
-                  Create Your Mat
+                  <span className="sm:hidden">Create</span>
+                  <span className="hidden sm:inline">Create Your Mat</span>
                 </button>
+              </Link>
+
+              <Link
+                to="/cart"
+                aria-label={`Cart with ${cartItemCount} ${cartItemCount === 1 ? 'item' : 'items'}`}
+                className="relative flex h-10 w-10 items-center justify-center rounded-full text-[#00123a] no-underline transition-colors duration-200 hover:bg-surface-alt focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
+              >
+                <svg
+                  aria-hidden="true"
+                  className="h-6 w-6"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  <circle cx="9" cy="20" r="1" />
+                  <circle cx="19" cy="20" r="1" />
+                  <path d="M3 4h2l2.4 10.4a2 2 0 0 0 2 1.6h7.7a2 2 0 0 0 2-1.6L21 8H6" />
+                </svg>
+                {cartItemCount > 0 && (
+                  <span className="absolute -right-0.5 -top-0.5 flex min-h-4 min-w-4 items-center justify-center rounded-full bg-[#E84545] px-1 text-[10px] font-bold leading-none text-white">
+                    {cartItemCount > 99 ? '99+' : cartItemCount}
+                  </span>
+                )}
               </Link>
 
               <div className="relative">
                 <button
                   onClick={() => setShowDropdown(!showDropdown)}
                   onBlur={() => setTimeout(() => setShowDropdown(false), 200)}
-                  className="flex items-center gap-2.5 bg-surface-alt border-2 border-border rounded-full py-1.5 px-4 pl-1.5 cursor-pointer transition-all duration-200 hover:border-primary hover:shadow-md"
+                  aria-label="Open account menu"
+                  aria-expanded={showDropdown}
+                  className="flex h-10 w-10 cursor-pointer items-center justify-center rounded-full border-2 border-border bg-surface-alt p-0 transition-all duration-200 hover:border-primary hover:shadow-md sm:w-auto sm:gap-2.5 sm:py-1.5 sm:pl-1.5 sm:pr-4"
                   style={{ fontFamily: "'DM Sans', sans-serif" }}
                 >
                   {currentUser.photoURL && failedAvatarUrl !== currentUser.photoURL ? (
@@ -95,11 +133,11 @@ const Header = () => {
                       {getInitials(currentUser.displayName || currentUser.email)}
                     </div>
                   )}
-                  <span className="text-sm font-semibold text-text">
+                  <span className="hidden text-sm font-semibold text-text sm:inline">
                     {currentUser.displayName || 'Account'}
                   </span>
                   <svg
-                    className="w-4 h-4 text-text-light transition-transform duration-200"
+                    className="hidden h-4 w-4 text-text-light transition-transform duration-200 sm:block"
                     style={{ transform: showDropdown ? 'rotate(180deg)' : 'rotate(0deg)' }}
                     viewBox="0 0 20 20"
                     fill="currentColor"
@@ -147,7 +185,7 @@ const Header = () => {
               </Link>
               <Link to="/create">
                 <button
-                  className="h-10 cursor-pointer rounded-md border-none px-6 text-sm font-bold text-white transition-all duration-200 hover:-translate-y-0.5"
+                  className="h-10 cursor-pointer rounded-md border-none px-4 text-sm font-bold text-white transition-all duration-200 hover:-translate-y-0.5 sm:px-6"
                   style={{
                     fontFamily: "'DM Sans', sans-serif",
                     background: 'var(--builder-orange)',
@@ -155,7 +193,8 @@ const Header = () => {
                     boxShadow: '0 2px 0 var(--builder-orange-edge), 0 6px 14px rgba(0, 0, 0, 0.12)',
                   }}
                 >
-                  Create Your Mat
+                  <span className="sm:hidden">Create</span>
+                  <span className="hidden sm:inline">Create Your Mat</span>
                 </button>
               </Link>
             </>

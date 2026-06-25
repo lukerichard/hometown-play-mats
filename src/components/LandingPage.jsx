@@ -267,21 +267,12 @@ const LandingPage = () => {
             </div>
           </div>
 
-          {/* Photo placeholder: a stylized top-down play-mat map.
-              Swap this block for an <img> of a child on the mat when art is ready. */}
           <div className="lp-hero-visual">
-            <div className="lp-mat" role="img" aria-label="A custom neighborhood play mat">
-              <div className="lp-mat-map">
-                <span className="lp-map-park" />
-                <span className="lp-map-water" />
-                <span className="lp-road lp-road-v" />
-                <span className="lp-road lp-road-h" />
-                <span className="lp-pin lp-pin-1" />
-                <span className="lp-pin lp-pin-2" />
-                <span className="lp-car" />
-                <span className="lp-mat-pill">Our Neighborhood</span>
-              </div>
-            </div>
+            <img
+              className="lp-hero-product-image"
+              src="/images/play-mat-hero.png"
+              alt="Custom neighborhood play mat with its corner rolled up to show the textured backing"
+            />
           </div>
         </div>
       </section>

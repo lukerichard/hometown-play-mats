@@ -154,8 +154,10 @@ const MatMapView = ({
       'pastel-road-medium-centerline',
       'pastel-road-local-casing',
       'pastel-road-local-base',
+      'pastel-road-local-centerline',
       'pastel-road-service-casing',
       'pastel-road-service-base',
+      'pastel-road-service-centerline',
       'pastel-road-major-labels',
       'pastel-road-medium-labels',
       'pastel-road-local-labels',
@@ -340,9 +342,7 @@ const MatMapView = ({
 
     roadGroups.forEach(addRoadCasing);
     roadGroups.forEach(addRoadBase);
-
-    addCenterline({ id: 'major', filter: majorRoadFilter, minzoom: ROAD_ZOOM_SCALE.major, width: roadWidth.highway });
-    addCenterline({ id: 'medium', filter: mediumRoadFilter, minzoom: ROAD_ZOOM_SCALE.medium, width: roadWidth.street });
+    roadGroups.forEach(addCenterline);
 
     if (showStreetNames) {
       const addRoadLabels = ({ id, filter, minzoom, width, spacing = 160 }) => {

@@ -142,7 +142,7 @@ const Cart = () => {
             <p style={{ fontSize: '16px', color: '#5A5A5A', marginBottom: '32px', maxWidth: '400px', margin: '0 auto 32px' }}>
               Start designing a mat and add it to your cart to get started!
             </p>
-            <Link to="/">
+            <Link to="/create">
               <button style={{
                 padding: '16px 36px', background: '#3DAEF5', color: 'white',
                 border: 'none', borderRadius: '999px', fontSize: '16px', fontWeight: '700',

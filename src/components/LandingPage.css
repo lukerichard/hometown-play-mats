@@ -305,142 +305,18 @@
 .lp-hero-visual {
   display: flex;
   justify-content: center;
-}
-
-.lp-mat {
-  position: relative;
   width: 100%;
-  max-width: 460px;
-  aspect-ratio: 5 / 4;
-  padding: 14px;
-  background: #ffffff;
-  border-radius: 24px;
-  box-shadow: 0 24px 48px rgba(21, 41, 77, 0.16);
-}
-
-.lp-mat-map {
-  position: relative;
-  width: 100%;
-  height: 100%;
+  aspect-ratio: 1 / 1;
   overflow: hidden;
-  border-radius: 14px;
-  background: #8ed16f; /* grass */
 }
 
-.lp-map-park {
-  position: absolute;
-  left: 6%;
-  top: -8%;
-  width: 26%;
-  height: 130%;
-  background: #d9d2bd;
-  transform: rotate(16deg);
-}
-
-.lp-map-water {
-  position: absolute;
-  right: -14%;
-  top: -12%;
-  width: 40%;
-  height: 130%;
-  background: #5fc0e8;
-  transform: rotate(10deg);
-}
-
-.lp-road {
-  position: absolute;
-  background: #4a4a4a;
-  border-radius: 4px;
-}
-
-.lp-road-h {
-  left: -6%;
-  top: 58%;
-  width: 80%;
-  height: 22px;
-  transform: rotate(-12deg);
-}
-
-.lp-road-h::after {
-  content: "";
-  position: absolute;
-  left: 6%;
-  top: 50%;
-  width: 88%;
-  height: 3px;
-  transform: translateY(-50%);
-  background: repeating-linear-gradient(
-    to right,
-    #ffd036 0 14px,
-    transparent 14px 28px
-  );
-}
-
-.lp-road-v {
-  left: 46%;
-  top: -8%;
-  width: 22px;
-  height: 120%;
-  transform: rotate(8deg);
-}
-
-.lp-pin {
-  position: absolute;
-  width: 30px;
-  height: 30px;
-  border-radius: 999px 999px 999px 4px;
-  transform: rotate(-45deg);
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
-}
-
-.lp-pin::after {
-  content: "";
-  position: absolute;
-  left: 9px;
-  top: 9px;
-  width: 12px;
-  height: 12px;
-  border-radius: 999px;
-  background: rgba(255, 255, 255, 0.85);
-}
-
-.lp-pin-1 {
-  left: 30%;
-  top: 24%;
-  background: #e84545;
-}
-
-.lp-pin-2 {
-  right: 26%;
-  top: 46%;
-  background: #2f6fe0;
-}
-
-.lp-car {
-  position: absolute;
-  left: 22%;
-  top: 62%;
-  width: 26px;
-  height: 14px;
-  border-radius: 5px;
-  background: #ffd036;
-  border: 2px solid #2a1c00;
-  transform: rotate(-12deg);
-}
-
-.lp-mat-pill {
-  position: absolute;
-  bottom: 26px;
-  left: 50%;
-  transform: translateX(-50%);
-  padding: 7px 18px;
-  background: rgba(255, 255, 255, 0.94);
-  border-radius: 999px;
-  font-size: 13px;
-  font-weight: 700;
-  color: var(--lp-ink);
-  box-shadow: 0 6px 16px rgba(21, 41, 77, 0.14);
-  white-space: nowrap;
+.lp-hero-product-image {
+  display: block;
+  width: 100%;
+  max-width: 540px;
+  height: 100%;
+  object-fit: cover;
+  object-position: 50% 56%;
 }
 
 /* ── Steps ───────────────────────────────────────────────────────── */
