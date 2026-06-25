@@ -439,7 +439,10 @@ const MatMapView = ({
           pitchWithRotate: false,
           touchPitch: false,
           bearing: 0,
+          dragPan: true,
           dragRotate: true,
+          touchZoomRotate: true,
+          cooperativeGestures: false,
           preserveDrawingBuffer: true,
         });
       } catch (error) {
@@ -454,6 +457,11 @@ const MatMapView = ({
       );
 
       mapRef.current.on('load', () => {
+        mapRef.current.setCooperativeGestures(false);
+        mapRef.current.dragPan.enable();
+        mapRef.current.touchZoomRotate.enable();
+        mapRef.current.touchZoomRotate.enableRotation();
+
         const latestView = latestViewRef.current;
         mapRef.current.jumpTo({
           center: latestView.center,
