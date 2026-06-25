@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { updateCartQuantity, removeFromCart } from '../../utils/cartUtils';
+import { getMatAspectRatio } from '../../utils/matDimensions';
 
 const CartItem = ({ userId, cartItem, mat, onViewMat }) => {
   const [updating, setUpdating] = useState(false);
@@ -23,6 +24,8 @@ const CartItem = ({ userId, cartItem, mat, onViewMat }) => {
   };
 
   const totalPrice = (cartItem.quantity * cartItem.pricePerUnit).toFixed(2);
+  const matSize = mat?.matSize || cartItem.matSize || 'medium';
+  const previewAspectRatio = getMatAspectRatio(matSize);
 
   return (
     <div style={{
@@ -35,15 +38,17 @@ const CartItem = ({ userId, cartItem, mat, onViewMat }) => {
       <div
         onClick={() => mat && onViewMat(mat)}
         style={{
-          width: '120px', height: '120px', borderRadius: '12px', overflow: 'hidden',
+          width: '136px', aspectRatio: previewAspectRatio, maxHeight: '120px',
+          borderRadius: '12px', overflow: 'hidden',
           background: '#F0F7ED', flexShrink: 0, cursor: mat ? 'pointer' : 'default',
-          transition: 'all 0.2s', border: '2px solid transparent'
+          transition: 'all 0.2s', border: '2px solid transparent',
+          display: 'grid', placeItems: 'center'
         }}
         onMouseEnter={(e) => { if (mat) { e.currentTarget.style.transform = 'scale(1.05)'; e.currentTarget.style.borderColor = '#3DAEF5'; } }}
         onMouseLeave={(e) => { e.currentTarget.style.transform = 'scale(1)'; e.currentTarget.style.borderColor = 'transparent'; }}
       >
         {mat?.previewImageUrl ? (
-          <img src={mat.previewImageUrl} alt={mat.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+          <img src={mat.previewImageUrl} alt={mat.name} style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
         ) : (
           <div style={{
             width: '100%', height: '100%', display: 'flex', alignItems: 'center',
@@ -71,7 +76,7 @@ const CartItem = ({ userId, cartItem, mat, onViewMat }) => {
             padding: '4px 12px', background: '#D6EFFF', borderRadius: '999px',
             fontSize: '12px', fontWeight: '700', color: '#3DAEF5', textTransform: 'uppercase'
           }}>
-            {mat?.matSize || cartItem.matSize || 'N/A'}
+            {matSize}
           </span>
         </div>
 

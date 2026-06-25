@@ -62,7 +62,9 @@ const Cart = () => {
     if (!currentUser || !previewingMat) return;
     try {
       const pricePerUnit = previewingMat.matSize === 'small' ? 29.99 : previewingMat.matSize === 'medium' ? 39.99 : 49.99;
-      await addToCart(currentUser.uid, previewingMat.id, 1, pricePerUnit);
+      await addToCart(currentUser.uid, previewingMat.id, 1, pricePerUnit, {
+        existingCartItemId: previewingCartItem?.id
+      });
     } catch (error) { console.error('Error adding to cart:', error); alert('Failed to add to cart. Please try again.'); }
   };
 

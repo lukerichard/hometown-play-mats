@@ -1,5 +1,8 @@
 import { useState } from 'react';
 import { joinLaunchWaitlist } from '../../utils/waitlist';
+import { getMatAspectRatio } from '../../utils/matDimensions';
+
+const PRODUCT_DETAIL_IMAGE = '/images/play-mat-product-detail.png';
 
 const ComingSoonCheckoutModal = ({
   open,
@@ -14,6 +17,7 @@ const ComingSoonCheckoutModal = ({
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
+  const selectedItemAspectRatio = getMatAspectRatio(selectedItem?.matSize);
 
   if (!open) return null;
 
@@ -64,8 +68,14 @@ const ComingSoonCheckoutModal = ({
           </p>
 
           {selectedItem?.previewImage && (
-            <div className="coming-soon-preview">
-              <img src={selectedItem.previewImage} alt={`${selectedItem.name || 'Custom play mat'} preview`} />
+            <div className="coming-soon-preview" style={{ '--mat-preview-ratio': selectedItemAspectRatio }}>
+              <div className="coming-soon-preview-images">
+                <img src={selectedItem.previewImage} alt={`${selectedItem.name || 'Custom play mat'} preview`} />
+                <img
+                  src={PRODUCT_DETAIL_IMAGE}
+                  alt="Physical play mat showing its printed surface and non-slip backing"
+                />
+              </div>
               <div>
                 <strong>{selectedItem.name || 'Custom Play Mat'}</strong>
                 <span>{selectedItem.sizeName || selectedItem.matSize || 'Custom size'}</span>

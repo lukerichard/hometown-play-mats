@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
 const QUICKSAND = "'Quicksand', 'DM Sans', sans-serif";
+const PRODUCT_DETAIL_IMAGE = '/images/play-mat-product-detail.png';
 
 const MatPreview = ({
   previewImage,
@@ -17,7 +18,9 @@ const MatPreview = ({
   onSave
 }) => {
   const [isAdding, setIsAdding] = useState(false);
+  const [activeImage, setActiveImage] = useState('design');
   const navigate = useNavigate();
+  const displayedImage = activeImage === 'design' ? previewImage : PRODUCT_DETAIL_IMAGE;
 
   return (
     <>
@@ -51,12 +54,51 @@ const MatPreview = ({
           {/* Preview Image */}
           <div className="flex-1 flex items-center justify-center p-10 overflow-y-auto" style={{ background: '#f7f9fb' }}>
             <div className="max-w-[600px] w-full">
-              <img
-                src={previewImage}
-                alt="Play Mat Preview"
-                className="w-full h-auto rounded-xl block"
-                style={{ boxShadow: '0 12px 32px rgba(33, 43, 58, 0.16)' }}
-              />
+              <div className="relative">
+                <img
+                  src={displayedImage}
+                  alt={activeImage === 'design'
+                    ? 'Your custom play mat design'
+                    : 'Physical play mat showing its printed surface and non-slip backing'}
+                  className="w-full h-auto max-h-[58vh] object-contain rounded-xl block bg-white"
+                  style={{ boxShadow: '0 12px 32px rgba(33, 43, 58, 0.16)' }}
+                />
+                <span
+                  className="absolute top-3 left-3 px-3 py-1.5 rounded-full text-[11px] font-bold uppercase tracking-wider"
+                  style={{ background: 'rgba(255, 255, 255, 0.92)', color: '#212b3a' }}
+                >
+                  {activeImage === 'design' ? 'Your design' : 'Product details'}
+                </span>
+              </div>
+
+              <div className="grid grid-cols-2 gap-3 mt-4" aria-label="Product images">
+                <button
+                  type="button"
+                  onClick={() => setActiveImage('design')}
+                  aria-pressed={activeImage === 'design'}
+                  className="flex items-center gap-3 p-2.5 rounded-xl text-left cursor-pointer bg-white transition-colors"
+                  style={{
+                    border: activeImage === 'design' ? '2px solid #212b3a' : '1px solid #c5c6cc',
+                    color: '#212b3a'
+                  }}
+                >
+                  <img src={previewImage} alt="" className="w-14 h-12 rounded-lg object-cover bg-[#f7f9fb]" />
+                  <span className="text-xs font-bold">Your map</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setActiveImage('product')}
+                  aria-pressed={activeImage === 'product'}
+                  className="flex items-center gap-3 p-2.5 rounded-xl text-left cursor-pointer bg-white transition-colors"
+                  style={{
+                    border: activeImage === 'product' ? '2px solid #212b3a' : '1px solid #c5c6cc',
+                    color: '#212b3a'
+                  }}
+                >
+                  <img src={PRODUCT_DETAIL_IMAGE} alt="" className="w-14 h-12 rounded-lg object-cover bg-[#f7f9fb]" />
+                  <span className="text-xs font-bold">Mat details</span>
+                </button>
+              </div>
             </div>
           </div>
 

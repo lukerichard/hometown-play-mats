@@ -6,6 +6,7 @@ import SavedMatCard from './SavedMatCard';
 import MatPreview from '../MatPreview';
 import { addToCart, updateCartQuantity, removeFromCart } from '../../utils/cartUtils';
 import { isVerifiedAccount } from '../../utils/authStatus';
+import { joinLaunchWaitlistIfContactAvailable } from '../../utils/waitlist';
 
 const SavedMats = () => {
   const { currentUser } = useAuth();
@@ -75,7 +76,24 @@ const SavedMats = () => {
         matSize: previewingMat.matSize,
         theme: previewingMat.colorScheme,
         nameSnapshot: previewingMat.name,
-        previewImageUrlSnapshot: previewingMat.previewImageUrl
+        previewImageUrlSnapshot: previewingMat.previewImageUrl,
+        existingCartItemId: previewingCartItem?.id
+      });
+      joinLaunchWaitlistIfContactAvailable({
+        user: currentUser,
+        source: 'saved-mat-add-to-cart',
+        selectedItem: {
+          userId: currentUser.uid,
+          designId: previewingMat.id,
+          name: previewingMat.name || 'Custom Play Mat',
+          matSize: previewingMat.matSize || '',
+          theme: previewingMat.colorScheme || '',
+          previewImage: previewingMat.previewImageUrl || '',
+          price: pricePerUnit,
+          quantity: 1
+        }
+      }).catch((waitlistError) => {
+        console.warn('Automatic launch lead capture failed.', waitlistError);
       });
     } catch (error) {
       console.error('Error adding to cart:', error);

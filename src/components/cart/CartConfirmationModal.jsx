@@ -1,10 +1,74 @@
+import { useState } from 'react';
+import { getMatAspectRatio } from '../../utils/matDimensions';
+
+const PRODUCT_DETAIL_IMAGE = '/images/play-mat-product-detail.png';
+const HOT_WHEELS_CAR_IMAGE = '/images/hot-wheels-car.png';
+
+const MAT_DIMENSIONS = {
+  small: { width: 36, height: 24 },
+  medium: { width: 48, height: 36 },
+  large: { width: 60, height: 48 }
+};
+
+const MatScaleDiagram = ({ previewImage, name, matSize }) => {
+  const dimensions = MAT_DIMENSIONS[matSize] || MAT_DIMENSIONS.medium;
+  const carWidthPercent = (1.5 / dimensions.width) * 100;
+  const carLengthPercent = (3 / dimensions.width) * 100;
+
+  return (
+  <div
+    className="mat-scale-diagram"
+    style={{
+      '--mat-ratio': `${dimensions.width} / ${dimensions.height}`,
+      '--car-width': `${carWidthPercent}%`,
+      '--car-length': `${carLengthPercent}%`
+    }}
+  >
+    <div className="mat-scale-stage">
+      <div className="mat-scale-height" aria-hidden="true">
+        <span>{dimensions.height} inches</span>
+      </div>
+      <div className="mat-scale-customer-frame">
+        <img
+          className="mat-scale-customer-image"
+          src={previewImage}
+          alt={`${name} shown at medium mat dimensions`}
+        />
+      </div>
+      <div className="mat-scale-width" aria-hidden="true">
+        <span>{dimensions.width} inches</span>
+      </div>
+      <div className="mat-scale-car-reference">
+        <strong>Scale Hot Wheels car</strong>
+        <img
+          className="mat-scale-car"
+          src={HOT_WHEELS_CAR_IMAGE}
+          alt="Hot Wheels car shown at scale"
+        />
+      </div>
+    </div>
+  </div>
+  );
+};
+
 const CartConfirmationModal = ({
   item,
   onClose,
   onCheckout,
   checkoutLoading
 }) => {
+  const [activeImage, setActiveImage] = useState('design');
+
   if (!item) return null;
+  const previewAspectRatio = getMatAspectRatio(item.matSize);
+  const hasScaleImage = Boolean(MAT_DIMENSIONS[item.matSize]);
+  const showingDesign = activeImage === 'design' && item.previewImage;
+  const displayedImage = showingDesign
+    ? item.previewImage
+    : PRODUCT_DETAIL_IMAGE;
+  const displayedAlt = showingDesign
+    ? `${item.name} custom map preview`
+    : 'Physical play mat showing its printed surface and non-slip backing';
 
   return (
     <>
@@ -26,12 +90,55 @@ const CartConfirmationModal = ({
         </div>
 
         <div className="cart-confirmation-body">
-          <div className="cart-confirmation-image">
-            {item.previewImage ? (
-              <img src={item.previewImage} alt={`${item.name} preview`} />
-            ) : (
-              <div>No preview available</div>
-            )}
+          <div className="cart-confirmation-gallery">
+            <div
+              className={`cart-confirmation-image ${
+                activeImage === 'scale' ? 'is-scale-diagram' : showingDesign ? '' : 'is-product-image'
+              }`}
+              style={{ aspectRatio: showingDesign ? previewAspectRatio : undefined }}
+            >
+              {activeImage === 'scale' && hasScaleImage && item.previewImage ? (
+                <MatScaleDiagram previewImage={item.previewImage} name={item.name} matSize={item.matSize} />
+              ) : (
+                <img src={displayedImage} alt={displayedAlt} />
+              )}
+            </div>
+
+            <div className="cart-image-options" aria-label="Product images">
+              {item.previewImage && (
+                <button
+                  type="button"
+                  className={activeImage === 'design' ? 'is-active' : ''}
+                  onClick={() => setActiveImage('design')}
+                  aria-pressed={activeImage === 'design'}
+                >
+                  <img src={item.previewImage} alt="" />
+                  <span>Your map</span>
+                </button>
+              )}
+              <button
+                type="button"
+                className={activeImage === 'product' || (!item.previewImage && activeImage !== 'scale') ? 'is-active' : ''}
+                onClick={() => setActiveImage('product')}
+                aria-pressed={activeImage === 'product' || (!item.previewImage && activeImage !== 'scale')}
+              >
+                <img src={PRODUCT_DETAIL_IMAGE} alt="" />
+                <span>Mat details</span>
+              </button>
+              {hasScaleImage && (
+                <button
+                  type="button"
+                  className={activeImage === 'scale' ? 'is-active' : ''}
+                  onClick={() => setActiveImage('scale')}
+                  aria-pressed={activeImage === 'scale'}
+                >
+                  <span className="cart-scale-thumbnail" aria-hidden="true">
+                    <img src={item.previewImage || PRODUCT_DETAIL_IMAGE} alt="" />
+                  </span>
+                  <span>Size &amp; scale</span>
+                </button>
+              )}
+            </div>
           </div>
 
           <div className="cart-confirmation-details">

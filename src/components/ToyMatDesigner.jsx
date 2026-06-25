@@ -6,6 +6,7 @@ import { saveMat, updateMat } from '../utils/matStorage';
 import { addToCart, updateCartQuantity, removeFromCart } from '../utils/cartUtils';
 import { isVerifiedAccount } from '../utils/authStatus';
 import { getShopifyVariantId } from '../config/shopify';
+import { joinLaunchWaitlistIfContactAvailable } from '../utils/waitlist';
 import MatSidebar from './MatSidebar';
 import MatMapView from './MatMapView';
 import MatPreview from './MatPreview';
@@ -413,25 +414,37 @@ const ToyMatDesigner = () => {
           theme: colorScheme,
           nameSnapshot: normalizedName,
           previewImageUrlSnapshot: capturedPreview,
-          shopifyVariantId: selectedSize.shopifyVariantId
+          shopifyVariantId: selectedSize.shopifyVariantId,
+          existingCartItemId: existingCartItem?.id
         }),
         'Adding this mat to your cart is taking too long. Please try again.'
       );
 
-      setPreviewImage(capturedPreview);
-      setCartConfirmation({
+      const confirmationItem = {
         userId: user.uid,
         designId: matIdToAdd,
         name: normalizedName,
         previewImage: capturedPreview,
         sizeName: selectedSize.name,
+        matSize,
         dimensions: selectedSize.dimensions,
         themeName: selectedTheme.name,
         address,
         showStreetNames,
         price: selectedSize.price,
         quantity: (existingCartItem?.quantity || 0) + 1
+      };
+
+      joinLaunchWaitlistIfContactAvailable({
+        user,
+        source: 'add-to-cart',
+        selectedItem: confirmationItem
+      }).catch((waitlistError) => {
+        console.warn('Automatic launch lead capture failed.', waitlistError);
       });
+
+      setPreviewImage(capturedPreview);
+      setCartConfirmation(confirmationItem);
       setIsMobileCustomizeOpen(false);
     } catch (error) {
       console.error('Error adding to cart:', error);
@@ -603,6 +616,7 @@ const ToyMatDesigner = () => {
       )}
 
       <CartConfirmationModal
+        key={cartConfirmation?.designId || 'empty-cart-confirmation'}
         item={cartConfirmation}
         onClose={() => {
           if (!checkoutLoading) {

@@ -8,6 +8,7 @@ import {
   query,
   where,
   orderBy,
+  increment,
   serverTimestamp
 } from 'firebase/firestore';
 import { db } from '../config/firebase';
@@ -47,30 +48,33 @@ export const getCartItemByMatId = getCartItemByDesignId;
 
 export const addToCart = async (userId, designId, quantity = 1, pricePerUnit, itemData = {}) => {
   try {
-    const existingItem = await getCartItemByDesignId(userId, designId);
+    // New cart rows use the design ID, so adding an item is a single atomic
+    // write instead of a query followed by a write. Callers can provide a
+    // legacy cart row ID while older randomly keyed rows are still present.
+    const cartItemId = itemData.existingCartItemId || designId;
+    const cartItemRef = cartDoc(userId, cartItemId);
 
-    if (existingItem) {
-      const newQuantity = existingItem.quantity + quantity;
-      await updateCartQuantity(userId, existingItem.id, newQuantity);
-      return existingItem.id;
-    }
-
-    const newCartItemRef = doc(cartCollection(userId));
-    await setDoc(newCartItemRef, {
+    await setDoc(cartItemRef, {
       designId,
       matId: designId,
-      quantity,
+      quantity: increment(quantity),
       pricePerUnit,
-      shopifyVariantId: itemData.shopifyVariantId || '',
-      nameSnapshot: itemData.nameSnapshot || '',
-      previewImageUrlSnapshot: compactPreviewSnapshot(itemData.previewImageUrlSnapshot),
-      matSize: itemData.matSize || '',
-      theme: itemData.theme || '',
+      ...(itemData.shopifyVariantId !== undefined
+        ? { shopifyVariantId: itemData.shopifyVariantId || '' }
+        : {}),
+      ...(itemData.nameSnapshot !== undefined
+        ? { nameSnapshot: itemData.nameSnapshot || '' }
+        : {}),
+      ...(itemData.previewImageUrlSnapshot !== undefined
+        ? { previewImageUrlSnapshot: compactPreviewSnapshot(itemData.previewImageUrlSnapshot) }
+        : {}),
+      ...(itemData.matSize !== undefined ? { matSize: itemData.matSize || '' } : {}),
+      ...(itemData.theme !== undefined ? { theme: itemData.theme || '' } : {}),
       addedAt: serverTimestamp(),
       updatedAt: serverTimestamp()
-    });
+    }, { merge: true });
 
-    return newCartItemRef.id;
+    return cartItemRef.id;
   } catch (error) {
     console.error('Error adding to cart:', error);
     throw error;
