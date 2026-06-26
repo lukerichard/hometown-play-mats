@@ -10,6 +10,8 @@ const MAT_DIMENSIONS = {
   large: { width: 60, height: 48 }
 };
 
+const CART_ITEM_TITLE = 'Your Hometown Play Mat';
+
 const MatScaleDiagram = ({ previewImage, name, matSize }) => {
   const dimensions = MAT_DIMENSIONS[matSize] || MAT_DIMENSIONS.medium;
   const carWidthPercent = (1.5 / dimensions.width) * 100;
@@ -67,7 +69,7 @@ const CartConfirmationModal = ({
     ? item.previewImage
     : PRODUCT_DETAIL_IMAGE;
   const displayedAlt = showingDesign
-    ? `${item.name} custom map preview`
+    ? `${CART_ITEM_TITLE} custom map preview`
     : 'Physical play mat showing its printed surface and non-slip backing';
 
   return (
@@ -82,7 +84,7 @@ const CartConfirmationModal = ({
         <div className="cart-confirmation-header">
           <div>
             <span>Added to Cart</span>
-            <h2 id="cart-confirmation-title">{item.name}</h2>
+            <h2 id="cart-confirmation-title">{CART_ITEM_TITLE}</h2>
           </div>
           <button type="button" className="cart-confirmation-close" onClick={onClose} aria-label="Close cart summary">
             X
@@ -98,7 +100,7 @@ const CartConfirmationModal = ({
               style={{ aspectRatio: showingDesign ? previewAspectRatio : undefined }}
             >
               {activeImage === 'scale' && hasScaleImage && item.previewImage ? (
-                <MatScaleDiagram previewImage={item.previewImage} name={item.name} matSize={item.matSize} />
+                <MatScaleDiagram previewImage={item.previewImage} name={CART_ITEM_TITLE} matSize={item.matSize} />
               ) : (
                 <img src={displayedImage} alt={displayedAlt} />
               )}

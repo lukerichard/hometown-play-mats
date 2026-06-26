@@ -41,6 +41,7 @@ const ToyMatDesigner = () => {
   const [isMobileCustomizeOpen, setIsMobileCustomizeOpen] = useState(false);
   const [isAddingToCart, setIsAddingToCart] = useState(false);
   const [cartConfirmation, setCartConfirmation] = useState(null);
+  const [comingSoonItem, setComingSoonItem] = useState(null);
   const [checkoutLoading, setCheckoutLoading] = useState(false);
   const [isComingSoonOpen, setIsComingSoonOpen] = useState(false);
   const [safeInsets, setSafeInsets] = useState({ top: 94, right: 310 });
@@ -470,6 +471,8 @@ const ToyMatDesigner = () => {
   const handleCheckoutFromConfirmation = async () => {
     if (!cartConfirmation?.userId || checkoutLoading) return;
     setCheckoutLoading(true);
+    setComingSoonItem(cartConfirmation);
+    setCartConfirmation(null);
     setIsComingSoonOpen(true);
     setCheckoutLoading(false);
   };
@@ -638,11 +641,14 @@ const ToyMatDesigner = () => {
 
       <ComingSoonCheckoutModal
         open={isComingSoonOpen}
-        onClose={() => setIsComingSoonOpen(false)}
-        userId={cartConfirmation?.userId || currentUser?.uid || ''}
+        onClose={() => {
+          setIsComingSoonOpen(false);
+          setComingSoonItem(null);
+        }}
+        userId={comingSoonItem?.userId || currentUser?.uid || ''}
         defaultEmail={currentUser?.email || ''}
         source="designer-checkout"
-        selectedItem={cartConfirmation}
+        selectedItem={comingSoonItem}
       />
 
       {showSaveDialog && (

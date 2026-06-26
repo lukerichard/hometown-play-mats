@@ -3,33 +3,36 @@ import { Link } from 'react-router-dom';
 import { useAuth } from '../../hooks/useAuth';
 import { useFirestore } from '../../hooks/useFirestore';
 import { getMat } from '../../utils/matStorage';
-import { calculateCartTotal, addToCart, updateCartQuantity, removeFromCart } from '../../utils/cartUtils';
+import { calculateCartTotal } from '../../utils/cartUtils';
 import CartItem from './CartItem';
-import MatPreview from '../MatPreview';
 import ComingSoonCheckoutModal from './ComingSoonCheckoutModal';
+import CartConfirmationModal from './CartConfirmationModal';
 
 const Cart = () => {
   const { currentUser } = useAuth();
   const [matsData, setMatsData] = useState({});
   const [loadingMats, setLoadingMats] = useState(true);
-  const [previewingMat, setPreviewingMat] = useState(null);
+  const [reviewingCartItem, setReviewingCartItem] = useState(null);
+  const [comingSoonItem, setComingSoonItem] = useState(null);
+  const [showRemovedNotice, setShowRemovedNotice] = useState(false);
   const [showComingSoon, setShowComingSoon] = useState(false);
 
   const font = "'DM Sans', 'Poppins', sans-serif";
   const fontDisplay = "'Poppins', 'DM Sans', sans-serif";
 
   const matSizes = {
-    small: { width: 1, height: 2, name: 'Small', dimensions: '39" × 79" (1m × 2m)' },
-    medium: { width: 1.5, height: 2, name: 'Medium', dimensions: '59" × 79" (1.5m × 2m)' },
-    large: { width: 2, height: 3, name: 'Large', dimensions: '79" × 118" (2m × 3m)' }
+    small: { name: 'Small', dimensions: '36" x 24"', price: 89 },
+    medium: { name: 'Medium', dimensions: '48" x 36"', price: 149 },
+    large: { name: 'Large', dimensions: '60" x 48"', price: 189 }
   };
 
   const colorSchemes = {
-    classic: { color: '#3DAEF5', name: 'Classic' },
-    muted: { color: '#5A5A5A', name: 'Muted' },
-    neon: { color: '#A76BDB', name: 'Neon Vibrant' }
+    pastel: { name: 'Pastel Park' },
+    modern: { name: 'Modern Mini' },
+    classic: { name: 'Classic City' },
+    muted: { name: 'Muted' },
+    neon: { name: 'Neon Vibrant' }
   };
-
   const { data: cartItems, loading: loadingCart, error } = useFirestore(
     currentUser?.uid ? `users/${currentUser.uid}/cart` : null
   );
@@ -54,28 +57,29 @@ const Cart = () => {
 
   const loading = loadingCart || loadingMats;
   const total = calculateCartTotal(cartItems);
-  const previewingCartItem = previewingMat
-    ? cartItems.find(item => (item.designId || item.matId) === previewingMat.id)
-    : null;
+  const getCartSummaryItem = (item) => {
+    const designId = item.designId || item.matId;
+    const mat = matsData[designId];
+    const matSize = mat?.matSize || item.matSize || 'medium';
+    const theme = mat?.colorScheme || item.theme || 'pastel';
+    const size = matSizes[matSize] || matSizes.medium;
+    const themeName = colorSchemes[theme]?.name || theme || 'Custom Theme';
 
-  const handleAddToCart = async () => {
-    if (!currentUser || !previewingMat) return;
-    try {
-      const pricePerUnit = previewingMat.matSize === 'small' ? 29.99 : previewingMat.matSize === 'medium' ? 39.99 : 49.99;
-      await addToCart(currentUser.uid, previewingMat.id, 1, pricePerUnit, {
-        existingCartItemId: previewingCartItem?.id
-      });
-    } catch (error) { console.error('Error adding to cart:', error); alert('Failed to add to cart. Please try again.'); }
+    return {
+      userId: currentUser?.uid || '',
+      designId,
+      name: mat?.name || item.nameSnapshot || 'Custom Play Mat',
+      previewImage: mat?.previewImageUrl || item.previewImageUrlSnapshot || '',
+      sizeName: size.name,
+      matSize,
+      dimensions: size.dimensions,
+      themeName,
+      address: mat?.address || '',
+      showStreetNames: mat?.showStreetNames ?? true,
+      price: Number(item.pricePerUnit) || size.price,
+      quantity: Number(item.quantity) || 1
+    };
   };
-
-  const handleUpdateQuantity = async (newQuantity) => {
-    if (!previewingCartItem) return;
-    try {
-      if (newQuantity <= 0) { await removeFromCart(currentUser.uid, previewingCartItem.id); setPreviewingMat(null); }
-      else { await updateCartQuantity(currentUser.uid, previewingCartItem.id, newQuantity); }
-    } catch (error) { console.error('Error updating quantity:', error); alert('Failed to update quantity. Please try again.'); }
-  };
-
   const waitlistCartItems = cartItems.map((item) => {
     const mat = matsData[item.designId || item.matId];
 
@@ -91,6 +95,13 @@ const Cart = () => {
   });
 
   const handleCheckout = () => {
+    setShowComingSoon(true);
+  };
+
+  const handleReviewCheckout = () => {
+    if (!reviewingCartItem) return;
+    setComingSoonItem(reviewingCartItem);
+    setReviewingCartItem(null);
     setShowComingSoon(true);
   };
 
@@ -162,7 +173,8 @@ const Cart = () => {
                   userId={currentUser.uid}
                   cartItem={item}
                   mat={matsData[item.designId || item.matId]}
-                  onViewMat={setPreviewingMat}
+                  onViewMat={() => setReviewingCartItem(getCartSummaryItem(item))}
+                  onRemoved={() => setShowRemovedNotice(true)}
                 />
               ))}
             </div>
@@ -222,29 +234,63 @@ const Cart = () => {
         )}
       </div>
 
-      {previewingMat && (
-        <MatPreview
-          previewImage={previewingMat.previewImageUrl}
-          matSize={previewingMat.matSize}
-          colorScheme={previewingMat.colorScheme}
-          matSizes={matSizes}
-          colorSchemes={colorSchemes}
-          savedMatId={previewingMat.id}
-          matName={previewingMat.name}
-          cartItem={previewingCartItem}
-          onBackToEdit={() => setPreviewingMat(null)}
-          onAddToCart={handleAddToCart}
-          onUpdateQuantity={handleUpdateQuantity}
-          onSave={() => {}}
-        />
+      <CartConfirmationModal
+        key={reviewingCartItem?.designId || 'cart-review-empty'}
+        item={reviewingCartItem}
+        onClose={() => setReviewingCartItem(null)}
+        onCheckout={handleReviewCheckout}
+        checkoutLoading={false}
+      />
+
+      {showRemovedNotice && (
+        <>
+          <div className="cart-confirmation-scrim" onClick={() => setShowRemovedNotice(false)} />
+          <section
+            className="cart-confirmation-modal cart-removed-modal"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="cart-removed-title"
+          >
+            <div className="cart-confirmation-header">
+              <div>
+                <span>Cart Updated</span>
+                <h2 id="cart-removed-title">Removed from cart</h2>
+              </div>
+              <button
+                type="button"
+                className="cart-confirmation-close"
+                onClick={() => setShowRemovedNotice(false)}
+                aria-label="Close removed from cart message"
+              >
+                X
+              </button>
+            </div>
+            <div className="coming-soon-content">
+              <p>Your play mat has been removed from your cart.</p>
+              <div className="cart-confirmation-actions">
+                <button
+                  type="button"
+                  className="primary-action"
+                  onClick={() => setShowRemovedNotice(false)}
+                >
+                  Done
+                </button>
+              </div>
+            </div>
+          </section>
+        </>
       )}
 
       <ComingSoonCheckoutModal
         open={showComingSoon}
-        onClose={() => setShowComingSoon(false)}
-        userId={currentUser?.uid || ''}
+        onClose={() => {
+          setShowComingSoon(false);
+          setComingSoonItem(null);
+        }}
+        userId={comingSoonItem?.userId || currentUser?.uid || ''}
         defaultEmail={currentUser?.email || ''}
-        source="cart-checkout"
+        source={comingSoonItem ? 'cart-item-review' : 'cart-checkout'}
+        selectedItem={comingSoonItem}
         cartItems={waitlistCartItems}
       />
     </div>

@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { updateCartQuantity, removeFromCart } from '../../utils/cartUtils';
 import { getMatAspectRatio } from '../../utils/matDimensions';
 
-const CartItem = ({ userId, cartItem, mat, onViewMat }) => {
+const CartItem = ({ userId, cartItem, mat, onViewMat, onRemoved }) => {
   const [updating, setUpdating] = useState(false);
 
   const font = "'DM Sans', 'Poppins', sans-serif";
@@ -16,9 +16,11 @@ const CartItem = ({ userId, cartItem, mat, onViewMat }) => {
   };
 
   const handleRemove = async () => {
-    if (!confirm('Remove this item from cart?')) return;
     setUpdating(true);
-    try { await removeFromCart(userId, cartItem.id); }
+    try {
+      await removeFromCart(userId, cartItem.id);
+      if (onRemoved) onRemoved();
+    }
     catch (error) { console.error('Error removing item:', error); alert('Failed to remove item. Please try again.'); }
     finally { setUpdating(false); }
   };
@@ -26,29 +28,44 @@ const CartItem = ({ userId, cartItem, mat, onViewMat }) => {
   const totalPrice = (cartItem.quantity * cartItem.pricePerUnit).toFixed(2);
   const matSize = mat?.matSize || cartItem.matSize || 'medium';
   const previewAspectRatio = getMatAspectRatio(matSize);
+  const itemTitle = `${matSize.charAt(0).toUpperCase()}${matSize.slice(1)} Hometown Play Mat`;
+  const handleViewMat = () => {
+    if (onViewMat) onViewMat();
+  };
 
   return (
-    <div style={{
-      display: 'flex', gap: '20px', padding: '20px', background: 'white',
-      borderRadius: '20px', border: '2px solid #E0DDD5',
-      opacity: updating ? 0.6 : 1, pointerEvents: updating ? 'none' : 'auto',
-      transition: 'all 0.2s', fontFamily: font
-    }}>
+    <div
+      role="button"
+      tabIndex={0}
+      aria-label="Review this cart item"
+      onClick={handleViewMat}
+      onKeyDown={(event) => {
+        if (event.key === 'Enter' || event.key === ' ') {
+          event.preventDefault();
+          handleViewMat();
+        }
+      }}
+      style={{
+        display: 'flex', gap: '20px', padding: '20px', background: 'white',
+        borderRadius: '20px', border: '2px solid #E0DDD5',
+        opacity: updating ? 0.6 : 1, pointerEvents: updating ? 'none' : 'auto',
+        transition: 'all 0.2s', fontFamily: font, cursor: 'pointer'
+      }}
+    >
       {/* Mat Preview Image */}
       <div
-        onClick={() => mat && onViewMat(mat)}
         style={{
           width: '136px', aspectRatio: previewAspectRatio, maxHeight: '120px',
           borderRadius: '12px', overflow: 'hidden',
-          background: '#F0F7ED', flexShrink: 0, cursor: mat ? 'pointer' : 'default',
+          background: '#F0F7ED', flexShrink: 0,
           transition: 'all 0.2s', border: '2px solid transparent',
-          display: 'grid', placeItems: 'center'
+          display: 'block'
         }}
-        onMouseEnter={(e) => { if (mat) { e.currentTarget.style.transform = 'scale(1.05)'; e.currentTarget.style.borderColor = '#3DAEF5'; } }}
+        onMouseEnter={(e) => { e.currentTarget.style.transform = 'scale(1.05)'; e.currentTarget.style.borderColor = '#3DAEF5'; }}
         onMouseLeave={(e) => { e.currentTarget.style.transform = 'scale(1)'; e.currentTarget.style.borderColor = 'transparent'; }}
       >
         {mat?.previewImageUrl ? (
-          <img src={mat.previewImageUrl} alt={mat.name} style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
+          <img src={mat.previewImageUrl} alt={mat.name} style={{ display: 'block', width: '100%', height: '100%', objectFit: 'cover' }} />
         ) : (
           <div style={{
             width: '100%', height: '100%', display: 'flex', alignItems: 'center',
@@ -60,15 +77,14 @@ const CartItem = ({ userId, cartItem, mat, onViewMat }) => {
       {/* Item Details */}
       <div style={{ flex: 1 }}>
         <h3
-          onClick={() => mat && onViewMat(mat)}
           style={{
             margin: '0 0 8px 0', fontSize: '18px', fontWeight: '800', color: '#2D2D2D',
-            cursor: mat ? 'pointer' : 'default', transition: 'color 0.2s', fontFamily: font
+            transition: 'color 0.2s', fontFamily: font
           }}
-          onMouseEnter={(e) => mat && (e.currentTarget.style.color = '#3DAEF5')}
+          onMouseEnter={(e) => (e.currentTarget.style.color = '#3DAEF5')}
           onMouseLeave={(e) => (e.currentTarget.style.color = '#2D2D2D')}
         >
-          {mat?.name || cartItem.nameSnapshot || 'Mat'}
+          {itemTitle}
         </h3>
 
         <div style={{ display: 'flex', gap: '8px', marginBottom: '12px' }}>
@@ -85,7 +101,10 @@ const CartItem = ({ userId, cartItem, mat, onViewMat }) => {
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
             <span style={{ fontSize: '14px', fontWeight: '600', color: '#5A5A5A' }}>Qty:</span>
             <button
-              onClick={() => handleQuantityChange(cartItem.quantity - 1)}
+              onClick={(event) => {
+                event.stopPropagation();
+                handleQuantityChange(cartItem.quantity - 1);
+              }}
               disabled={cartItem.quantity <= 1 || updating}
               style={{
                 width: '32px', height: '32px', background: 'white', border: '2.5px solid #E0DDD5',
@@ -98,7 +117,10 @@ const CartItem = ({ userId, cartItem, mat, onViewMat }) => {
               {cartItem.quantity}
             </span>
             <button
-              onClick={() => handleQuantityChange(cartItem.quantity + 1)}
+              onClick={(event) => {
+                event.stopPropagation();
+                handleQuantityChange(cartItem.quantity + 1);
+              }}
               disabled={updating}
               style={{
                 width: '32px', height: '32px', background: 'white', border: '2.5px solid #E0DDD5',
@@ -115,7 +137,10 @@ const CartItem = ({ userId, cartItem, mat, onViewMat }) => {
 
           {/* Remove Button */}
           <button
-            onClick={handleRemove}
+            onClick={(event) => {
+              event.stopPropagation();
+              handleRemove();
+            }}
             disabled={updating}
             style={{
               marginLeft: 'auto', padding: '8px 20px', background: 'white', color: '#E84545',

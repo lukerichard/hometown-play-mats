@@ -3,6 +3,7 @@ import { joinLaunchWaitlist } from '../../utils/waitlist';
 import { getMatAspectRatio } from '../../utils/matDimensions';
 
 const PRODUCT_DETAIL_IMAGE = '/images/play-mat-product-detail.png';
+const CHECKOUT_ITEM_TITLE = 'Your Hometown Play Mat';
 
 const ComingSoonCheckoutModal = ({
   open,
@@ -71,14 +72,14 @@ const ComingSoonCheckoutModal = ({
           {selectedItem?.previewImage && (
             <div className="coming-soon-preview" style={{ '--mat-preview-ratio': selectedItemAspectRatio }}>
               <div className="coming-soon-preview-images">
-                <img src={selectedItem.previewImage} alt={`${selectedItem.name || 'Custom play mat'} preview`} />
+                <img src={selectedItem.previewImage} alt={`${CHECKOUT_ITEM_TITLE} preview`} />
                 <img
                   src={PRODUCT_DETAIL_IMAGE}
                   alt="Physical play mat showing its printed surface and non-slip backing"
                 />
               </div>
               <div>
-                <strong>{selectedItem.name || 'Custom Play Mat'}</strong>
+                <strong>{CHECKOUT_ITEM_TITLE}</strong>
                 <span>{selectedItem.sizeName || selectedItem.matSize || 'Custom size'}</span>
               </div>
             </div>

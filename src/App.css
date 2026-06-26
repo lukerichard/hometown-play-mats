@@ -681,6 +681,10 @@
   font-family: var(--builder-font);
 }
 
+.cart-removed-modal {
+  width: min(460px, calc(100vw - 32px));
+}
+
 .cart-confirmation-header {
   display: flex;
   align-items: flex-start;
