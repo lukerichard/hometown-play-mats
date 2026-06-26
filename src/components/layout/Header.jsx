@@ -60,7 +60,7 @@ const Header = () => {
         </Link>
 
         <nav className="hidden items-center gap-12 text-sm font-semibold md:flex">
-          <a href="#how-it-works" className="text-[#00123a] no-underline transition-colors duration-150 hover:text-primary focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-primary focus-visible:rounded-sm">How it Works</a>
+          <a href="/#how-it-works" className="text-[#00123a] no-underline transition-colors duration-150 hover:text-primary focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-primary focus-visible:rounded-sm">How it Works</a>
           <a href="/#sizes" className="text-[#00123a] no-underline transition-colors duration-150 hover:text-primary focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-primary focus-visible:rounded-sm">Sizes</a>
         </nav>
 

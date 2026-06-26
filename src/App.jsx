@@ -1,4 +1,5 @@
-import { Routes, Route } from 'react-router-dom';
+import { useEffect } from 'react';
+import { Routes, Route, useLocation } from 'react-router-dom';
 import ToyMatDesigner from './components/ToyMatDesigner';
 import LandingPage from './components/LandingPage';
 import ProtectedRoute from './components/layout/ProtectedRoute';
@@ -10,9 +11,32 @@ import SavedMats from './components/mats/SavedMats';
 import Cart from './components/cart/Cart';
 import './App.css';
 
+const HashScroller = () => {
+  const location = useLocation();
+
+  useEffect(() => {
+    if (!location.hash) return;
+
+    const scrollToHash = () => {
+      const target = document.querySelector(location.hash);
+      if (!target) return;
+
+      const headerOffset = 84;
+      const targetTop = target.getBoundingClientRect().top + window.scrollY - headerOffset;
+      window.scrollTo({ top: targetTop, behavior: 'smooth' });
+    };
+
+    const timeoutId = window.setTimeout(scrollToHash, 0);
+    return () => window.clearTimeout(timeoutId);
+  }, [location.pathname, location.hash]);
+
+  return null;
+};
+
 function App() {
   return (
     <>
+      <HashScroller />
       <Header />
       <Routes>
         <Route path="/login" element={<Login />} />
