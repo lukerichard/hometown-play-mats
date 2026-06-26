@@ -212,6 +212,24 @@ const testimonials = [
   },
 ];
 
+const sizeOptions = [
+  {
+    size: '36" x 24"',
+    label: 'Tabletop',
+    note: 'Best for small rooms, desks, and first custom gifts.',
+  },
+  {
+    size: '48" x 36"',
+    label: 'Playroom',
+    note: 'A roomy everyday mat with space for streets, parks, and school routes.',
+  },
+  {
+    size: '60" x 48"',
+    label: 'Full floor',
+    note: 'Our largest neighborhood canvas for shared play and sprawling layouts.',
+  },
+];
+
 const LandingPage = () => {
   const navigate = useNavigate();
   const [heroAddress, setHeroAddress] = useState('');
@@ -239,7 +257,6 @@ const LandingPage = () => {
       <section className="lp-hero lp-container" aria-labelledby="lp-hero-title">
         <div className="lp-hero-grid">
           <div>
-            <span className="lp-badge">New Concept</span>
             <h1 id="lp-hero-title">
               Turn your neighborhood into a <span className="lp-accent">toy</span>
             </h1>
@@ -277,14 +294,46 @@ const LandingPage = () => {
         </div>
       </section>
 
-      {/* ── Steps ─────────────────────────────────────────────── */}
+      {/* Size options */}
+      <section id="sizes" className="lp-size-options lp-section" aria-labelledby="lp-size-title">
+        <div className="lp-container">
+          <div className="lp-size-grid">
+            <div className="lp-size-copy">
+              <h2 id="lp-size-title">Pick the mat that fits your kind of play.</h2>
+              <p>
+                Each size uses the same custom neighborhood map, scaled for crisp street detail and
+                easy toy-car routes from room to room.
+              </p>
+
+              <div className="lp-size-list" aria-label="Available mat sizes">
+                {sizeOptions.map((option) => (
+                  <article className="lp-size-card" key={option.size}>
+                    <strong>{option.size}</strong>
+                    <span>{option.label}</span>
+                    <p>{option.note}</p>
+                  </article>
+                ))}
+              </div>
+            </div>
+
+            <figure className="lp-size-visual">
+              <img
+                src="/images/play-mat-size-options.png"
+                alt="Three custom play mat size options shown as overlapping map rectangles: 36 by 24 inches, 48 by 36 inches, and 60 by 48 inches."
+              />
+            </figure>
+          </div>
+        </div>
+      </section>
+
+      {/* Steps */}
       <section id="how-it-works" className="lp-steps lp-section">
         <div className="lp-container">
           <div className="lp-section-head">
-            <h2>Your Adventure, 3 Steps Away</h2>
+            <h2>Your Custom Mat, 3 Steps Away</h2>
             <p>
-              Creating a world for your child shouldn’t be hard. Our simple process handles the
-              cartography, while you handle the fun.
+              Start with your home, tune the map until it feels like your neighborhood, then we
+              print and ship it to your door.
             </p>
           </div>
 
@@ -294,8 +343,8 @@ const LandingPage = () => {
               <span className="lp-chip lp-chip-blue">
                 <PinIcon width="22" height="22" />
               </span>
-              <h3>Pin Your World</h3>
-              <p>Enter your address and we’ll pull real street layouts from your local neighborhood.</p>
+              <h3>Enter Your Address</h3>
+              <p>Type in your home address and we generate a real map around your neighborhood.</p>
             </article>
 
             <article className="lp-step is-feature">
@@ -303,8 +352,8 @@ const LandingPage = () => {
               <span className="lp-chip lp-chip-amber">
                 <SlidersIcon />
               </span>
-              <h3>Make it Playful</h3>
-              <p>Add a customized playground, choose your colors, and label your favorite local spots.</p>
+              <h3>Adjust Your Map</h3>
+              <p>Move, zoom, and customize the map so it shows the streets and places that matter most.</p>
             </article>
 
             <article className="lp-step">
@@ -312,8 +361,8 @@ const LandingPage = () => {
               <span className="lp-chip lp-chip-green">
                 <TruckIcon />
               </span>
-              <h3>Shipped with Love</h3>
-              <p>We print your custom mat on premium material and ship it straight to your playroom.</p>
+              <h3>Delivered Home</h3>
+              <p>We print your finished design on premium material and deliver it straight to your house.</p>
             </article>
           </div>
         </div>
@@ -419,18 +468,15 @@ const LandingPage = () => {
             <span className="lp-footer-mark">
               <MapMarkIcon />
             </span>
-            Hometown Play Mats
+            <span className="brand-wordmark">Hometown Play Mats</span>
           </div>
           <nav aria-label="Footer">
             <a href="#how-it-works">How it Works</a>
             <a href="/cart">Contact Us</a>
-            <a href="/cart">Privacy Policy</a>
-            <a href="/cart">Terms of Service</a>
-            <a href="/cart">Shipping Info</a>
           </nav>
         </div>
         <div className="lp-copyright">
-          © 2026 Hometown Play Mats. Handcrafted with love for your little explorers.
+          © 2026 <span className="brand-wordmark">Hometown Play Mats</span>. Handcrafted with love for your little explorers.
         </div>
       </footer>
     </main>

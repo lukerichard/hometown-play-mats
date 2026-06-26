@@ -250,6 +250,19 @@ const ToyMatDesigner = () => {
     ctx.imageSmoothingEnabled = true;
     ctx.imageSmoothingQuality = 'high';
     ctx.drawImage(canvas, cropX, cropY, scaledWidth, scaledHeight, 0, 0, outputWidth, outputHeight);
+
+    const watermarkText = 'Hometown Play Mats';
+    const fontSize = Math.round(Math.max(18, Math.min(34, outputWidth / 27)));
+    const padding = Math.round(Math.max(16, outputWidth * 0.03));
+
+    ctx.save();
+    ctx.font = `400 ${fontSize}px "Chewy", "Quicksand", "Poppins", "DM Sans", sans-serif`;
+    ctx.textAlign = 'right';
+    ctx.textBaseline = 'bottom';
+    ctx.fillStyle = '#ffffff';
+    ctx.fillText(watermarkText, outputWidth - padding, outputHeight - padding);
+    ctx.restore();
+
     return croppedCanvas.toDataURL('image/jpeg', 0.92);
   };
 
@@ -537,8 +550,6 @@ const ToyMatDesigner = () => {
           <MatSidebar
             matSize={matSize}
             setMatSize={setMatSize}
-            matName={matName}
-            setMatName={setMatName}
             matSizes={matSizes}
             selectedSize={selectedSize}
             idPrefix="desktop-mat"
@@ -559,8 +570,6 @@ const ToyMatDesigner = () => {
             <MatSidebar
               matSize={matSize}
               setMatSize={setMatSize}
-              matName={matName}
-              setMatName={setMatName}
               matSizes={matSizes}
               selectedSize={selectedSize}
               idPrefix="mobile-mat"

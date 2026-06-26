@@ -3,8 +3,6 @@ import { useState } from 'react';
 const MatSidebar = ({
   matSize,
   setMatSize,
-  matName,
-  setMatName,
   matSizes,
   selectedSize,
   showStreetNames,
@@ -16,7 +14,6 @@ const MatSidebar = ({
   idPrefix = 'mat'
 }) => {
   const sizeOptions = Object.entries(matSizes);
-  const matTitleId = `${idPrefix}-title`;
   const [expandedSection, setExpandedSection] = useState(null);
 
   const toggleSection = (section) => {
@@ -28,7 +25,7 @@ const MatSidebar = ({
       <div className="shopping-card-head">
         <div>
           <span className="shopping-card-kicker">Custom Play Mat</span>
-          <h2>{matName || 'Custom Play Mat'}</h2>
+          <h2>Map Builder</h2>
         </div>
         {onClose && (
           <button type="button" className="shopping-card-close" onClick={onClose} aria-label="Close customization panel">
@@ -46,24 +43,12 @@ const MatSidebar = ({
         >
           <span className="builder-card-title">
             <span className="builder-card-icon icon-edit" aria-hidden="true" />
-            Personalize
+            Map Details
           </span>
           <span className="section-expand-indicator" aria-hidden="true">+</span>
         </button>
 
         <div className="shopping-section-body">
-          <label className="builder-label" htmlFor={matTitleId}>
-            Child's Name or Title
-          </label>
-          <input
-            id={matTitleId}
-            type="text"
-            value={matName}
-            onChange={(event) => setMatName(event.target.value)}
-            placeholder="Leo's Little London"
-            className="builder-input"
-          />
-
           <label className="street-toggle">
             <span>
               <strong>Show Street Names</strong>

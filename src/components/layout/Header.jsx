@@ -51,8 +51,8 @@ const Header = () => {
         {/* Logo */}
         <Link to="/" className="no-underline">
           <span
-            className="text-lg font-bold tracking-tight sm:text-2xl"
-            style={{ color: '#00123a', fontFamily: "'Poppins', 'DM Sans', sans-serif" }}
+            className="brand-wordmark text-xl tracking-normal sm:text-3xl"
+            style={{ color: '#00123a' }}
           >
             <span className="hidden min-[361px]:inline">Hometown Play Mats</span>
             <span className="min-[361px]:hidden">Hometown</span>
@@ -61,8 +61,7 @@ const Header = () => {
 
         <nav className="hidden items-center gap-12 text-sm font-semibold md:flex">
           <a href="#how-it-works" className="text-[#00123a] no-underline transition-colors duration-150 hover:text-primary focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-primary focus-visible:rounded-sm">How it Works</a>
-          <a href="#sizes" className="text-[#00123a] no-underline transition-colors duration-150 hover:text-primary focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-primary focus-visible:rounded-sm">Sizes</a>
-          <a href="#gift-guide" className="text-[#00123a] no-underline transition-colors duration-150 hover:text-primary focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-primary focus-visible:rounded-sm">Gift Guide</a>
+          <a href="/#sizes" className="text-[#00123a] no-underline transition-colors duration-150 hover:text-primary focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-primary focus-visible:rounded-sm">Sizes</a>
         </nav>
 
         {/* Right side */}

@@ -64,7 +64,8 @@ const ComingSoonCheckoutModal = ({
 
         <div className="coming-soon-content">
           <p>
-            Leave your email and we will let you know as soon as Hometown Play Mats is ready to take orders.
+            Leave your email and we will let you know as soon as{' '}
+            <span className="brand-wordmark">Hometown Play Mats</span> is ready to take orders.
           </p>
 
           {selectedItem?.previewImage && (

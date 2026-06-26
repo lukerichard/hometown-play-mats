@@ -55,7 +55,13 @@
   z-index: 50;
   padding: 16px 24px 20px;
   background: transparent;
-  pointer-events: auto;
+  pointer-events: none;
+}
+
+.brand-wordmark {
+  font-family: 'Chewy', 'Quicksand', 'Poppins', 'DM Sans', sans-serif;
+  font-weight: 400;
+  letter-spacing: 0.01em;
 }
 
 .editor-progress-row {
@@ -154,6 +160,7 @@
   border-radius: 14px;
   background: #fff;
   transition: border-color 0.15s ease;
+  pointer-events: auto;
 }
 
 .address-search:focus-within {

@@ -42,6 +42,7 @@ const ROAD_CASING_SCALE = 1.34;
 
 const classIn = (...classes) => ['in', ['get', 'class'], ['literal', classes]];
 const typeIn = (...types) => ['in', ['get', 'type'], ['literal', types]];
+const nearlyEqual = (a, b, epsilon = 0.000001) => Math.abs(a - b) < epsilon;
 
 const MatMapView = ({
   center,
@@ -346,8 +347,8 @@ const MatMapView = ({
 
     if (showStreetNames) {
       const addRoadLabels = ({ id, filter, minzoom, width, spacing = 160 }) => {
-        const textSize = Math.min(Math.max(width * ROAD_CASING_SCALE * 0.42, 12), 22);
-        const textMaskWidth = Math.max(textSize * 0.22, 3);
+        const textSize = Math.min(Math.max(width * ROAD_CASING_SCALE * 0.42, 5), 22);
+        const textMaskWidth = Math.max(textSize * 0.18, 0.8);
 
         map.addLayer({
           id: `pastel-road-${id}-labels`,
@@ -461,6 +462,8 @@ const MatMapView = ({
         mapRef.current.dragPan.enable();
         mapRef.current.touchZoomRotate.enable();
         mapRef.current.touchZoomRotate.enableRotation();
+        mapRef.current.getCanvas().style.touchAction = 'none';
+        mapRef.current.getCanvasContainer().style.touchAction = 'none';
 
         const latestView = latestViewRef.current;
         mapRef.current.jumpTo({
@@ -496,15 +499,26 @@ const MatMapView = ({
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
-    if (mapRef.current?.isStyleLoaded()) {
-      mapRef.current.flyTo({ center, zoom, essential: true });
-    }
+    const map = mapRef.current;
+    if (!map?.isStyleLoaded()) return;
+
+    const currentCenter = map.getCenter();
+    const isAlreadyAtCamera =
+      nearlyEqual(currentCenter.lng, center[0]) &&
+      nearlyEqual(currentCenter.lat, center[1]) &&
+      nearlyEqual(map.getZoom(), zoom, 0.0001);
+
+    if (isAlreadyAtCamera) return;
+
+    map.flyTo({ center, zoom, essential: true });
   }, [center, zoom]);
 
   useEffect(() => {
-    if (mapRef.current?.isStyleLoaded()) {
-      mapRef.current.rotateTo(rotation, { duration: 300 });
-    }
+    const map = mapRef.current;
+    if (!map?.isStyleLoaded()) return;
+    if (nearlyEqual(map.getBearing(), rotation, 0.01)) return;
+
+    map.rotateTo(rotation, { duration: 300 });
   }, [rotation]);
 
   useEffect(() => {
@@ -522,7 +536,15 @@ const MatMapView = ({
     >
       {/* Map canvas */}
       {!mapUnavailable ? (
-        <div ref={mapContainerRef} style={{ position: 'absolute', inset: 0 }} />
+        <div
+          ref={mapContainerRef}
+          style={{
+            position: 'absolute',
+            inset: 0,
+            touchAction: 'none',
+            userSelect: 'none',
+          }}
+        />
       ) : (
         <div className="map-fallback" aria-label="Map preview placeholder">
           <div className="fallback-water" />
@@ -536,13 +558,26 @@ const MatMapView = ({
         </div>
       )}
 
-      {/* Mat frame overlay: 4 panels darken everything outside the mat area */}
+      {/* Mat frame overlay */}
       {frame && (
         <>
-          <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: frame.ft, background: OVERLAY, pointerEvents: 'none', zIndex: 5 }} />
-          <div style={{ position: 'absolute', top: frame.fb, left: 0, right: 0, bottom: 0, background: OVERLAY, pointerEvents: 'none', zIndex: 5 }} />
-          <div style={{ position: 'absolute', top: frame.ft, left: 0, width: frame.fl, height: frame.fh, background: OVERLAY, pointerEvents: 'none', zIndex: 5 }} />
-          <div style={{ position: 'absolute', top: frame.ft, left: frame.fr, right: 0, height: frame.fh, background: OVERLAY, pointerEvents: 'none', zIndex: 5 }} />
+          <svg
+            aria-hidden="true"
+            style={{
+              position: 'absolute',
+              inset: 0,
+              width: '100%',
+              height: '100%',
+              pointerEvents: 'none',
+              zIndex: 5,
+            }}
+          >
+            <path
+              d={`M0 0H${containerSize.w}V${containerSize.h}H0Z M${frame.fl + 18} ${frame.ft}H${frame.fr - 18}Q${frame.fr} ${frame.ft} ${frame.fr} ${frame.ft + 18}V${frame.fb - 18}Q${frame.fr} ${frame.fb} ${frame.fr - 18} ${frame.fb}H${frame.fl + 18}Q${frame.fl} ${frame.fb} ${frame.fl} ${frame.fb - 18}V${frame.ft + 18}Q${frame.fl} ${frame.ft} ${frame.fl + 18} ${frame.ft}Z`}
+              fill={OVERLAY}
+              fillRule="evenodd"
+            />
+          </svg>
 
           {/* Mat frame border */}
           <div
@@ -553,12 +588,34 @@ const MatMapView = ({
               width: frame.fw,
               height: frame.fh,
               border: '2px solid rgba(255, 255, 255, 0.88)',
-              borderRadius: '3px',
+              borderRadius: '18px',
               boxShadow: '0 0 0 1px rgba(0, 0, 0, 0.30), inset 0 0 0 1px rgba(0,0,0,0.12)',
               pointerEvents: 'none',
               zIndex: 6,
             }}
           />
+
+          <div
+            aria-hidden="true"
+            style={{
+              position: 'absolute',
+              right: containerSize.w - frame.fr + Math.max(12, frame.fw * 0.035),
+              bottom: containerSize.h - frame.fb + Math.max(12, frame.fw * 0.035),
+              maxWidth: frame.fw - Math.max(24, frame.fw * 0.07),
+              color: '#ffffff',
+              fontFamily: "'Chewy', 'Quicksand', 'Poppins', 'DM Sans', sans-serif",
+              fontSize: Math.max(12, Math.min(20, frame.fw / 27)),
+              fontWeight: 400,
+              lineHeight: 1,
+              letterSpacing: '0.01em',
+              textAlign: 'right',
+              whiteSpace: 'nowrap',
+              pointerEvents: 'none',
+              zIndex: 7,
+            }}
+          >
+            Hometown Play Mats
+          </div>
 
           {/* Size label below the frame */}
           <div

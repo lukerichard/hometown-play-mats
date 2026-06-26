@@ -240,7 +240,7 @@
 }
 
 .lp-hero h1 {
-  margin: 18px 0 0;
+  margin: 0;
   max-width: 12ch;
   font-size: clamp(2.4rem, 5.2vw, 3.6rem);
   line-height: 1.08;
@@ -319,8 +319,96 @@
   object-position: 50% 56%;
 }
 
-/* ── Steps ───────────────────────────────────────────────────────── */
+/* Size options */
+.lp-size-options {
+  background: #ffffff;
+  border-block: 1px solid var(--lp-border);
+}
 
+.lp-size-grid {
+  display: grid;
+  grid-template-columns: 0.82fr 1.18fr;
+  gap: 42px;
+  align-items: center;
+}
+
+.lp-size-copy h2 {
+  margin-top: 0;
+  max-width: 11ch;
+  color: var(--lp-blue);
+  font-size: clamp(2rem, 4.2vw, 3.1rem);
+  font-weight: 800;
+  line-height: 1.05;
+  letter-spacing: -0.02em;
+}
+
+.lp-size-copy > p {
+  margin: 18px 0 0;
+  max-width: 43ch;
+  color: var(--lp-muted);
+  font-size: 17px;
+  line-height: 1.6;
+}
+
+.lp-size-list {
+  display: grid;
+  gap: 12px;
+  margin-top: 28px;
+}
+
+.lp-size-card {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 4px 14px;
+  padding: 16px 18px;
+  background: rgba(255, 255, 255, 0.88);
+  border: 1px solid var(--lp-border);
+  border-radius: 16px;
+  box-shadow: 0 12px 28px rgba(21, 41, 77, 0.06);
+}
+
+.lp-size-card strong {
+  color: var(--lp-ink);
+  font-size: 20px;
+  line-height: 1.1;
+}
+
+.lp-size-card span {
+  align-self: center;
+  color: var(--lp-blue);
+  font-size: 13px;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.lp-size-card p {
+  grid-column: 1 / -1;
+  margin: 0;
+  color: var(--lp-muted);
+  font-size: 14px;
+  line-height: 1.45;
+}
+
+.lp-size-visual {
+  display: flex;
+  justify-content: center;
+  margin: 0;
+  padding: 22px;
+  background: #ffffff;
+  border: 1px solid var(--lp-border);
+  border-radius: 22px;
+  box-shadow: 0 18px 40px rgba(21, 41, 77, 0.08);
+}
+
+.lp-size-visual img {
+  display: block;
+  width: min(100%, 560px);
+  height: auto;
+  border-radius: 14px;
+}
+
+/* Steps */
 .lp-steps {
   background: #ffffff;
   border-block: 1px solid var(--lp-border);
@@ -729,6 +817,14 @@
   .lp-hero-grid {
     grid-template-columns: 1fr;
     gap: 40px;
+  }
+
+  .lp-size-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .lp-size-copy h2 {
+    max-width: 14ch;
   }
 
   .lp-step-grid,
