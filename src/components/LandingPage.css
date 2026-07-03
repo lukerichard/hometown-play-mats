@@ -492,6 +492,42 @@
   right: 14px;
 }
 
+.lp-size-car-reference {
+  position: absolute;
+  inset: 0;
+  z-index: 4;
+  pointer-events: none;
+}
+
+.lp-size-car-reference img {
+  position: absolute;
+  left: 18px;
+  bottom: 18px;
+  display: block;
+  width: 1.667%;
+  height: 6.25%;
+  object-fit: contain;
+}
+
+.lp-size-car-reference span {
+  position: absolute;
+  left: calc(18px + 1.667% + 8px);
+  bottom: 15px;
+  display: inline-flex;
+  align-items: center;
+  min-height: 28px;
+  padding: 0 10px;
+  border: 1px solid rgba(21, 41, 77, 0.12);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.9);
+  color: var(--lp-ink);
+  font-size: 12px;
+  font-weight: 900;
+  line-height: 1;
+  white-space: nowrap;
+  box-shadow: 0 10px 24px rgba(21, 41, 77, 0.12);
+}
+
 /* Steps */
 .lp-steps {
   background: #ffffff;
@@ -882,19 +918,24 @@
   max-width: 720px;
   margin: 0 auto;
   padding: 44px 32px;
+  display: grid;
+  grid-template-columns: auto 1fr;
+  column-gap: 18px;
+  align-items: start;
   background: #ffffff;
   border: 1px solid var(--lp-border);
   border-radius: 22px;
   box-shadow: 0 18px 40px rgba(21, 41, 77, 0.08);
-  text-align: center;
+  text-align: left;
 }
 
 .lp-guarantee-card svg {
   color: var(--lp-green-deep);
+  margin-top: 2px;
 }
 
 .lp-guarantee-card h2 {
-  margin-top: 16px;
+  margin: 0;
   color: var(--lp-ink);
   font-size: clamp(1.4rem, 3vw, 1.9rem);
   font-weight: 700;
@@ -902,7 +943,8 @@
 }
 
 .lp-guarantee-card p {
-  margin: 12px auto 0;
+  grid-column: 2;
+  margin: 12px 0 0;
   max-width: 48ch;
   color: var(--lp-muted);
   font-size: 15px;
@@ -1120,6 +1162,22 @@
     min-height: 38px;
     padding: 0 14px;
     font-size: 13px;
+  }
+  .lp-size-car-reference {
+    inset: 0;
+  }
+  .lp-size-car-reference img {
+    left: 10px;
+    bottom: 10px;
+    width: 1.667%;
+    height: 6.25%;
+  }
+  .lp-size-car-reference span {
+    left: calc(10px + 1.667% + 6px);
+    bottom: 7px;
+    min-height: 24px;
+    padding: 0 8px;
+    font-size: 10px;
   }
   .lp-footer-inner { flex-direction: column; align-items: flex-start; }
 }

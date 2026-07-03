@@ -166,7 +166,7 @@ const ToyMatDesigner = () => {
       label: 'Large Mat',
       dimensions: '60" x 48"',
       description: '60" x 48" - Best for playrooms',
-      price: 189,
+      price: 259,
       shopifyVariantId: getShopifyVariantId('large')
     },
     medium: {
@@ -176,7 +176,7 @@ const ToyMatDesigner = () => {
       label: 'Medium Mat',
       dimensions: '48" x 36"',
       description: '48" x 36" - Perfect for bedroom',
-      price: 149,
+      price: 189,
       shopifyVariantId: getShopifyVariantId('medium')
     },
   };
@@ -857,19 +857,7 @@ const ToyMatDesigner = () => {
       return;
     }
 
-    setCustomPins((pins) => [
-      ...pins,
-      {
-        ...customPinDraft,
-        description: customPinDescription.trim(),
-      },
-    ]);
-    setCustomPinDraft(null);
-    setCustomPinAddress('');
-    setCustomPinDescription('');
-    setCustomPinIconId(DEFAULT_CUSTOM_PIN_ICON_ID);
-    setCustomPinSuggestions([]);
-    setShowCustomPinSuggestions(false);
+    commitCustomPinDraft();
   };
 
   const handleUpdateCustomPin = (pinId, updates) => {

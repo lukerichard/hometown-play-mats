@@ -531,6 +531,15 @@ const LandingPage = () => {
               <div className="lp-size-scale-frame lp-size-scale-medium">
                 <span>48&quot; x 36&quot;</span>
               </div>
+              <div className="lp-size-car-reference" aria-label="Hot Wheels car size reference">
+                <img
+                  src="/images/hot-wheels-car.png"
+                  alt=""
+                  aria-hidden="true"
+                  loading="lazy"
+                />
+                <span>Hot Wheels car size</span>
+              </div>
             </div>
           </div>
         </div>

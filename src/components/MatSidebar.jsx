@@ -59,6 +59,12 @@ const MatSidebar = ({
     setExpandedSection((current) => (current === section ? null : section));
   };
 
+  const handleSaveCustomPin = () => {
+    if (!customPinDraft) return;
+    onSaveCustomPin();
+    setIsCustomPinOpen(false);
+  };
+
   return (
     <aside className={`shopping-card ${expandedSection ? 'has-expanded-section' : ''}`}>
       <div className="shopping-card-head">
@@ -252,7 +258,7 @@ const MatSidebar = ({
                   Pin placed. Drag it on the map if needed, then save.
                 </p>
               )}
-              <button type="button" className="primary-action custom-pin-save" onClick={onSaveCustomPin} disabled={!customPinDraft}>
+              <button type="button" className="primary-action custom-pin-save" onClick={handleSaveCustomPin} disabled={!customPinDraft}>
                 Save Pin
               </button>
             </div>

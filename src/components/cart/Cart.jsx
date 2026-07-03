@@ -22,8 +22,8 @@ const Cart = () => {
 
   const matSizes = {
     small: { name: 'Small', dimensions: '36" x 24"', price: 89 },
-    medium: { name: 'Medium', dimensions: '48" x 36"', price: 149 },
-    large: { name: 'Large', dimensions: '60" x 48"', price: 189 }
+    medium: { name: 'Medium', dimensions: '48" x 36"', price: 189 },
+    large: { name: 'Large', dimensions: '60" x 48"', price: 259 }
   };
 
   const colorSchemes = {
