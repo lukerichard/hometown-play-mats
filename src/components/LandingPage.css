@@ -72,7 +72,7 @@
   overflow: hidden;
   background-color: #f7fbf6;
   background-image: url('/images/landing-map-background.png');
-  background-size: auto 112%;
+  background-size: auto 123%;
   background-attachment: fixed;
   background-position:
     calc(var(--lp-map-base-x) + var(--lp-map-shift-x))
@@ -719,19 +719,6 @@
   background: #ffffff;
   box-shadow: 0 8px 20px rgba(21, 41, 77, 0.1);
   color: var(--lp-blue);
-}
-
-/* ── Founders batch banner ───────────────────────────────────────── */
-
-.lp-founders-banner {
-  padding: 12px 24px;
-  background: var(--lp-ink);
-  color: rgba(255, 255, 255, 0.94);
-  text-align: center;
-  font-size: 14px;
-  font-weight: 600;
-  line-height: 1.5;
-  text-wrap: balance;
 }
 
 /* ── Made from your real streets ─────────────────────────────────── */

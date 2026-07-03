@@ -353,12 +353,6 @@ const LandingPage = () => {
 
   return (
     <main className="lp">
-      {/* ── Founders batch banner ─────────────────────────────── */}
-      <div className="lp-founders-banner" role="note">
-        First run of 20. Each founders&rsquo; mat ships with a numbered first-run tag and your
-        family name on the map, included.
-      </div>
-
       {/* ── Hero ──────────────────────────────────────────────── */}
       <section className="lp-hero lp-map-section lp-map-hero" aria-labelledby="lp-hero-title">
         <span className="lp-map-parallax-layer" aria-hidden="true" />
