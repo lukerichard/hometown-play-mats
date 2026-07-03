@@ -57,6 +57,13 @@ const Cart = () => {
 
   const loading = loadingCart || loadingMats;
   const total = calculateCartTotal(cartItems);
+  const getCustomPinsForCartItem = (mat, item) => (
+    mat?.customPins
+    || (mat?.customPin ? [mat.customPin] : null)
+    || item.customPinsSnapshot
+    || []
+  );
+
   const getCartSummaryItem = (item) => {
     const designId = item.designId || item.matId;
     const mat = matsData[designId];
@@ -76,6 +83,10 @@ const Cart = () => {
       themeName,
       address: mat?.address || '',
       showStreetNames: mat?.showStreetNames ?? true,
+      showLandmarks: mat?.showLandmarks ?? true,
+      showLandmarkNames: mat?.showLandmarkNames ?? true,
+      landmarkDensity: mat?.landmarkDensity || 'balanced',
+      customPins: getCustomPinsForCartItem(mat, item),
       price: Number(item.pricePerUnit) || size.price,
       quantity: Number(item.quantity) || 1
     };
@@ -90,7 +101,8 @@ const Cart = () => {
       theme: mat?.colorScheme || item.theme || '',
       quantity: item.quantity,
       pricePerUnit: item.pricePerUnit,
-      previewImageUrl: mat?.previewImageUrl || item.previewImageUrlSnapshot || ''
+      previewImageUrl: mat?.previewImageUrl || item.previewImageUrlSnapshot || '',
+      customPins: getCustomPinsForCartItem(mat, item)
     };
   });
 

@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { getMatAspectRatio } from '../../utils/matDimensions';
+import ZoomableImage from '../ZoomableImage';
 
 const PRODUCT_DETAIL_IMAGE = '/images/play-mat-product-detail.png';
 const HOT_WHEELS_CAR_IMAGE = '/images/hot-wheels-car.png';
@@ -71,6 +72,7 @@ const CartConfirmationModal = ({
   const displayedAlt = showingDesign
     ? `${CART_ITEM_TITLE} custom map preview`
     : 'Physical play mat showing its printed surface and non-slip backing';
+  const customPinCount = item.customPins?.length || (item.customPin ? 1 : 0);
 
   return (
     <>
@@ -102,7 +104,7 @@ const CartConfirmationModal = ({
               {activeImage === 'scale' && hasScaleImage && item.previewImage ? (
                 <MatScaleDiagram previewImage={item.previewImage} name={CART_ITEM_TITLE} matSize={item.matSize} />
               ) : (
-                <img src={displayedImage} alt={displayedAlt} />
+                <ZoomableImage src={displayedImage} alt={displayedAlt} />
               )}
             </div>
 
@@ -151,14 +153,23 @@ const CartConfirmationModal = ({
             </div>
 
             <div className="cart-confirmation-row">
-              <span>Customization</span>
-              <strong>{item.themeName}</strong>
-              <small>{item.address}</small>
+              <span>Street Names</span>
+              <strong>{item.showStreetNames ? 'Included' : 'Hidden'}</strong>
             </div>
 
             <div className="cart-confirmation-row">
-              <span>Street Names</span>
-              <strong>{item.showStreetNames ? 'Included' : 'Hidden'}</strong>
+              <span>Landmarks</span>
+              <strong>{item.showLandmarks ? 'Included' : 'Hidden'}</strong>
+              {item.showLandmarks && (
+                <small>
+                  Names {item.showLandmarkNames ? 'included' : 'hidden'}
+                </small>
+              )}
+            </div>
+
+            <div className="cart-confirmation-row">
+              <span>Custom Pins</span>
+              <strong>{customPinCount ? `${customPinCount} added` : 'Not added'}</strong>
             </div>
 
             <div className="cart-confirmation-total">

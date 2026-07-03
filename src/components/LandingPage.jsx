@@ -1,6 +1,23 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import Logo from './Logo';
 import './LandingPage.css';
+import customPinIconUrl from '../../icons/custom.png';
+import schoolPinIconUrl from '../../icons/school.png';
+import parkPinIconUrl from '../../icons/park.png';
+import playgroundPinIconUrl from '../../icons/playground.png';
+import grandparentsPinIconUrl from '../../icons/grandparents.png';
+import homePinIconUrl from '../../icons/home.png';
+
+/* Same six pins offered in the designer sidebar */
+const STREET_PIN_ICONS = [
+  { id: 'home', label: 'Home', src: homePinIconUrl },
+  { id: 'grandparents', label: 'Family', src: grandparentsPinIconUrl },
+  { id: 'school', label: 'School', src: schoolPinIconUrl },
+  { id: 'park', label: 'Park', src: parkPinIconUrl },
+  { id: 'playground', label: 'Playground', src: playgroundPinIconUrl },
+  { id: 'custom', label: 'Custom', src: customPinIconUrl },
+];
 
 /* ── Inline icons (2px stroke, rounded — per the design system) ───── */
 const stroke = {
@@ -40,10 +57,10 @@ const ShieldIcon = (props) => (
   </svg>
 );
 
-const CapIcon = (props) => (
+const LayersIcon = (props) => (
   <svg width="30" height="30" viewBox="0 0 24 24" aria-hidden="true" {...stroke} {...props}>
-    <path d="M22 9 12 5 2 9l10 4 10-4Z" />
-    <path d="M6 11v5c0 1 2.7 3 6 3s6-2 6-3v-5" />
+    <path d="m12 2 10 5-10 5L2 7l10-5Z" />
+    <path d="m2 12 10 5 10-5M2 17l10 5 10-5" />
   </svg>
 );
 
@@ -53,32 +70,11 @@ const DropIcon = (props) => (
   </svg>
 );
 
-const CheckIcon = (props) => (
-  <svg width="20" height="20" viewBox="0 0 24 24" aria-hidden="true" {...stroke} {...props}>
-    <circle cx="12" cy="12" r="9" />
-    <path d="m8.5 12 2.5 2.5 4.5-5" />
-  </svg>
-);
-
 const MapMarkIcon = (props) => (
   <svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true" {...stroke} {...props}>
     <path d="M9 3 3 6v15l6-3 6 3 6-3V3l-6 3-6-3Z" />
     <path d="M9 3v15M15 6v15" />
   </svg>
-);
-
-const StarIcon = () => (
-  <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-    <path d="m12 2 2.9 6 6.6.6-5 4.4 1.5 6.5L12 16.9 5.9 19.4 7.4 13l-5-4.4 6.6-.6L12 2Z" />
-  </svg>
-);
-
-const Stars = () => (
-  <div className="lp-stars" aria-label="Rated 5 out of 5 stars">
-    {Array.from({ length: 5 }).map((_, i) => (
-      <StarIcon key={i} />
-    ))}
-  </div>
 );
 
 /* ── Address capture form (reused in hero + final CTA) ───────────── */
@@ -185,55 +181,159 @@ const AddressForm = ({ value, onChange, onSubmit, cta, label }) => {
   );
 };
 
-const testimonials = [
+const sizeOptions = [
   {
-    quote:
-      "Leo absolutely loves seeing 'our house' on the mat. He drives his wooden car to the playground we visit every Saturday. It's so special.",
-    name: 'Sarah M.',
-    location: 'Portland, OR',
-    color: '#f5a623',
-    initial: 'S',
+    name: 'The Neighbourhood',
+    size: '48" x 36"',
+    price: '$189',
+    note: 'Fits comfortably in a bedroom or beside the couch. Room for your street and a few blocks around it.',
   },
   {
-    quote:
-      "The quality is beyond what I expected. Thick, durable, and easy to clean. Best gift we've ever bought for our playroom.",
-    name: 'David K.',
-    location: 'Brooklyn, NY',
-    color: '#2f6fe0',
-    initial: 'D',
-  },
-  {
-    quote:
-      'We used it to teach our 4-year-old our address and the way to Grandma’s house. Educational and fun at the same time!',
-    name: 'Elena R.',
-    location: 'Austin, TX',
-    color: '#22c55e',
-    initial: 'E',
+    name: 'The Hometown',
+    size: '60" x 48"',
+    price: '$259',
+    note: 'Takes up a good stretch of playroom or living room floor. Fits the school, the park, and the way to grandma’s.',
   },
 ];
 
-const sizeOptions = [
+const faqItems = [
   {
-    size: '36" x 24"',
-    label: 'Tabletop',
-    note: 'Best for small rooms, desks, and first custom gifts.',
+    question: 'How long does shipping take?',
+    answer:
+      'Every mat is printed to order in Ontario. Most orders arrive within 10 to 14 days anywhere in Canada, a little longer for remote addresses.',
   },
   {
-    size: '48" x 36"',
-    label: 'Playroom',
-    note: 'A roomy everyday mat with space for streets, parks, and school routes.',
+    question: 'What if I don’t like how my map turned out?',
+    answer:
+      'Send it back for a full refund. If you’d rather adjust the map and reprint it, email us and we’ll help you do that instead.',
   },
   {
-    size: '60" x 48"',
-    label: 'Full floor',
-    note: 'Our largest neighborhood canvas for shared play and sprawling layouts.',
+    question: 'Is my address stored or shared?',
+    answer:
+      'Your address is used to generate your map and kept with your order so we can reprint it if you ever ask us to. It is never sold or shared.',
+  },
+  {
+    question: 'What’s the mat made of?',
+    answer:
+      'An 8mm cushioned core with an anti-slip rubber backing and a wipe-clean printed surface. The inks are non-toxic and child-safe.',
+  },
+  {
+    question: 'Can I gift one if I don’t know their exact address?',
+    answer:
+      'A gift option is coming soon. For now, email us at hello@hometownplaymats.com and we’ll set something up.',
   },
 ];
+
+const FOUNDER_PHOTO_SRC = '/images/luke-family-photo.jpg';
 
 const LandingPage = () => {
   const navigate = useNavigate();
   const [heroAddress, setHeroAddress] = useState('');
   const [ctaAddress, setCtaAddress] = useState('');
+
+  useEffect(() => {
+    const clamp = (value, min, max) => Math.min(Math.max(value, min), max);
+    const entries = Array.from(document.querySelectorAll('.lp-map-section'))
+      .map((section) => ({
+        section,
+        layer: section.querySelector('.lp-map-parallax-layer'),
+        currentX: 0,
+        currentY: 0,
+        currentScale: 1,
+        targetX: 0,
+        targetY: 0,
+        targetScale: 1,
+      }))
+      .filter((entry) => entry.layer);
+
+    if (!entries.length) return undefined;
+
+    let animationFrame = 0;
+    const parallaxEase = 0.12;
+
+    const applyMapOffset = (entry) => {
+      entry.section.style.setProperty('--lp-map-shift-x', `${entry.currentX.toFixed(1)}px`);
+      entry.section.style.setProperty('--lp-map-shift-y', `${entry.currentY.toFixed(1)}px`);
+      entry.layer.style.transform = 'none';
+    };
+
+    const renderFrame = () => {
+      animationFrame = 0;
+      let needsNextFrame = false;
+
+      entries.forEach((entry) => {
+        entry.currentX += (entry.targetX - entry.currentX) * parallaxEase;
+        entry.currentY += (entry.targetY - entry.currentY) * parallaxEase;
+        entry.currentScale += (entry.targetScale - entry.currentScale) * parallaxEase;
+
+        const deltaX = Math.abs(entry.targetX - entry.currentX);
+        const deltaY = Math.abs(entry.targetY - entry.currentY);
+        const deltaScale = Math.abs(entry.targetScale - entry.currentScale);
+
+        if (deltaX > 0.05 || deltaY > 0.05 || deltaScale > 0.001) {
+          needsNextFrame = true;
+        } else {
+          entry.currentX = entry.targetX;
+          entry.currentY = entry.targetY;
+          entry.currentScale = entry.targetScale;
+        }
+
+        applyMapOffset(entry);
+      });
+
+      if (needsNextFrame) {
+        animationFrame = window.requestAnimationFrame(renderFrame);
+      }
+    };
+
+    const requestRender = () => {
+      if (animationFrame) return;
+      animationFrame = window.requestAnimationFrame(renderFrame);
+    };
+
+    const updateTargets = (immediate = false) => {
+      const viewportHeight = window.innerHeight || 1;
+
+      entries.forEach((entry) => {
+        const rect = entry.section.getBoundingClientRect();
+        const progress = clamp((viewportHeight - rect.top) / (viewportHeight + rect.height), 0, 1);
+        const centeredProgress = progress - 0.5;
+        const isHero = entry.section.classList.contains('lp-map-hero');
+        const isSizes = entry.section.classList.contains('lp-map-sizes');
+        const yTravel = isHero ? 42 : 36;
+        const xTravel = 0;
+        const xDirection = isSizes ? -1 : 1;
+        const scale = 1;
+        const x = centeredProgress * xTravel * xDirection * -1;
+        const y = centeredProgress * yTravel * -1;
+
+        entry.targetX = x;
+        entry.targetY = y;
+        entry.targetScale = scale;
+
+        if (immediate) {
+          entry.currentX = x;
+          entry.currentY = y;
+          entry.currentScale = scale;
+          applyMapOffset(entry);
+        }
+      });
+
+      if (!immediate) requestRender();
+    };
+
+    const handleViewportChange = () => updateTargets();
+
+    updateTargets(true);
+    window.addEventListener('scroll', handleViewportChange, { passive: true });
+    window.addEventListener('resize', handleViewportChange);
+
+    return () => {
+      if (animationFrame) window.cancelAnimationFrame(animationFrame);
+      window.removeEventListener('scroll', handleViewportChange);
+      window.removeEventListener('resize', handleViewportChange);
+    };
+  }, []);
 
   const goToDesigner = (prefillAddress, suggestion) => {
     const trimmedAddress = prefillAddress.trim();
@@ -253,17 +353,24 @@ const LandingPage = () => {
 
   return (
     <main className="lp">
+      {/* ── Founders batch banner ─────────────────────────────── */}
+      <div className="lp-founders-banner" role="note">
+        First run of 20. Each founders&rsquo; mat ships with a numbered first-run tag and your
+        family name on the map, included.
+      </div>
+
       {/* ── Hero ──────────────────────────────────────────────── */}
-      <section className="lp-hero lp-container" aria-labelledby="lp-hero-title">
-        <div className="lp-hero-grid">
-          <div>
+      <section className="lp-hero lp-map-section lp-map-hero" aria-labelledby="lp-hero-title">
+        <span className="lp-map-parallax-layer" aria-hidden="true" />
+        <div className="lp-container lp-hero-grid">
+          <div className="lp-hero-copy-panel">
             <h1 id="lp-hero-title">
-              Turn your neighborhood into a <span className="lp-accent">toy</span>
+              The streets they&rsquo;re growing up on.{' '}
+              <span className="lp-accent">The mat they&rsquo;ll grow up playing on.</span>
             </h1>
             <p className="lp-hero-copy">
-              Imagine your child’s favorite park, their school, and your own street turned into a
-              beautiful, durable playmat. Simply enter your address to generate a custom-mapped
-              world for endless adventures.
+              A custom play mat of your family&rsquo;s real neighbourhood. Your street, their
+              school, the park you walk to. Designed by you in two minutes, printed in Ontario.
             </p>
 
             <AddressForm
@@ -271,57 +378,8 @@ const LandingPage = () => {
               value={heroAddress}
               onChange={setHeroAddress}
               onSubmit={goToDesigner}
-              cta="Create Your Mat"
+              cta="See your neighbourhood"
             />
-
-            <div className="lp-trust">
-              <div className="lp-avatars" aria-hidden="true">
-                <span style={{ background: '#f5a623' }}>JO</span>
-                <span style={{ background: '#22c55e' }}>MS</span>
-                <span style={{ background: '#2f6fe0' }}>AK</span>
-              </div>
-              <p>Joined by 2,000+ happy parents</p>
-            </div>
-          </div>
-
-          <div className="lp-hero-visual">
-            <img
-              className="lp-hero-product-image"
-              src="/images/play-mat-hero.png"
-              alt="Custom neighborhood play mat with its corner rolled up to show the textured backing"
-            />
-          </div>
-        </div>
-      </section>
-
-      {/* Size options */}
-      <section id="sizes" className="lp-size-options lp-section" aria-labelledby="lp-size-title">
-        <div className="lp-container">
-          <div className="lp-size-grid">
-            <div className="lp-size-copy">
-              <h2 id="lp-size-title">Pick the mat that fits your kind of play.</h2>
-              <p>
-                Each size uses the same custom neighborhood map, scaled for crisp street detail and
-                easy toy-car routes from room to room.
-              </p>
-
-              <div className="lp-size-list" aria-label="Available mat sizes">
-                {sizeOptions.map((option) => (
-                  <article className="lp-size-card" key={option.size}>
-                    <strong>{option.size}</strong>
-                    <span>{option.label}</span>
-                    <p>{option.note}</p>
-                  </article>
-                ))}
-              </div>
-            </div>
-
-            <figure className="lp-size-visual">
-              <img
-                src="/images/play-mat-size-options.png"
-                alt="Three custom play mat size options shown as overlapping map rectangles: 36 by 24 inches, 48 by 36 inches, and 60 by 48 inches."
-              />
-            </figure>
           </div>
         </div>
       </section>
@@ -330,11 +388,7 @@ const LandingPage = () => {
       <section id="how-it-works" className="lp-steps lp-section">
         <div className="lp-container">
           <div className="lp-section-head">
-            <h2>Your Custom Mat, 3 Steps Away</h2>
-            <p>
-              Start with your home, tune the map until it feels like your neighborhood, then we
-              print and ship it to your door.
-            </p>
+            <h2>How it works</h2>
           </div>
 
           <div className="lp-step-grid">
@@ -343,8 +397,8 @@ const LandingPage = () => {
               <span className="lp-chip lp-chip-blue">
                 <PinIcon width="22" height="22" />
               </span>
-              <h3>Enter Your Address</h3>
-              <p>Type in your home address and we generate a real map around your neighborhood.</p>
+              <h3>Enter your address</h3>
+              <p>Type it in and we draw a map of the streets around your home.</p>
             </article>
 
             <article className="lp-step is-feature">
@@ -352,8 +406,8 @@ const LandingPage = () => {
               <span className="lp-chip lp-chip-amber">
                 <SlidersIcon />
               </span>
-              <h3>Adjust Your Map</h3>
-              <p>Move, zoom, and customize the map so it shows the streets and places that matter most.</p>
+              <h3>Shape the map</h3>
+              <p>Shift and rotate it until it feels like home.</p>
             </article>
 
             <article className="lp-step">
@@ -361,28 +415,56 @@ const LandingPage = () => {
               <span className="lp-chip lp-chip-green">
                 <TruckIcon />
               </span>
-              <h3>Delivered Home</h3>
-              <p>We print your finished design on premium material and deliver it straight to your house.</p>
+              <h3>We print and ship it</h3>
+              <p>Your mat is printed in Ontario and shipped to your door.</p>
             </article>
           </div>
         </div>
       </section>
 
-      {/* ── Feature bento ─────────────────────────────────────── */}
+      {/* ── Made from your real streets ───────────────────────── */}
+      <section className="lp-streets lp-section" aria-labelledby="lp-streets-title">
+        <div className="lp-container">
+          <div className="lp-section-head">
+            <h2 id="lp-streets-title">Made from your real streets</h2>
+            <p>
+              Every mat is generated from your family&rsquo;s actual address. The roads on it are
+              the ones outside your door, so no two mats are the same.
+            </p>
+          </div>
+          <ul className="lp-streets-pins" aria-label="Pins you can add to your mat">
+            {STREET_PIN_ICONS.map((pin) => (
+              <li key={pin.id} className="lp-streets-pin">
+                <img src={pin.src} alt="" width="56" height="56" loading="lazy" />
+                <span>{pin.label}</span>
+              </li>
+            ))}
+          </ul>
+          <p className="lp-streets-frame">
+            You choose what makes the frame. Shift the map so grandma&rsquo;s street or the school
+            makes it on.
+          </p>
+        </div>
+      </section>
+
+      {/* ── Materials ─────────────────────────────────────────── */}
       <section className="lp-section" aria-labelledby="lp-features-title">
         <div className="lp-container">
           <div className="lp-section-head">
-            <h2 id="lp-features-title">Designed for Real Play</h2>
+            <h2 id="lp-features-title">Built to be played on for years</h2>
+            <p>
+              And to still hang together when they&rsquo;ve outgrown it.
+            </p>
           </div>
 
           <div className="lp-bento">
             <article className="lp-feature lp-feature-safety">
               <div className="lp-feature-text">
-                <span className="lp-feature-pill">Safety First</span>
-                <h3 style={{ marginTop: 14 }}>100% Non-Toxic &amp; Safe</h3>
+                <span className="lp-feature-pill">Child-safe</span>
+                <h3 style={{ marginTop: 14 }}>Inks they can put their hands on</h3>
                 <p>
-                  Every mat is BPA-free, hypoallergenic, and crafted with child-safe vegetable inks.
-                  Soft enough for crawlers, tough enough for toddlers.
+                  Every mat is printed with non-toxic, child-safe inks. Fine for babies who still
+                  explore the floor with their hands and their mouth.
                 </p>
               </div>
               <div className="lp-shield">
@@ -391,26 +473,25 @@ const LandingPage = () => {
             </article>
 
             <article className="lp-feature lp-feature-learning">
-              <CapIcon />
-              <h3>Learning through Map Play</h3>
-              <p>Develop spatial awareness and community recognition from a young age.</p>
-              <span className="lp-feature-pill">Curriculum Inspired</span>
+              <LayersIcon />
+              <h3>8mm of cushion</h3>
+              <p>Thick enough to be comfortable on hardwood. For kneeling parents as much as kids.</p>
+              <span className="lp-feature-pill">Quiet underfoot</span>
             </article>
 
             <article className="lp-feature lp-feature-durability">
-              <h3>Wipe-Clean Durability</h3>
-              <p>Accidents happen. Our mats are waterproof and scrub-ready for any spill.</p>
+              <h3>Wipes clean</h3>
+              <p>Spilled juice and muddy toy wheels come off with a damp cloth.</p>
               <DropIcon />
             </article>
 
             <article className="lp-feature lp-feature-material">
               <div className="lp-feature-text">
-                <h3>High-Quality Material</h3>
-                <ul className="lp-check-list">
-                  <li><CheckIcon /> 8mm thickness for comfort</li>
-                  <li><CheckIcon /> Anti-slip rubber backing</li>
-                  <li><CheckIcon /> UV-resistant colors</li>
-                </ul>
+                <h3>Made to stay put and stay bright</h3>
+                <p>
+                  An anti-slip rubber backing keeps it flat on hardwood and tile. The colour is
+                  UV-resistant, so a sunny playroom won&rsquo;t wash it out.
+                </p>
               </div>
               <div className="lp-material-badge">
                 <MapMarkIcon width="36" height="36" />
@@ -420,26 +501,115 @@ const LandingPage = () => {
         </div>
       </section>
 
-      {/* ── Testimonials ──────────────────────────────────────── */}
-      <section className="lp-testimonials lp-section" aria-labelledby="lp-quotes-title">
+      {/* Size options */}
+      <section id="sizes" className="lp-size-options lp-map-section lp-map-sizes lp-section" aria-labelledby="lp-size-title">
+        <span className="lp-map-parallax-layer" aria-hidden="true" />
+        <div className="lp-container">
+          <div className="lp-size-grid">
+            <div className="lp-size-copy">
+              <h2 id="lp-size-title">Two sizes. Both your streets.</h2>
+              <p>
+                Both use the same map of your neighbourhood, printed with the same care. The only
+                question is how much floor you want to give it.
+              </p>
+
+              <div className="lp-size-list" aria-label="Available mat sizes">
+                {sizeOptions.map((option) => (
+                  <article className="lp-size-card" key={option.name}>
+                    <strong>{option.name}</strong>
+                    <span>
+                      {option.size} - {option.price}
+                    </span>
+                    <p>{option.note}</p>
+                  </article>
+                ))}
+              </div>
+
+              <p className="lp-price-note">
+                Shipping included. All prices CAD. Printed and shipped from Ontario.
+              </p>
+            </div>
+
+            <div className="lp-size-scale" aria-label="Mat size comparison over map background">
+              <div className="lp-size-scale-frame lp-size-scale-large">
+                <span>60&quot; x 48&quot;</span>
+              </div>
+              <div className="lp-size-scale-frame lp-size-scale-medium">
+                <span>48&quot; x 36&quot;</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ── Gifting ───────────────────────────────────────────── */}
+      <section className="lp-gift lp-section" aria-labelledby="lp-gift-title">
         <div className="lp-container">
           <div className="lp-section-head">
-            <h2 id="lp-quotes-title">What Parents are Saying</h2>
+            <h2 id="lp-gift-title">A gift that shows you know where they live</h2>
+            <p>
+              For grandparents who want the grandkids to know their street too. For the family that
+              just moved into their first house. A map of home means more than another toy.
+            </p>
           </div>
+          <p className="lp-gift-note">
+            Every mat ships gift-ready, rolled in a sturdy tube with no invoice inside.
+          </p>
+        </div>
+      </section>
 
-          <div className="lp-quote-grid">
-            {testimonials.map((t) => (
-              <article className="lp-quote" key={t.name}>
-                <Stars />
-                <blockquote>“{t.quote}”</blockquote>
-                <div className="lp-quote-author">
-                  <span style={{ background: t.color }}>{t.initial}</span>
-                  <div>
-                    <strong>{t.name}</strong>
-                    <small>{t.location}</small>
-                  </div>
-                </div>
-              </article>
+      {/* ── Founder note ──────────────────────────────────────── */}
+      <section className="lp-founder lp-section" aria-labelledby="lp-founder-title">
+        <div className="lp-container lp-founder-inner">
+          <figure className="lp-founder-photo">
+            <img
+              src={FOUNDER_PHOTO_SRC}
+              alt="Luke with his family on the beach"
+              loading="lazy"
+              onError={(event) => {
+                event.currentTarget.hidden = true;
+                event.currentTarget.parentElement?.classList.add('is-missing');
+              }}
+            />
+          </figure>
+          <div>
+            <h2 id="lp-founder-title">A note from the founder</h2>
+            <p>
+              I&rsquo;m Luke, a dad in Waterdown, Ontario. I made the first one of these for my own
+              kids, so the roads they pushed their cars along were the ones outside our window. Now
+              I make them for other families&rsquo; streets. Each one is checked by hand before it
+              ships.
+            </p>
+            <p className="lp-founder-sig">- Luke</p>
+          </div>
+        </div>
+      </section>
+
+      {/* ── Guarantee ─────────────────────────────────────────── */}
+      <section className="lp-guarantee lp-section" aria-labelledby="lp-guarantee-title">
+        <div className="lp-container">
+          <div className="lp-guarantee-card">
+            <ShieldIcon width="44" height="44" />
+            <h2 id="lp-guarantee-title">
+              If it isn&rsquo;t beautiful in person, send it back. Full refund.
+            </h2>
+            <p>We would rather take a mat back than have it sit rolled up in a closet.</p>
+          </div>
+        </div>
+      </section>
+
+      {/* ── FAQ ───────────────────────────────────────────────── */}
+      <section className="lp-faq lp-section" aria-labelledby="lp-faq-title">
+        <div className="lp-container">
+          <div className="lp-section-head">
+            <h2 id="lp-faq-title">Questions, answered honestly</h2>
+          </div>
+          <div className="lp-faq-list">
+            {faqItems.map((item) => (
+              <details className="lp-faq-item" key={item.question}>
+                <summary>{item.question}</summary>
+                <p>{item.answer}</p>
+              </details>
             ))}
           </div>
         </div>
@@ -448,16 +618,19 @@ const LandingPage = () => {
       {/* ── Final CTA ─────────────────────────────────────────── */}
       <section className="lp-cta-wrap lp-container">
         <div className="lp-cta">
-          <h2>Ready to Map Your Neighborhood?</h2>
-          <p>Join thousands of families turning their corners of the world into a playground.</p>
+          <h2>Start with your address</h2>
+          <p>
+            Type it in and see your streets as a mat. Designing takes about two minutes and costs
+            nothing.
+          </p>
           <AddressForm
             label="Your address"
             value={ctaAddress}
             onChange={setCtaAddress}
             onSubmit={goToDesigner}
-            cta="Get Started"
+            cta="See your neighbourhood"
           />
-          <p className="lp-cta-note">No credit card required to design. Starting at $89.</p>
+          <p className="lp-cta-note">All prices CAD. Printed and shipped from Ontario.</p>
         </div>
       </section>
 
@@ -465,18 +638,17 @@ const LandingPage = () => {
       <footer className="lp-footer">
         <div className="lp-container lp-footer-inner">
           <div className="lp-footer-brand">
-            <span className="lp-footer-mark">
-              <MapMarkIcon />
-            </span>
-            <span className="brand-wordmark">Hometown Play Mats</span>
+            <Logo size={30} />
           </div>
           <nav aria-label="Footer">
             <a href="#how-it-works">How it Works</a>
-            <a href="/cart">Contact Us</a>
+            <a href="mailto:hello@hometownplaymats.com">Contact Us</a>
+            <a href="mailto:hello@hometownplaymats.com">hello@hometownplaymats.com</a>
           </nav>
         </div>
         <div className="lp-copyright">
-          © 2026 <span className="brand-wordmark">Hometown Play Mats</span>. Handcrafted with love for your little explorers.
+          © 2026 <Logo size={16} gap={4} />. Printed in Ontario,
+          Canada.
         </div>
       </footer>
     </main>

@@ -9,6 +9,8 @@ import Signup from './components/auth/Signup';
 import AccountSettings from './components/auth/AccountSettings';
 import SavedMats from './components/mats/SavedMats';
 import Cart from './components/cart/Cart';
+import MapBackgroundExporter from './components/MapBackgroundExporter';
+import { AppDialogProvider } from './contexts/AppDialogContext';
 import './App.css';
 
 const HashScroller = () => {
@@ -35,7 +37,7 @@ const HashScroller = () => {
 
 function App() {
   return (
-    <>
+    <AppDialogProvider>
       <HashScroller />
       <Header />
       <Routes>
@@ -44,6 +46,7 @@ function App() {
         {/* Home page - no login required */}
         <Route path="/" element={<LandingPage />} />
         <Route path="/create" element={<ToyMatDesigner />} />
+        <Route path="/map-background-export" element={<MapBackgroundExporter />} />
         {/* Protected routes - require login */}
         <Route
           path="/account"
@@ -66,7 +69,7 @@ function App() {
           element={<Cart />}
         />
       </Routes>
-    </>
+    </AppDialogProvider>
   );
 }
 

@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 120" role="img" aria-labelledby="title">
+  <title>Playground marker</title>
+  <path fill="#FFFFFF" d="M50 2A48 48 0 0 1 84.9 82.9L50 120 15.1 82.9A48 48 0 0 1 50 2Z"/>
+  <path fill="#7BA05B" d="M50 6A44 44 0 0 1 82.8 79.3L50 116 17.2 79.3A44 44 0 0 1 50 6Z"/>
+  <path fill="none" stroke="#FFFFFF" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" d="M31 28h38M35 31 28 74M65 31l7 43M44 32 42 65M56 32l2 33M40 67h20"/>
+</svg>

@@ -1,7 +1,9 @@
 import { useState } from 'react';
 import { deleteMat } from '../../utils/matStorage';
+import { useAppDialog } from '../../hooks/useAppDialog';
 
 const SavedMatCard = ({ userId, mat, onLoadMat, isInCart }) => {
+  const dialog = useAppDialog();
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [deleting, setDeleting] = useState(false);
 
@@ -14,7 +16,7 @@ const SavedMatCard = ({ userId, mat, onLoadMat, isInCart }) => {
       setShowDeleteConfirm(false);
     } catch (error) {
       console.error('Error deleting mat:', error);
-      alert('Failed to delete mat. Please try again.');
+      dialog.alert('Failed to delete mat. Please try again.', { title: 'Delete failed', tone: 'danger' });
     } finally {
       setDeleting(false);
     }

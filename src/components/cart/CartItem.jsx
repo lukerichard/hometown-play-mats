@@ -1,8 +1,10 @@
 import { useState } from 'react';
 import { updateCartQuantity, removeFromCart } from '../../utils/cartUtils';
 import { getMatAspectRatio } from '../../utils/matDimensions';
+import { useAppDialog } from '../../hooks/useAppDialog';
 
 const CartItem = ({ userId, cartItem, mat, onViewMat, onRemoved }) => {
+  const dialog = useAppDialog();
   const [updating, setUpdating] = useState(false);
 
   const font = "'DM Sans', 'Poppins', sans-serif";
@@ -11,7 +13,10 @@ const CartItem = ({ userId, cartItem, mat, onViewMat, onRemoved }) => {
     if (newQuantity < 1) return;
     setUpdating(true);
     try { await updateCartQuantity(userId, cartItem.id, newQuantity); }
-    catch (error) { console.error('Error updating quantity:', error); alert('Failed to update quantity. Please try again.'); }
+    catch (error) {
+      console.error('Error updating quantity:', error);
+      dialog.alert('Failed to update quantity. Please try again.', { title: 'Quantity update failed' });
+    }
     finally { setUpdating(false); }
   };
 
@@ -21,7 +26,10 @@ const CartItem = ({ userId, cartItem, mat, onViewMat, onRemoved }) => {
       await removeFromCart(userId, cartItem.id);
       if (onRemoved) onRemoved();
     }
-    catch (error) { console.error('Error removing item:', error); alert('Failed to remove item. Please try again.'); }
+    catch (error) {
+      console.error('Error removing item:', error);
+      dialog.alert('Failed to remove item. Please try again.', { title: 'Remove failed' });
+    }
     finally { setUpdating(false); }
   };
 

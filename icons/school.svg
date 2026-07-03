@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 120" role="img" aria-labelledby="title">
+  <title>School marker</title>
+  <path fill="#FFFFFF" d="M50 2A48 48 0 0 1 84.9 82.9L50 120 15.1 82.9A48 48 0 0 1 50 2Z"/>
+  <path fill="#2B3A67" d="M50 6A44 44 0 0 1 82.8 79.3L50 116 17.2 79.3A44 44 0 0 1 50 6Z"/>
+  <path fill="none" stroke="#FFFFFF" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" d="M27 54h46v22H27V54ZM43 54V40h14v14M42 40l8-10 8 10M45 76V64h10v12M34 60h7v7h-7V60ZM59 60h7v7h-7V60Z"/>
+</svg>

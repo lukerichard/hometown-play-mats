@@ -1,8 +1,10 @@
 import { useEffect, useRef, useState } from 'react';
 import mapboxgl from 'mapbox-gl';
 import 'mapbox-gl/dist/mapbox-gl.css';
+import { useAppDialog } from '../hooks/useAppDialog';
 
 const MapEditor = () => {
+  const dialog = useAppDialog();
   const mapContainerRef = useRef(null);
   const mapRef = useRef(null);
   const markerRef = useRef(null);
@@ -103,11 +105,11 @@ const MapEditor = () => {
         console.log('Location found:', data.features[0].place_name);
       } else {
         console.warn('No results found for:', address);
-        alert('Address not found. Please try a different search.');
+        dialog.alert('Address not found. Please try a different search.', { title: 'Address not found' });
       }
     } catch (error) {
       console.error('Geocoding error:', error);
-      alert('Error searching for address. Please try again.');
+      dialog.alert('Error searching for address. Please try again.', { title: 'Search failed' });
     } finally {
       setIsSearching(false);
     }

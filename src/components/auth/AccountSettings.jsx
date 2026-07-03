@@ -1,9 +1,11 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../hooks/useAuth';
+import { useAppDialog } from '../../hooks/useAppDialog';
 
 const AccountSettings = () => {
   const { currentUser, updateUserProfile, updatePassword, deleteAccount, logout } = useAuth();
+  const dialog = useAppDialog();
   const navigate = useNavigate();
 
   const [displayName, setDisplayName] = useState(currentUser?.displayName || '');
@@ -90,14 +92,17 @@ const AccountSettings = () => {
       navigate('/signup');
     } catch (error) {
       console.error('Delete account error:', error);
-      alert('Failed to delete account. You may need to re-login and try again.');
+      dialog.alert('Failed to delete account. You may need to re-login and try again.', { title: 'Delete failed', tone: 'danger' });
       setShowDeleteConfirm(false);
     } finally { setDeleteLoading(false); }
   };
 
   const handleLogout = async () => {
     try { await logout(); navigate('/login'); }
-    catch (error) { console.error('Logout error:', error); alert('Failed to logout. Please try again.'); }
+    catch (error) {
+      console.error('Logout error:', error);
+      dialog.alert('Failed to logout. Please try again.', { title: 'Logout failed' });
+    }
   };
 
   return (

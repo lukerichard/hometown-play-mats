@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import ZoomableImage from './ZoomableImage';
 
 const QUICKSAND = "'Quicksand', 'DM Sans', sans-serif";
 const PRODUCT_DETAIL_IMAGE = '/images/play-mat-product-detail.png';
@@ -55,7 +56,7 @@ const MatPreview = ({
           <div className="flex-1 flex items-center justify-center p-10 overflow-y-auto" style={{ background: '#f7f9fb' }}>
             <div className="max-w-[600px] w-full">
               <div className="relative">
-                <img
+                <ZoomableImage
                   src={displayedImage}
                   alt={activeImage === 'design'
                     ? 'Your custom play mat design'

@@ -1,0 +1,53 @@
+{
+  "icons": [
+    {
+      "id": "home",
+      "file": "home.svg",
+      "png": "home.png",
+      "label": "Your House",
+      "defaultColor": "#E07856"
+    },
+    {
+      "id": "school",
+      "file": "school.svg",
+      "png": "school.png",
+      "label": "School",
+      "defaultColor": "#2B3A67"
+    },
+    {
+      "id": "park",
+      "file": "park.svg",
+      "png": "park.png",
+      "label": "Park",
+      "defaultColor": "#7BA05B"
+    },
+    {
+      "id": "playground",
+      "file": "playground.svg",
+      "png": "playground.png",
+      "label": "Playground",
+      "defaultColor": "#7BA05B"
+    },
+    {
+      "id": "grandparents",
+      "file": "grandparents.svg",
+      "png": "grandparents.png",
+      "label": "Family & Friends",
+      "defaultColor": "#F5C542"
+    },
+    {
+      "id": "treat",
+      "file": "treat.svg",
+      "png": "treat.png",
+      "label": "Treat",
+      "defaultColor": "#F5C542"
+    },
+    {
+      "id": "custom",
+      "file": "custom.svg",
+      "png": "custom.png",
+      "label": "Custom Pin",
+      "defaultColor": "#2B3A67"
+    }
+  ]
+}

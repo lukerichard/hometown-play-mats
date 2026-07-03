@@ -7,9 +7,11 @@ import MatPreview from '../MatPreview';
 import { addToCart, updateCartQuantity, removeFromCart } from '../../utils/cartUtils';
 import { isVerifiedAccount } from '../../utils/authStatus';
 import { joinLaunchWaitlistIfContactAvailable } from '../../utils/waitlist';
+import { useAppDialog } from '../../hooks/useAppDialog';
 
 const SavedMats = () => {
   const { currentUser } = useAuth();
+  const dialog = useAppDialog();
   const navigate = useNavigate();
   const [previewingMat, setPreviewingMat] = useState(null);
 
@@ -44,6 +46,10 @@ const SavedMats = () => {
     ? cartItems.find(item => (item.designId || item.matId) === previewingMat.id)
     : null;
 
+  const getCustomPinsForMat = (mat) => (
+    mat?.customPins || (mat?.customPin ? [mat.customPin] : [])
+  );
+
   const handleLoadMat = (mat) => {
     navigate('/create', {
       state: {
@@ -57,6 +63,10 @@ const SavedMats = () => {
           mapZoom: mat.mapZoom || 15,
           address: mat.address || '',
           showStreetNames: mat.showStreetNames ?? true,
+          showLandmarks: mat.showLandmarks ?? true,
+          showLandmarkNames: mat.showLandmarkNames ?? true,
+          landmarkDensity: mat.landmarkDensity || 'balanced',
+          customPins: mat.customPins || (mat.customPin ? [mat.customPin] : []),
           previewImageUrl: mat.previewImageUrl || ''
         }
       }
@@ -65,7 +75,10 @@ const SavedMats = () => {
 
   const handleAddToCart = async () => {
     if (!isSignedIn) {
-      const shouldSignup = confirm('You need a verified account to add saved mats to cart. Create or verify an account now?');
+      const shouldSignup = await dialog.confirm('You need a verified account to add saved mats to cart. Create or verify an account now?', {
+        title: 'Account required',
+        confirmLabel: 'Create account',
+      });
       if (shouldSignup) navigate('/signup');
       return;
     }
@@ -77,6 +90,7 @@ const SavedMats = () => {
         theme: previewingMat.colorScheme,
         nameSnapshot: previewingMat.name,
         previewImageUrlSnapshot: previewingMat.previewImageUrl,
+        customPinsSnapshot: getCustomPinsForMat(previewingMat),
         existingCartItemId: previewingCartItem?.id
       });
       joinLaunchWaitlistIfContactAvailable({
@@ -89,6 +103,7 @@ const SavedMats = () => {
           matSize: previewingMat.matSize || '',
           theme: previewingMat.colorScheme || '',
           previewImage: previewingMat.previewImageUrl || '',
+          customPins: getCustomPinsForMat(previewingMat),
           price: pricePerUnit,
           quantity: 1
         }
@@ -97,7 +112,7 @@ const SavedMats = () => {
       });
     } catch (error) {
       console.error('Error adding to cart:', error);
-      alert('Failed to add to cart. Please try again.');
+      dialog.alert('Failed to add to cart. Please try again.', { title: 'Cart update failed' });
     }
   };
 
@@ -111,7 +126,7 @@ const SavedMats = () => {
       }
     } catch (error) {
       console.error('Error updating quantity:', error);
-      alert('Failed to update quantity. Please try again.');
+      dialog.alert('Failed to update quantity. Please try again.', { title: 'Quantity update failed' });
     }
   };
 

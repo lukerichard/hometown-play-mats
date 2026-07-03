@@ -68,6 +68,9 @@ export const addToCart = async (userId, designId, quantity = 1, pricePerUnit, it
       ...(itemData.previewImageUrlSnapshot !== undefined
         ? { previewImageUrlSnapshot: compactPreviewSnapshot(itemData.previewImageUrlSnapshot) }
         : {}),
+      ...(itemData.customPinsSnapshot !== undefined
+        ? { customPinsSnapshot: Array.isArray(itemData.customPinsSnapshot) ? itemData.customPinsSnapshot : [] }
+        : {}),
       ...(itemData.matSize !== undefined ? { matSize: itemData.matSize || '' } : {}),
       ...(itemData.theme !== undefined ? { theme: itemData.theme || '' } : {}),
       addedAt: serverTimestamp(),

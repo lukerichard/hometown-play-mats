@@ -1,6 +1,13 @@
 import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import mapboxgl from 'mapbox-gl';
 import 'mapbox-gl/dist/mapbox-gl.css';
+import homePinIconUrl from '../../icons/home.png';
+import schoolPinIconUrl from '../../icons/school.png';
+import parkPinIconUrl from '../../icons/park.png';
+import playgroundPinIconUrl from '../../icons/playground.png';
+import grandparentsPinIconUrl from '../../icons/grandparents.png';
+import treatPinIconUrl from '../../icons/treat.png';
+import customPinIconUrl from '../../icons/custom.png';
 
 // Physical mat dimensions in inches per size name
 const MAT_INCHES = {
@@ -39,10 +46,111 @@ const ROAD_ZOOM_SCALE = {
 };
 
 const ROAD_CASING_SCALE = 1.34;
+const HOME_PIN_SOURCE_ID = 'pastel-home-pin';
+const HOME_PIN_LAYER_ID = 'pastel-home-pin-symbol';
+const LANDMARK_SOURCE_ID = 'pastel-landmarks';
+const LANDMARK_LAYER_ID = 'pastel-landmark-symbols';
+const CUSTOM_PIN_SOURCE_ID = 'pastel-custom-pin';
+const CUSTOM_PIN_LAYER_ID = 'pastel-custom-pin-symbol';
+const PIN_ICON_IMAGE_HEIGHT = 512;
+const PIN_ICON_URLS = {
+  home: homePinIconUrl,
+  school: schoolPinIconUrl,
+  park: parkPinIconUrl,
+  playground: playgroundPinIconUrl,
+  grandparents: grandparentsPinIconUrl,
+  treat: treatPinIconUrl,
+  custom: customPinIconUrl,
+};
+const PIN_ICON_IDS = Object.keys(PIN_ICON_URLS);
+const LANDMARK_ICON_TYPES = {
+  school: 'school',
+  playground: 'playground',
+  park: 'park',
+};
+const LANDMARK_TYPES = [
+  {
+    type: 'school',
+    priority: 10,
+    tests: ['school', 'kindergarten', 'preschool', 'college', 'university', 'academy'],
+  },
+  { type: 'playground', priority: 9, tests: ['playground'] },
+  { type: 'park', priority: 8, tests: ['park', 'garden', 'recreation ground', 'recreation_ground'] },
+];
+const mapImageLoadState = new WeakMap();
 
 const classIn = (...classes) => ['in', ['get', 'class'], ['literal', classes]];
 const typeIn = (...types) => ['in', ['get', 'type'], ['literal', types]];
 const nearlyEqual = (a, b, epsilon = 0.000001) => Math.abs(a - b) < epsilon;
+const emptyHomePinCollection = () => ({ type: 'FeatureCollection', features: [] });
+const emptyLandmarkCollection = () => ({ type: 'FeatureCollection', features: [] });
+const emptyCustomPinCollection = () => ({ type: 'FeatureCollection', features: [] });
+const getPinImageId = (iconId) => `pin-${iconId}`;
+const normalizePinIconId = (iconId) => (PIN_ICON_URLS[iconId] ? iconId : 'custom');
+
+const pointDistance = (a, b) => Math.hypot(a.x - b.x, a.y - b.y);
+
+const distanceToSegment = (point, start, end) => {
+  const dx = end.x - start.x;
+  const dy = end.y - start.y;
+  const lengthSq = dx * dx + dy * dy;
+
+  if (!lengthSq) return pointDistance(point, start);
+
+  const t = Math.max(0, Math.min(1, ((point.x - start.x) * dx + (point.y - start.y) * dy) / lengthSq));
+  return pointDistance(point, { x: start.x + t * dx, y: start.y + t * dy });
+};
+
+const flattenLineCoordinates = (coordinates) => {
+  if (!Array.isArray(coordinates) || coordinates.length === 0) return [];
+  if (typeof coordinates[0]?.[0] === 'number') return [coordinates];
+  return coordinates.flatMap(flattenLineCoordinates);
+};
+
+const classifyLandmark = (properties = {}) => {
+  const searchable = Object.values(properties)
+    .filter((value) => typeof value === 'string' || typeof value === 'number')
+    .join(' ')
+    .toLowerCase();
+
+  if (!searchable || searchable.includes('parking')) return null;
+
+  const match = LANDMARK_TYPES.find(({ tests }) => tests.some((test) => searchable.includes(test)));
+  if (!match) return null;
+
+  return {
+    type: match.type,
+    priority: match.priority,
+    name: properties.name_en || properties.name || properties.name_script || properties.name_local || '',
+  };
+};
+
+const ensurePinImages = (map, iconIds, onLoad) => {
+  if (!map) return;
+
+  let loadingImages = mapImageLoadState.get(map);
+  if (!loadingImages) {
+    loadingImages = new Set();
+    mapImageLoadState.set(map, loadingImages);
+  }
+
+  iconIds.forEach((iconId) => {
+    const normalizedIconId = normalizePinIconId(iconId);
+    const imageId = getPinImageId(normalizedIconId);
+    if (map.hasImage(imageId) || loadingImages.has(imageId)) return;
+
+    loadingImages.add(imageId);
+    map.loadImage(PIN_ICON_URLS[normalizedIconId], (error, image) => {
+      loadingImages.delete(imageId);
+      if (error || !image) {
+        console.warn(`Failed to load map pin icon: ${normalizedIconId}`, error);
+        return;
+      }
+      if (!map.hasImage(imageId)) map.addImage(imageId, image);
+      onLoad?.();
+    });
+  });
+};
 
 const MatMapView = ({
   center,
@@ -50,6 +158,11 @@ const MatMapView = ({
   matSize,
   rotation,
   showStreetNames = true,
+  showLandmarks = true,
+  showLandmarkNames = true,
+  homePinCoordinates,
+  customPins = [],
+  onCustomPinChange,
   onMapReady,
   onFrameChange,
   onCameraChange,
@@ -58,10 +171,16 @@ const MatMapView = ({
   const wrapperRef = useRef(null);
   const mapContainerRef = useRef(null);
   const mapRef = useRef(null);
+  const customPinMarkersRef = useRef(new Map());
+  const customPinsRef = useRef(customPins);
   const latestViewRef = useRef({ center, zoom, rotation });
   const onCameraChangeRef = useRef(onCameraChange);
+  const onCustomPinChangeRef = useRef(onCustomPinChange);
+  const landmarkUpdateTimeoutRef = useRef(null);
+  const customPinSyncTimeoutRef = useRef(null);
   const [mapUnavailable, setMapUnavailable] = useState(false);
   const [containerSize, setContainerSize] = useState({ w: 0, h: 0 });
+  const [customPinScreenPositions, setCustomPinScreenPositions] = useState([]);
 
   useLayoutEffect(() => {
     latestViewRef.current = { center, zoom, rotation };
@@ -70,6 +189,14 @@ const MatMapView = ({
   useLayoutEffect(() => {
     onCameraChangeRef.current = onCameraChange;
   }, [onCameraChange]);
+
+  useLayoutEffect(() => {
+    onCustomPinChangeRef.current = onCustomPinChange;
+  }, [onCustomPinChange]);
+
+  useLayoutEffect(() => {
+    customPinsRef.current = customPins;
+  }, [customPins]);
 
   // Track container size so the overlay panels stay accurate
   useEffect(() => {
@@ -163,11 +290,483 @@ const MatMapView = ({
       'pastel-road-medium-labels',
       'pastel-road-local-labels',
       'pastel-road-service-labels',
+      HOME_PIN_LAYER_ID,
+      LANDMARK_LAYER_ID,
+      CUSTOM_PIN_LAYER_ID,
     ];
 
     layerIds.forEach((id) => {
       if (map.getLayer(id)) map.removeLayer(id);
     });
+  };
+
+  const getPinIconScale = () => {
+    if (!frame) return 38 / PIN_ICON_IMAGE_HEIGHT;
+    const spec = MAT_INCHES[matSize.name] || MAT_INCHES.Medium;
+    const pixelsPerInch = frame.fw / spec.w;
+    const targetHeight = Math.min(Math.max(pixelsPerInch * 2.2, 34), 58);
+    return targetHeight / PIN_ICON_IMAGE_HEIGHT;
+  };
+
+  const getRoadLayerIds = () => [
+    'pastel-road-major-casing',
+    'pastel-road-major-base',
+    'pastel-road-medium-casing',
+    'pastel-road-medium-base',
+    'pastel-road-local-casing',
+    'pastel-road-local-base',
+    'pastel-road-service-casing',
+    'pastel-road-service-base',
+  ].filter((id) => mapRef.current?.getLayer(id));
+
+  const updateHomePinSource = () => {
+    const source = mapRef.current?.getSource(HOME_PIN_SOURCE_ID);
+    if (!source?.setData) return;
+
+    if (!Array.isArray(homePinCoordinates)) {
+      source.setData(emptyHomePinCollection());
+      return;
+    }
+
+    source.setData({
+      type: 'FeatureCollection',
+      features: [
+        {
+          type: 'Feature',
+          geometry: {
+            type: 'Point',
+            coordinates: homePinCoordinates,
+          },
+          properties: {},
+        },
+      ],
+    });
+  };
+
+  const ensureHomePinLayer = () => {
+    const map = mapRef.current;
+    if (!map || !map.isStyleLoaded()) return;
+
+    ensurePinImages(map, ['home'], updateHomePinSource);
+
+    if (!map.getSource(HOME_PIN_SOURCE_ID)) {
+      map.addSource(HOME_PIN_SOURCE_ID, {
+        type: 'geojson',
+        data: emptyHomePinCollection(),
+      });
+    }
+
+    if (!map.getLayer(HOME_PIN_LAYER_ID)) {
+      map.addLayer({
+        id: HOME_PIN_LAYER_ID,
+        type: 'symbol',
+        source: HOME_PIN_SOURCE_ID,
+        layout: {
+          'symbol-placement': 'point',
+          'icon-image': getPinImageId('home'),
+          'icon-size': getPinIconScale(),
+          'icon-anchor': 'bottom',
+          'icon-allow-overlap': true,
+          'icon-ignore-placement': true,
+        },
+      });
+    } else {
+      map.setLayoutProperty(HOME_PIN_LAYER_ID, 'icon-size', getPinIconScale());
+    }
+  };
+
+  const ensureLandmarkLayer = () => {
+    const map = mapRef.current;
+    if (!map || !map.isStyleLoaded()) return;
+
+    ensurePinImages(map, Object.values(LANDMARK_ICON_TYPES), () => scheduleLandmarkUpdate(0));
+
+    if (!map.getSource(LANDMARK_SOURCE_ID)) {
+      map.addSource(LANDMARK_SOURCE_ID, {
+        type: 'geojson',
+        data: emptyLandmarkCollection(),
+      });
+    }
+
+    if (!map.getLayer(LANDMARK_LAYER_ID)) {
+      map.addLayer({
+        id: LANDMARK_LAYER_ID,
+        type: 'symbol',
+        source: LANDMARK_SOURCE_ID,
+        layout: {
+          'symbol-placement': 'point',
+          'symbol-sort-key': ['get', 'sortKey'],
+          'icon-image': ['concat', 'pin-', ['get', 'iconId']],
+          'icon-size': getPinIconScale(),
+          'icon-anchor': 'bottom',
+          'icon-allow-overlap': false,
+          'icon-ignore-placement': false,
+          'icon-padding': 12,
+          'text-field': showLandmarkNames ? ['get', 'label'] : '',
+          'text-font': ['DIN Pro Bold', 'Arial Unicode MS Bold'],
+          'text-size': 11,
+          'text-offset': [0, 0.45],
+          'text-anchor': 'top',
+          'text-max-width': 14,
+          'text-allow-overlap': false,
+          'text-ignore-placement': false,
+          'text-padding': 4,
+        },
+        paint: {
+          'text-color': '#212b3a',
+          'text-halo-color': '#FFFFFF',
+          'text-halo-width': 1.8,
+          'text-halo-blur': 0.2,
+        },
+      });
+    } else {
+      map.setLayoutProperty(LANDMARK_LAYER_ID, 'icon-size', getPinIconScale());
+      map.setLayoutProperty(LANDMARK_LAYER_ID, 'text-field', showLandmarkNames ? ['get', 'label'] : '');
+      map.setLayoutProperty(LANDMARK_LAYER_ID, 'text-max-width', 14);
+    }
+  };
+
+  const clearLandmarks = () => {
+    const source = mapRef.current?.getSource(LANDMARK_SOURCE_ID);
+    if (source?.setData) source.setData(emptyLandmarkCollection());
+  };
+
+  const ensureCustomPinLayer = () => {
+    const map = mapRef.current;
+    if (!map || !map.isStyleLoaded()) return;
+
+    ensurePinImages(map, PIN_ICON_IDS, updateCustomPinSource);
+
+    if (!map.getSource(CUSTOM_PIN_SOURCE_ID)) {
+      map.addSource(CUSTOM_PIN_SOURCE_ID, {
+        type: 'geojson',
+        data: emptyCustomPinCollection(),
+      });
+    }
+
+    if (!map.getLayer(CUSTOM_PIN_LAYER_ID)) {
+      map.addLayer({
+        id: CUSTOM_PIN_LAYER_ID,
+        type: 'symbol',
+        source: CUSTOM_PIN_SOURCE_ID,
+        layout: {
+          'visibility': 'none',
+          'icon-image': ['concat', 'pin-', ['get', 'iconId']],
+          'icon-size': getPinIconScale(),
+          'icon-anchor': 'bottom',
+          'icon-allow-overlap': true,
+          'icon-ignore-placement': true,
+          'text-field': ['get', 'label'],
+          'text-font': ['DIN Pro Bold', 'Arial Unicode MS Bold'],
+          'text-size': 11,
+          'text-anchor': 'top',
+          'text-offset': [0, 0.45],
+          'text-max-width': 14,
+          'text-allow-overlap': false,
+          'text-ignore-placement': false,
+          'text-padding': 4,
+        },
+        paint: {
+          'text-color': '#212b3a',
+          'text-halo-color': '#FFFFFF',
+          'text-halo-width': 1.8,
+          'text-halo-blur': 0.2,
+        },
+      });
+    }
+
+    if (map.getLayer(CUSTOM_PIN_LAYER_ID)) {
+      map.moveLayer(CUSTOM_PIN_LAYER_ID);
+      map.setLayoutProperty(CUSTOM_PIN_LAYER_ID, 'icon-size', getPinIconScale());
+      map.setLayoutProperty(CUSTOM_PIN_LAYER_ID, 'visibility', 'none');
+    }
+  };
+
+  const updateCustomPinSource = () => {
+    const source = mapRef.current?.getSource(CUSTOM_PIN_SOURCE_ID);
+    if (!source?.setData) return;
+    const pins = customPinsRef.current;
+
+    source.setData({
+      type: 'FeatureCollection',
+      features: pins
+        .filter((pin) => Array.isArray(pin.coordinates))
+        .map((pin) => ({
+          type: 'Feature',
+          geometry: {
+            type: 'Point',
+            coordinates: pin.coordinates,
+          },
+          properties: {
+            label: pin.description || '',
+            iconId: normalizePinIconId(pin.iconId),
+          },
+        })),
+    });
+  };
+
+  const updateCustomPinScreenPositions = () => {
+    const map = mapRef.current;
+    if (!map) return;
+    const pins = customPinsRef.current;
+
+    setCustomPinScreenPositions(
+      pins
+        .filter((pin) => Array.isArray(pin.coordinates))
+        .map((pin, index) => {
+          const point = map.project(pin.coordinates);
+          return {
+            id: pin.id || `pin-${index}`,
+            x: point.x,
+            y: point.y,
+            description: pin.description || '',
+            iconId: normalizePinIconId(pin.iconId),
+          };
+        })
+    );
+  };
+
+  const syncCustomPinMarker = (attempt = 0) => {
+    const map = mapRef.current;
+    if (!map) return;
+
+    if (!map.isStyleLoaded()) {
+      if (attempt < 30) {
+        window.clearTimeout(customPinSyncTimeoutRef.current);
+        customPinSyncTimeoutRef.current = window.setTimeout(() => syncCustomPinMarker(attempt + 1), 100);
+      }
+      return;
+    }
+
+    ensureCustomPinLayer();
+    updateCustomPinSource();
+    updateCustomPinScreenPositions();
+
+    customPinMarkersRef.current.forEach((marker) => marker.remove());
+    customPinMarkersRef.current.clear();
+  };
+
+  const beginCustomPinDrag = (pinId, event) => {
+    const map = mapRef.current;
+    const wrapper = wrapperRef.current;
+    if (!map || !wrapper) return;
+
+    event.preventDefault();
+    event.stopPropagation();
+    event.currentTarget.setPointerCapture?.(event.pointerId);
+    map.dragPan.disable();
+
+    const markerElement = event.currentTarget;
+    let latestPoint = { x: event.clientX, y: event.clientY };
+    let animationFrame = null;
+
+    markerElement.classList.add('is-dragging');
+
+    const renderDragPosition = () => {
+      const rect = wrapper.getBoundingClientRect();
+      markerElement.style.left = `${latestPoint.x - rect.left}px`;
+      markerElement.style.top = `${latestPoint.y - rect.top}px`;
+      animationFrame = null;
+    };
+
+    const movePin = (pointerEvent) => {
+      latestPoint = { x: pointerEvent.clientX, y: pointerEvent.clientY };
+      if (!animationFrame) {
+        animationFrame = window.requestAnimationFrame(renderDragPosition);
+      }
+    };
+
+    const stopDrag = () => {
+      window.removeEventListener('pointermove', movePin);
+      window.removeEventListener('pointerup', stopDrag);
+      if (animationFrame) window.cancelAnimationFrame(animationFrame);
+      markerElement.classList.remove('is-dragging');
+      map.dragPan.enable();
+
+      const rect = wrapper.getBoundingClientRect();
+      const point = {
+        x: latestPoint.x - rect.left,
+        y: latestPoint.y - rect.top,
+      };
+      const lngLat = map.unproject(point);
+      setCustomPinScreenPositions((pins) => pins.map((pin) => (
+        pin.id === pinId ? { ...pin, x: point.x, y: point.y } : pin
+      )));
+      onCustomPinChangeRef.current?.(pinId, {
+        coordinates: [lngLat.lng, lngLat.lat],
+      });
+    };
+
+    window.addEventListener('pointermove', movePin);
+    window.addEventListener('pointerup', stopDrag, { once: true });
+  };
+
+  const isInsideFrame = ({ x, y }, padding = 0) => (
+    frame &&
+    x >= frame.fl + padding &&
+    x <= frame.fr - padding &&
+    y >= frame.ft + padding &&
+    y <= frame.fb - padding
+  );
+
+  const isAwayFromRoads = (point, roadLines, roadBuffer) => roadLines.every((line) => {
+    for (let index = 1; index < line.length; index += 1) {
+      if (distanceToSegment(point, line[index - 1], line[index]) <= roadBuffer) return false;
+    }
+    return true;
+  });
+
+  const getRoadLines = () => {
+    const map = mapRef.current;
+    if (!map || !frame) return [];
+
+    const roadFeatures = map.queryRenderedFeatures(
+      [[frame.fl, frame.ft], [frame.fr, frame.fb]],
+      { layers: getRoadLayerIds() }
+    );
+
+    return roadFeatures.flatMap((feature) => (
+      flattenLineCoordinates(feature.geometry?.coordinates)
+        .map((line) => line.map((coordinate) => {
+          const projected = map.project(coordinate);
+          return { x: projected.x, y: projected.y };
+        }))
+        .filter((line) => line.length > 1)
+    ));
+  };
+
+  const findSafeLandmarkPoint = (coordinate, roadLines, roadBuffer, iconPadding) => {
+    const map = mapRef.current;
+    if (!map || !frame) return null;
+
+    const origin = map.project(coordinate);
+    const step = Math.max(iconPadding * 1.05, roadBuffer * 0.85);
+    const offsets = [
+      [0, 0],
+      [0, -step],
+      [step, 0],
+      [0, step],
+      [-step, 0],
+      [step * 0.78, -step * 0.78],
+      [step * 0.78, step * 0.78],
+      [-step * 0.78, step * 0.78],
+      [-step * 0.78, -step * 0.78],
+      [0, -step * 1.7],
+      [step * 1.7, 0],
+      [0, step * 1.7],
+      [-step * 1.7, 0],
+    ];
+
+    for (const [offsetX, offsetY] of offsets) {
+      const candidate = { x: origin.x + offsetX, y: origin.y + offsetY };
+      if (!isInsideFrame(candidate, iconPadding)) continue;
+      if (!isAwayFromRoads(candidate, roadLines, roadBuffer)) continue;
+      const lngLat = map.unproject(candidate);
+      return [lngLat.lng, lngLat.lat];
+    }
+
+    return null;
+  };
+
+  const updateLandmarks = () => {
+    const map = mapRef.current;
+    if (!map || !map.isStyleLoaded() || !map.getSource('composite') || !frame) return;
+
+    ensureLandmarkLayer();
+
+    if (!showLandmarks) {
+      clearLandmarks();
+      return;
+    }
+
+    const roadWidth = getRoadWidth();
+    if (!roadWidth) return;
+
+    let sourceFeatures = [];
+    try {
+      sourceFeatures = map.querySourceFeatures('composite', { sourceLayer: 'poi_label' });
+    } catch (error) {
+      console.warn('Landmark discovery failed.', error);
+      clearLandmarks();
+      return;
+    }
+
+    const iconPixelSize = PIN_ICON_IMAGE_HEIGHT * getPinIconScale();
+    const iconPadding = Math.max(iconPixelSize * 0.52, 18);
+    const roadBuffer = Math.max(roadWidth.street * ROAD_CASING_SCALE * 0.5 + iconPadding * 0.7, 22);
+    const roadLines = getRoadLines();
+    const mapCenterPoint = map.project(center);
+    const seen = new Set();
+    const candidates = sourceFeatures
+      .map((feature) => {
+        const classification = classifyLandmark(feature.properties);
+        const coordinate = feature.geometry?.type === 'Point' ? feature.geometry.coordinates : null;
+        if (!classification || !Array.isArray(coordinate)) return null;
+
+        const projected = map.project(coordinate);
+        if (!isInsideFrame(projected, 0)) return null;
+
+        const name = String(classification.name || classification.type).trim();
+        const key = `${classification.type}:${name.toLowerCase()}:${coordinate.map((value) => Number(value).toFixed(4)).join(',')}`;
+        if (seen.has(key)) return null;
+        seen.add(key);
+
+        return {
+          coordinate,
+          label: name,
+          type: classification.type,
+          priority: classification.priority,
+          distance: pointDistance(projected, mapCenterPoint),
+        };
+      })
+      .filter(Boolean)
+      .sort((a, b) => b.priority - a.priority || a.distance - b.distance);
+
+    const placed = [];
+
+    for (const candidate of candidates) {
+      const displayCoordinate = findSafeLandmarkPoint(candidate.coordinate, roadLines, roadBuffer, iconPadding);
+      if (!displayCoordinate) continue;
+
+      const displayPoint = map.project(displayCoordinate);
+      const collidesWithPlaced = placed.some((feature) => pointDistance(displayPoint, feature.properties.screenPoint) < iconPadding * 1.45);
+      if (collidesWithPlaced) continue;
+
+      placed.push({
+        type: 'Feature',
+        geometry: {
+          type: 'Point',
+          coordinates: displayCoordinate,
+        },
+        properties: {
+          landmarkType: candidate.type,
+          iconId: LANDMARK_ICON_TYPES[candidate.type],
+          label: candidate.label,
+          sortKey: 100 - candidate.priority,
+          screenPoint: displayPoint,
+        },
+      });
+    }
+
+    const publicFeatures = placed.map(({ properties, ...feature }) => ({
+      ...feature,
+      properties: {
+        landmarkType: properties.landmarkType,
+        iconId: properties.iconId,
+        label: properties.label,
+        sortKey: properties.sortKey,
+      },
+    }));
+
+    map.getSource(LANDMARK_SOURCE_ID)?.setData({
+      type: 'FeatureCollection',
+      features: publicFeatures,
+    });
+  };
+
+  const scheduleLandmarkUpdate = (delay = 120) => {
+    window.clearTimeout(landmarkUpdateTimeoutRef.current);
+    landmarkUpdateTimeoutRef.current = window.setTimeout(updateLandmarks, delay);
   };
 
   function applyPastelMatStyle() {
@@ -388,6 +987,13 @@ const MatMapView = ({
       addRoadLabels({ id: 'service', filter: serviceRoadFilter, minzoom: ROAD_ZOOM_SCALE.serviceLabels, width: roadWidth.street, spacing: 120 });
     }
 
+    ensureHomePinLayer();
+    updateHomePinSource();
+    ensureLandmarkLayer();
+    ensureCustomPinLayer();
+    updateCustomPinSource();
+    syncCustomPinMarker();
+    scheduleLandmarkUpdate();
   }
 
   const applyPastelMatStyleWhenReady = (attempt = 0) => {
@@ -472,6 +1078,11 @@ const MatMapView = ({
           bearing: latestView.rotation || 0,
         });
         applyPastelMatStyleWhenReady();
+        syncCustomPinMarker();
+        mapRef.current.once('idle', () => {
+          scheduleLandmarkUpdate(0);
+          syncCustomPinMarker();
+        });
         if (onMapReady) onMapReady(mapRef.current);
       });
 
@@ -485,6 +1096,20 @@ const MatMapView = ({
           center: [center.lng, center.lat],
           zoom: map.getZoom(),
           rotation: map.getBearing(),
+        });
+        scheduleLandmarkUpdate(180);
+        map.once('idle', () => {
+          scheduleLandmarkUpdate(0);
+          syncCustomPinMarker();
+        });
+      });
+
+      let customPinMoveFrame = null;
+      mapRef.current.on('move', () => {
+        if (customPinMoveFrame) return;
+        customPinMoveFrame = window.requestAnimationFrame(() => {
+          customPinMoveFrame = null;
+          updateCustomPinScreenPositions();
         });
       });
 
@@ -525,10 +1150,29 @@ const MatMapView = ({
     const map = mapRef.current;
     if (!map) return;
     applyPastelMatStyleWhenReady();
-  }, [containerSize.w, containerSize.h, matSize, showStreetNames]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [containerSize.w, containerSize.h, matSize, showStreetNames, showLandmarks, showLandmarkNames, homePinCoordinates]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  useEffect(() => {
+    const map = mapRef.current;
+    if (!map) return;
+    ensureHomePinLayer();
+    updateHomePinSource();
+  }, [homePinCoordinates]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  useEffect(() => {
+    const map = mapRef.current;
+    if (!map) return;
+    syncCustomPinMarker();
+  }, [customPins]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  useEffect(() => () => {
+    window.clearTimeout(landmarkUpdateTimeoutRef.current);
+    window.clearTimeout(customPinSyncTimeoutRef.current);
+    customPinMarkersRef.current.forEach((marker) => marker.remove());
+    customPinMarkersRef.current.clear();
+  }, []);
 
   const OVERLAY = 'rgba(20, 27, 41, 0.46)';
-
   return (
     <div
       ref={wrapperRef}
@@ -557,6 +1201,28 @@ const MatMapView = ({
           <span className="fallback-pin pin-three" />
         </div>
       )}
+
+      {!mapUnavailable && customPinScreenPositions.map((pin) => (
+        <button
+          key={pin.id}
+          type="button"
+          className="custom-pin-overlay-marker"
+          style={{
+            left: pin.x,
+            top: pin.y,
+          }}
+          aria-label="Drag custom pin"
+          onPointerDown={(event) => beginCustomPinDrag(pin.id, event)}
+        >
+          <img
+            src={PIN_ICON_URLS[normalizePinIconId(pin.iconId)]}
+            alt=""
+            aria-hidden="true"
+            draggable="false"
+          />
+          {pin.description && <span>{pin.description}</span>}
+        </button>
+      ))}
 
       {/* Mat frame overlay */}
       {frame && (
@@ -602,19 +1268,37 @@ const MatMapView = ({
               right: containerSize.w - frame.fr + Math.max(12, frame.fw * 0.035),
               bottom: containerSize.h - frame.fb + Math.max(12, frame.fw * 0.035),
               maxWidth: frame.fw - Math.max(24, frame.fw * 0.07),
-              color: '#ffffff',
-              fontFamily: "'Chewy', 'Quicksand', 'Poppins', 'DM Sans', sans-serif",
-              fontSize: Math.max(12, Math.min(20, frame.fw / 27)),
-              fontWeight: 400,
-              lineHeight: 1,
-              letterSpacing: '0.01em',
-              textAlign: 'right',
-              whiteSpace: 'nowrap',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'flex-end',
+              gap: Math.max(3, frame.fw * 0.012),
               pointerEvents: 'none',
               zIndex: 7,
             }}
           >
-            Hometown Play Mats
+            <img
+              src={grandparentsPinIconUrl}
+              alt=""
+              style={{
+                width: Math.max(14, Math.min(24, frame.fw / 22)),
+                height: 'auto',
+                flexShrink: 0,
+                display: 'block',
+              }}
+            />
+            <span
+              style={{
+                color: '#ffffff',
+                fontFamily: "'Nunito', 'Quicksand', 'Poppins', 'DM Sans', sans-serif",
+                fontSize: Math.max(12, Math.min(20, frame.fw / 27)),
+                fontWeight: 800,
+                lineHeight: 1,
+                letterSpacing: '-0.02em',
+                whiteSpace: 'nowrap',
+              }}
+            >
+              hometown play mats
+            </span>
           </div>
 
           {/* Size label below the frame */}

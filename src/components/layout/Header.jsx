@@ -3,9 +3,12 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../hooks/useAuth';
 import { useFirestore } from '../../hooks/useFirestore';
 import { isVerifiedAccount } from '../../utils/authStatus';
+import { useAppDialog } from '../../hooks/useAppDialog';
+import Logo from '../Logo';
 
 const Header = () => {
   const { currentUser, logout } = useAuth();
+  const dialog = useAppDialog();
   const navigate = useNavigate();
   const [showDropdown, setShowDropdown] = useState(false);
   const [failedAvatarUrl, setFailedAvatarUrl] = useState('');
@@ -24,7 +27,7 @@ const Header = () => {
       navigate('/login');
     } catch (error) {
       console.error('Logout failed:', error);
-      alert('Failed to logout. Please try again.');
+      dialog.alert('Failed to logout. Please try again.', { title: 'Logout failed' });
     }
   };
 
@@ -50,13 +53,15 @@ const Header = () => {
       <div className="flex h-full items-center justify-between px-3 sm:px-6 md:px-8">
         {/* Logo */}
         <Link to="/" className="no-underline">
-          <span
-            className="brand-wordmark text-xl tracking-normal sm:text-3xl"
-            style={{ color: '#00123a' }}
-          >
-            <span className="hidden min-[361px]:inline">Hometown Play Mats</span>
-            <span className="min-[361px]:hidden">Hometown</span>
-          </span>
+          <Logo size={40} className="sm:gap-2.5">
+            <span
+              className="brand-wordmark text-xl tracking-normal sm:text-3xl"
+              style={{ color: '#00123a' }}
+            >
+              <span className="hidden min-[361px]:inline">hometown play mats</span>
+              <span className="min-[361px]:hidden">hometown</span>
+            </span>
+          </Logo>
         </Link>
 
         <nav className="hidden items-center gap-12 text-sm font-semibold md:flex">

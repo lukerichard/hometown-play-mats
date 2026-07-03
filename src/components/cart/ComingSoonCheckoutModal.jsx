@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { joinLaunchWaitlist } from '../../utils/waitlist';
 import { getMatAspectRatio } from '../../utils/matDimensions';
+import Logo from '../Logo';
 
 const PRODUCT_DETAIL_IMAGE = '/images/play-mat-product-detail.png';
 const CHECKOUT_ITEM_TITLE = 'Your Hometown Play Mat';
@@ -36,9 +37,9 @@ const ComingSoonCheckoutModal = ({
         selectedItem,
         cartItems
       });
-      setSuccess(`You're on the launch list at ${savedEmail}.`);
+      setSuccess(`Your place is saved at ${savedEmail}.`);
     } catch (submitError) {
-      setError(submitError.message || 'Could not join the launch list. Please try again.');
+      setError(submitError.message || 'Could not save your place. Please try again.');
     } finally {
       setSubmitting(false);
     }
@@ -55,8 +56,8 @@ const ComingSoonCheckoutModal = ({
       >
         <div className="cart-confirmation-header">
           <div>
-            <span>Checkout Coming Soon</span>
-            <h2 id="coming-soon-title">We are almost ready to launch.</h2>
+            <span>Checkout Opens Soon</span>
+            <h2 id="coming-soon-title">The first run of 20 is almost ready.</h2>
           </div>
           <button type="button" className="cart-confirmation-close" onClick={onClose} aria-label="Close">
             X
@@ -65,8 +66,10 @@ const ComingSoonCheckoutModal = ({
 
         <div className="coming-soon-content">
           <p>
-            Leave your email and we will let you know as soon as{' '}
-            <span className="brand-wordmark">Hometown Play Mats</span> is ready to take orders.
+            Leave your email and we will hold your place for when{' '}
+            <Logo size={16} gap={4} /> starts taking orders. Each
+            founders&rsquo; mat ships with a numbered first-run tag and your family name on the
+            map, included.
           </p>
 
           {selectedItem?.previewImage && (
@@ -104,7 +107,7 @@ const ComingSoonCheckoutModal = ({
                 Close
               </button>
               <button type="submit" className="primary-action" disabled={submitting}>
-                {submitting ? 'Joining...' : 'Notify Me'}
+                {submitting ? 'Saving...' : 'Hold my place'}
               </button>
             </div>
           </form>
