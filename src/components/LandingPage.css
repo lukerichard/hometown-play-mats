@@ -360,7 +360,7 @@
 
 .lp-map-sizes::after {
   background:
-    linear-gradient(90deg, rgba(255, 255, 255, 0.92) 0%, rgba(255, 255, 255, 0.78) 30%, rgba(255, 255, 255, 0.42) 46%, rgba(255, 255, 255, 0) 58%);
+    linear-gradient(90deg, rgba(255, 255, 255, 0.84) 0%, rgba(255, 255, 255, 0.62) 30%, rgba(255, 255, 255, 0.26) 46%, rgba(255, 255, 255, 0) 58%);
 }
 
 .lp-size-grid {
@@ -1120,21 +1120,45 @@
 
   .lp-size-grid {
     grid-template-columns: 1fr;
+    gap: 24px;
   }
 
-  /* Stacked layout: copy on top, card below — fade the wash vertically
-     so the map area under the frames stays fully clear. */
-  .lp-map-sizes::after {
-    background:
-      linear-gradient(180deg, rgba(255, 255, 255, 0.92) 0%, rgba(255, 255, 255, 0.8) 42%, rgba(255, 255, 255, 0.42) 58%, rgba(255, 255, 255, 0) 70%);
-  }
-
-  .lp-size-scale {
-    min-height: 280px;
+  .lp-size-copy {
+    display: contents;
   }
 
   .lp-size-copy h2 {
+    order: 1;
     max-width: 14ch;
+  }
+
+  .lp-size-copy > p:not(.lp-price-note) {
+    order: 2;
+    margin-top: -8px;
+  }
+
+  .lp-size-scale {
+    order: 3;
+    justify-self: center;
+    width: min(100%, 640px);
+    min-height: 280px;
+  }
+
+  .lp-size-list {
+    order: 4;
+    margin-top: 4px;
+  }
+
+  .lp-price-note {
+    order: 5;
+    margin-top: -6px;
+  }
+
+  /* Stacked layout: intro, frame comparison, then cards, with a lighter wash
+     so the street map stays visible behind the frames and cards. */
+  .lp-map-sizes::after {
+    background:
+      linear-gradient(180deg, rgba(255, 255, 255, 0.68) 0%, rgba(255, 255, 255, 0.46) 34%, rgba(255, 255, 255, 0.18) 54%, rgba(255, 255, 255, 0) 76%);
   }
 
   .lp-step-grid,
