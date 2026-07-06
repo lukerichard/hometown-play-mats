@@ -19,7 +19,9 @@ export const joinLaunchWaitlist = async ({
   source = 'checkout',
   cartItems = [],
   selectedItem = null,
-  contact = null
+  contact = null,
+  shippingAddress = null,
+  orderTotals = null
 }) => {
   if (!db) {
     throw new Error('Waitlist is unavailable until Firebase is configured.');
@@ -34,6 +36,8 @@ export const joinLaunchWaitlist = async ({
     contact,
     selectedItem,
     cartItems,
+    shippingAddress,
+    orderTotals,
     createdAt: serverTimestamp()
   });
 

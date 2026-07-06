@@ -79,7 +79,10 @@ const MatSidebar = ({
         )}
       </div>
 
-      <section className={`shopping-card-section personalize-section ${expandedSection === 'personalize' ? 'is-expanded' : ''}`}>
+      <section
+        className={`shopping-card-section personalize-section ${expandedSection === 'personalize' ? 'is-expanded' : ''}`}
+        data-tour="map-customization"
+      >
         <button
           type="button"
           className="shopping-section-toggle"
@@ -87,7 +90,9 @@ const MatSidebar = ({
           aria-expanded={expandedSection === 'personalize'}
         >
           <span className="builder-card-title">
-            <span className="builder-card-icon icon-edit" aria-hidden="true" />
+            <svg className="builder-card-icon" viewBox="0 0 20 20" fill="none" aria-hidden="true">
+              <path d="M3 5.5H17M3 10H17M3 14.5H17" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+            </svg>
             Map Customization
           </span>
           <span className="section-expand-indicator" aria-hidden="true">+</span>
@@ -141,7 +146,10 @@ const MatSidebar = ({
           aria-expanded={expandedSection === 'custom-pins'}
         >
           <span className="builder-card-title">
-            <span className="builder-card-icon icon-pin" aria-hidden="true" />
+            <svg className="builder-card-icon" viewBox="0 0 20 20" fill="none" aria-hidden="true">
+              <path d="M10 18s6-5.686 6-10a6 6 0 1 0-12 0c0 4.314 6 10 6 10Z" stroke="currentColor" strokeWidth="2" strokeLinejoin="round" />
+              <circle cx="10" cy="8" r="2" fill="currentColor" />
+            </svg>
             Custom Pins
           </span>
           <span className="section-expand-indicator" aria-hidden="true">+</span>
@@ -309,7 +317,10 @@ const MatSidebar = ({
         </div>
       </section>
 
-      <section className={`shopping-card-section size-section ${expandedSection === 'size' ? 'is-expanded' : ''}`}>
+      <section
+        className={`shopping-card-section size-section ${expandedSection === 'size' ? 'is-expanded' : ''}`}
+        data-tour="select-size"
+      >
         <button
           type="button"
           className="shopping-section-toggle"
@@ -317,10 +328,12 @@ const MatSidebar = ({
           aria-expanded={expandedSection === 'size'}
         >
           <span className="builder-card-title">
-            <span className="builder-card-icon icon-size" aria-hidden="true" />
+            <svg className="builder-card-icon" viewBox="0 0 20 20" fill="none" aria-hidden="true">
+              <rect x="2" y="6" width="16" height="8" rx="1.5" transform="rotate(-45 10 10)" stroke="currentColor" strokeWidth="1.6" />
+              <path d="M8.5 7.5 10 9M11 6l1 1M6 10l1.5 1.5M13.5 4.5l1 1" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" />
+            </svg>
             Select Size
           </span>
-          <span className="section-expand-indicator" aria-hidden="true">+</span>
         </button>
 
         <div className="shopping-section-body size-options">

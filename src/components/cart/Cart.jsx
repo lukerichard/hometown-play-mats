@@ -1,30 +1,23 @@
-import { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../hooks/useAuth';
 import { useFirestore } from '../../hooks/useFirestore';
-import { getMat } from '../../utils/matStorage';
-import { calculateCartTotal } from '../../utils/cartUtils';
+import { useCartMats } from '../../hooks/useCartMats';
+import { calculateCartTotal, buildCartSummaryItem } from '../../utils/cartUtils';
+import { MAT_SIZES, formatCurrency } from '../../utils/pricing';
 import CartItem from './CartItem';
-import ComingSoonCheckoutModal from './ComingSoonCheckoutModal';
 import CartConfirmationModal from './CartConfirmationModal';
 
 const Cart = () => {
   const { currentUser } = useAuth();
-  const [matsData, setMatsData] = useState({});
-  const [loadingMats, setLoadingMats] = useState(true);
+  const navigate = useNavigate();
   const [reviewingCartItem, setReviewingCartItem] = useState(null);
-  const [comingSoonItem, setComingSoonItem] = useState(null);
   const [showRemovedNotice, setShowRemovedNotice] = useState(false);
-  const [showComingSoon, setShowComingSoon] = useState(false);
 
   const font = "'DM Sans', 'Poppins', sans-serif";
   const fontDisplay = "'Poppins', 'DM Sans', sans-serif";
 
-  const matSizes = {
-    small: { name: 'Small', dimensions: '36" x 24"', price: 89 },
-    medium: { name: 'Medium', dimensions: '48" x 36"', price: 189 },
-    large: { name: 'Large', dimensions: '60" x 48"', price: 259 }
-  };
+  const matSizes = MAT_SIZES;
 
   const colorSchemes = {
     pastel: { name: 'Pastel Park' },
@@ -36,85 +29,18 @@ const Cart = () => {
   const { data: cartItems, loading: loadingCart, error } = useFirestore(
     currentUser?.uid ? `users/${currentUser.uid}/cart` : null
   );
-
-  useEffect(() => {
-    const fetchMats = async () => {
-      if (!currentUser?.uid || cartItems.length === 0) { setLoadingMats(false); return; }
-      setLoadingMats(true);
-      const mats = {};
-      try {
-        await Promise.all(cartItems.map(async (item) => {
-          const designId = item.designId || item.matId;
-          try { mats[designId] = await getMat(currentUser.uid, designId); }
-          catch (error) { console.error(`Error fetching mat ${designId}:`, error); mats[designId] = null; }
-        }));
-        setMatsData(mats);
-      } catch (error) { console.error('Error fetching mats:', error); }
-      finally { setLoadingMats(false); }
-    };
-    fetchMats();
-  }, [cartItems, currentUser?.uid]);
+  const { matsData, loading: loadingMats } = useCartMats(currentUser?.uid, cartItems);
 
   const loading = loadingCart || loadingMats;
   const total = calculateCartTotal(cartItems);
-  const getCustomPinsForCartItem = (mat, item) => (
-    mat?.customPins
-    || (mat?.customPin ? [mat.customPin] : null)
-    || item.customPinsSnapshot
-    || []
-  );
-
-  const getCartSummaryItem = (item) => {
-    const designId = item.designId || item.matId;
-    const mat = matsData[designId];
-    const matSize = mat?.matSize || item.matSize || 'medium';
-    const theme = mat?.colorScheme || item.theme || 'pastel';
-    const size = matSizes[matSize] || matSizes.medium;
-    const themeName = colorSchemes[theme]?.name || theme || 'Custom Theme';
-
-    return {
-      userId: currentUser?.uid || '',
-      designId,
-      name: mat?.name || item.nameSnapshot || 'Custom Play Mat',
-      previewImage: mat?.previewImageUrl || item.previewImageUrlSnapshot || '',
-      sizeName: size.name,
-      matSize,
-      dimensions: size.dimensions,
-      themeName,
-      address: mat?.address || '',
-      showStreetNames: mat?.showStreetNames ?? true,
-      showLandmarks: mat?.showLandmarks ?? true,
-      showLandmarkNames: mat?.showLandmarkNames ?? true,
-      landmarkDensity: mat?.landmarkDensity || 'balanced',
-      customPins: getCustomPinsForCartItem(mat, item),
-      price: Number(item.pricePerUnit) || size.price,
-      quantity: Number(item.quantity) || 1
-    };
-  };
-  const waitlistCartItems = cartItems.map((item) => {
-    const mat = matsData[item.designId || item.matId];
-
-    return {
-      designId: item.designId || item.matId,
-      name: mat?.name || item.nameSnapshot || 'Custom Play Mat',
-      matSize: mat?.matSize || item.matSize || '',
-      theme: mat?.colorScheme || item.theme || '',
-      quantity: item.quantity,
-      pricePerUnit: item.pricePerUnit,
-      previewImageUrl: mat?.previewImageUrl || item.previewImageUrlSnapshot || '',
-      customPins: getCustomPinsForCartItem(mat, item)
-    };
+  const getCartSummaryItem = (item) => buildCartSummaryItem(item, matsData, {
+    userId: currentUser?.uid || '',
+    matSizes,
+    colorSchemes
   });
 
   const handleCheckout = () => {
-    setShowComingSoon(true);
-  };
-
-  const handleReviewCheckout = () => {
-    if (!reviewingCartItem) return;
-    setComingSoonItem(reviewingCartItem);
-    setReviewingCartItem(null);
-    setShowComingSoon(true);
+    navigate('/checkout');
   };
 
   if (loading) {
@@ -201,17 +127,26 @@ const Cart = () => {
               </h2>
 
               <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '12px' }}>
-                <span style={{ fontSize: '15px', color: '#5A5A5A', fontWeight: '600' }}>Items ({cartItems.length})</span>
-                <span style={{ fontSize: '15px', color: '#2D2D2D', fontWeight: '700' }}>${total.toFixed(2)}</span>
+                <span style={{ fontSize: '15px', color: '#5A5A5A', fontWeight: '600' }}>Subtotal ({cartItems.length} item{cartItems.length === 1 ? '' : 's'})</span>
+                <span style={{ fontSize: '15px', color: '#2D2D2D', fontWeight: '700' }}>{formatCurrency(total)}</span>
+              </div>
+
+              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '12px' }}>
+                <span style={{ fontSize: '15px', color: '#5A5A5A', fontWeight: '600' }}>Shipping</span>
+                <span style={{ fontSize: '15px', color: '#2e7d32', fontWeight: '700' }}>Included</span>
               </div>
 
               <div style={{
                 borderTop: '2px solid #E0DDD5', marginTop: '16px', paddingTop: '16px',
-                display: 'flex', justifyContent: 'space-between', marginBottom: '24px'
+                display: 'flex', justifyContent: 'space-between', marginBottom: '8px'
               }}>
                 <span style={{ fontSize: '18px', color: '#2D2D2D', fontWeight: '800' }}>Total</span>
-                <span style={{ fontSize: '24px', color: '#3DAEF5', fontWeight: '800' }}>${total.toFixed(2)}</span>
+                <span style={{ fontSize: '24px', color: '#3DAEF5', fontWeight: '800' }}>{formatCurrency(total)}</span>
               </div>
+
+              <p style={{ fontSize: '13px', color: '#8A8A8A', marginBottom: '20px' }}>
+                Tax is calculated at checkout, based on your shipping province.
+              </p>
 
               <button
                 onClick={handleCheckout}
@@ -225,7 +160,7 @@ const Cart = () => {
                 onMouseEnter={(e) => e.currentTarget.style.background = '#2A9BE0'}
                 onMouseLeave={(e) => e.currentTarget.style.background = '#3DAEF5'}
               >
-                Checkout Coming Soon
+                Continue to Checkout
               </button>
 
               <Link to="/">
@@ -250,8 +185,6 @@ const Cart = () => {
         key={reviewingCartItem?.designId || 'cart-review-empty'}
         item={reviewingCartItem}
         onClose={() => setReviewingCartItem(null)}
-        onCheckout={handleReviewCheckout}
-        checkoutLoading={false}
       />
 
       {showRemovedNotice && (
@@ -292,19 +225,6 @@ const Cart = () => {
           </section>
         </>
       )}
-
-      <ComingSoonCheckoutModal
-        open={showComingSoon}
-        onClose={() => {
-          setShowComingSoon(false);
-          setComingSoonItem(null);
-        }}
-        userId={comingSoonItem?.userId || currentUser?.uid || ''}
-        defaultEmail={currentUser?.email || ''}
-        source={comingSoonItem ? 'cart-item-review' : 'cart-checkout'}
-        selectedItem={comingSoonItem}
-        cartItems={waitlistCartItems}
-      />
     </div>
   );
 };

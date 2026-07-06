@@ -147,6 +147,56 @@ export const calculateCartTotal = (cartItems) => {
   return cartItems.reduce((total, item) => total + (item.quantity * item.pricePerUnit), 0);
 };
 
+export const getCustomPinsForCartItem = (mat, item) => (
+  mat?.customPins
+  || (mat?.customPin ? [mat.customPin] : null)
+  || item.customPinsSnapshot
+  || []
+);
+
+export const buildCartSummaryItem = (item, matsData, { userId = '', matSizes, colorSchemes } = {}) => {
+  const designId = item.designId || item.matId;
+  const mat = matsData[designId];
+  const matSize = mat?.matSize || item.matSize || 'medium';
+  const theme = mat?.colorScheme || item.theme || 'pastel';
+  const size = matSizes[matSize] || matSizes.medium;
+  const themeName = colorSchemes[theme]?.name || theme || 'Custom Theme';
+
+  return {
+    userId,
+    designId,
+    name: mat?.name || item.nameSnapshot || 'Custom Play Mat',
+    previewImage: mat?.previewImageUrl || item.previewImageUrlSnapshot || '',
+    sizeName: size.name,
+    matSize,
+    dimensions: size.dimensions,
+    themeName,
+    address: mat?.address || '',
+    showStreetNames: mat?.showStreetNames ?? true,
+    showLandmarks: mat?.showLandmarks ?? true,
+    showLandmarkNames: mat?.showLandmarkNames ?? true,
+    landmarkDensity: mat?.landmarkDensity || 'balanced',
+    customPins: getCustomPinsForCartItem(mat, item),
+    price: Number(item.pricePerUnit) || size.price,
+    quantity: Number(item.quantity) || 1
+  };
+};
+
+export const buildWaitlistCartItems = (cartItems, matsData) => cartItems.map((item) => {
+  const mat = matsData[item.designId || item.matId];
+
+  return {
+    designId: item.designId || item.matId,
+    name: mat?.name || item.nameSnapshot || 'Custom Play Mat',
+    matSize: mat?.matSize || item.matSize || '',
+    theme: mat?.colorScheme || item.theme || '',
+    quantity: item.quantity,
+    pricePerUnit: item.pricePerUnit,
+    previewImageUrl: mat?.previewImageUrl || item.previewImageUrlSnapshot || '',
+    customPins: getCustomPinsForCartItem(mat, item)
+  };
+});
+
 const themeLabels = {
   pastel: 'Pastel Park',
   modern: 'Modern Mini',

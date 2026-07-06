@@ -9,6 +9,7 @@ import Signup from './components/auth/Signup';
 import AccountSettings from './components/auth/AccountSettings';
 import SavedMats from './components/mats/SavedMats';
 import Cart from './components/cart/Cart';
+import Checkout from './components/checkout/Checkout';
 import MapBackgroundExporter from './components/MapBackgroundExporter';
 import { AppDialogProvider } from './contexts/AppDialogContext';
 import './App.css';
@@ -67,6 +68,10 @@ function App() {
         <Route
           path="/cart"
           element={<Cart />}
+        />
+        <Route
+          path="/checkout"
+          element={<Checkout />}
         />
       </Routes>
     </AppDialogProvider>

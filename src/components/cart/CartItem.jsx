@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { updateCartQuantity, removeFromCart } from '../../utils/cartUtils';
 import { getMatAspectRatio } from '../../utils/matDimensions';
+import { MAT_SIZES, formatCurrency } from '../../utils/pricing';
 import { useAppDialog } from '../../hooks/useAppDialog';
 
 const CartItem = ({ userId, cartItem, mat, onViewMat, onRemoved }) => {
@@ -33,10 +34,11 @@ const CartItem = ({ userId, cartItem, mat, onViewMat, onRemoved }) => {
     finally { setUpdating(false); }
   };
 
-  const totalPrice = (cartItem.quantity * cartItem.pricePerUnit).toFixed(2);
+  const totalPrice = formatCurrency(cartItem.quantity * cartItem.pricePerUnit);
   const matSize = mat?.matSize || cartItem.matSize || 'medium';
+  const size = MAT_SIZES[matSize] || MAT_SIZES.medium;
   const previewAspectRatio = getMatAspectRatio(matSize);
-  const itemTitle = `${matSize.charAt(0).toUpperCase()}${matSize.slice(1)} Hometown Play Mat`;
+  const itemTitle = size.name;
   const handleViewMat = () => {
     if (onViewMat) onViewMat();
   };
@@ -100,7 +102,7 @@ const CartItem = ({ userId, cartItem, mat, onViewMat, onRemoved }) => {
             padding: '4px 12px', background: '#D6EFFF', borderRadius: '999px',
             fontSize: '12px', fontWeight: '700', color: '#3DAEF5', textTransform: 'uppercase'
           }}>
-            {matSize}
+            {size.dimensions}
           </span>
         </div>
 
@@ -140,7 +142,7 @@ const CartItem = ({ userId, cartItem, mat, onViewMat, onRemoved }) => {
           {/* Price */}
           <div>
             <span style={{ fontSize: '14px', fontWeight: '600', color: '#5A5A5A', marginRight: '8px' }}>Price:</span>
-            <span style={{ fontSize: '18px', fontWeight: '800', color: '#3DAEF5' }}>${totalPrice}</span>
+            <span style={{ fontSize: '18px', fontWeight: '800', color: '#3DAEF5' }}>{totalPrice}</span>
           </div>
 
           {/* Remove Button */}

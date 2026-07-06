@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { Link } from 'react-router-dom';
 import { getMatAspectRatio } from '../../utils/matDimensions';
 import ZoomableImage from '../ZoomableImage';
 
@@ -56,9 +57,7 @@ const MatScaleDiagram = ({ previewImage, name, matSize }) => {
 
 const CartConfirmationModal = ({
   item,
-  onClose,
-  onCheckout,
-  checkoutLoading
+  onClose
 }) => {
   const [activeImage, setActiveImage] = useState('design');
 
@@ -190,12 +189,12 @@ const CartConfirmationModal = ({
         </div>
 
         <div className="cart-confirmation-actions">
-          <button type="button" className="secondary-action" onClick={onClose} disabled={checkoutLoading}>
+          <button type="button" className="secondary-action" onClick={onClose}>
             Close
           </button>
-          <button type="button" className="primary-action" onClick={onCheckout} disabled={checkoutLoading}>
-            {checkoutLoading ? 'Opening...' : 'Notify Me'}
-          </button>
+          <Link to="/cart" className="primary-action cart-confirmation-view-cart" onClick={onClose}>
+            View Cart
+          </Link>
         </div>
       </section>
     </>

@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import mapboxgl from 'mapbox-gl';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
@@ -7,6 +7,7 @@ import { saveMat, updateMat } from '../utils/matStorage';
 import { addToCart, updateCartQuantity, removeFromCart } from '../utils/cartUtils';
 import { isVerifiedAccount } from '../utils/authStatus';
 import { getShopifyVariantId } from '../config/shopify';
+import { MAT_SIZES } from '../utils/pricing';
 import { joinLaunchWaitlistIfContactAvailable } from '../utils/waitlist';
 import { useAppDialog } from '../hooks/useAppDialog';
 import { getPrintPreviewPixelSize } from '../utils/matDimensions';
@@ -14,7 +15,9 @@ import MatSidebar from './MatSidebar';
 import MatMapView from './MatMapView';
 import MatPreview from './MatPreview';
 import CartConfirmationModal from './cart/CartConfirmationModal';
-import ComingSoonCheckoutModal from './cart/ComingSoonCheckoutModal';
+import TourOverlay from './tour/TourOverlay';
+import ControlsPopover from './tour/ControlsPopover';
+import { TOUR_STEPS, TOUR_SEEN_STORAGE_KEY } from './tour/tourSteps';
 import schoolPinIconUrl from '../../icons/school.png';
 import parkPinIconUrl from '../../icons/park.png';
 import playgroundPinIconUrl from '../../icons/playground.png';
@@ -141,11 +144,64 @@ const ToyMatDesigner = () => {
   const [isMobileCustomizeOpen, setIsMobileCustomizeOpen] = useState(false);
   const [isAddingToCart, setIsAddingToCart] = useState(false);
   const [cartConfirmation, setCartConfirmation] = useState(null);
-  const [comingSoonItem, setComingSoonItem] = useState(null);
-  const [checkoutLoading, setCheckoutLoading] = useState(false);
-  const [isComingSoonOpen, setIsComingSoonOpen] = useState(false);
   const [safeInsets, setSafeInsets] = useState({ top: 94, right: 310 });
+  const [isTourActive, setIsTourActive] = useState(false);
+  const [tourStepIndex, setTourStepIndex] = useState(0);
+  const tourOpenedMobileSheetRef = useRef(false);
   const isSignedIn = isVerifiedAccount(currentUser);
+
+  const markTourSeen = () => {
+    try {
+      window.localStorage.setItem(TOUR_SEEN_STORAGE_KEY, '1');
+    } catch {
+      // localStorage unavailable (e.g. private browsing) — safe to ignore
+    }
+  };
+
+  const closeTour = () => {
+    markTourSeen();
+    setIsTourActive(false);
+    setTourStepIndex(0);
+  };
+
+  const handleReplayTour = () => {
+    setTourStepIndex(0);
+    setIsTourActive(true);
+  };
+
+  useEffect(() => {
+    let hasSeenTour = true;
+    try {
+      hasSeenTour = window.localStorage.getItem(TOUR_SEEN_STORAGE_KEY) === '1';
+    } catch {
+      // localStorage unavailable — skip auto-tour rather than risk crashing
+    }
+    if (hasSeenTour) return undefined;
+    const timeoutId = window.setTimeout(() => setIsTourActive(true), 600);
+    return () => window.clearTimeout(timeoutId);
+  }, []);
+
+  useEffect(() => {
+    if (!isTourActive) return;
+    const isMobileViewport = window.matchMedia('(max-width: 720px)').matches;
+    if (!isMobileViewport) return;
+    const stepNeedsSheet = Boolean(TOUR_STEPS[tourStepIndex]?.requiresMobileSheet);
+    if (stepNeedsSheet && !isMobileCustomizeOpen) {
+      setIsMobileCustomizeOpen(true);
+      tourOpenedMobileSheetRef.current = true;
+    } else if (!stepNeedsSheet && tourOpenedMobileSheetRef.current) {
+      setIsMobileCustomizeOpen(false);
+      tourOpenedMobileSheetRef.current = false;
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isTourActive, tourStepIndex]);
+
+  useEffect(() => {
+    if (!isTourActive && tourOpenedMobileSheetRef.current) {
+      setIsMobileCustomizeOpen(false);
+      tourOpenedMobileSheetRef.current = false;
+    }
+  }, [isTourActive]);
 
   useEffect(() => {
     const update = () => setSafeInsets(
@@ -158,28 +214,12 @@ const ToyMatDesigner = () => {
     return () => window.removeEventListener('resize', update);
   }, []);
 
-  const matSizes = {
-    large: {
-      width: 3,
-      height: 2,
-      name: 'Large',
-      label: 'Large Mat',
-      dimensions: '60" x 48"',
-      description: '60" x 48" - Best for playrooms',
-      price: 259,
-      shopifyVariantId: getShopifyVariantId('large')
-    },
-    medium: {
-      width: 2,
-      height: 1.5,
-      name: 'Medium',
-      label: 'Medium Mat',
-      dimensions: '48" x 36"',
-      description: '48" x 36" - Perfect for bedroom',
-      price: 189,
-      shopifyVariantId: getShopifyVariantId('medium')
-    },
-  };
+  const matSizes = Object.fromEntries(
+    Object.entries(MAT_SIZES).map(([key, size]) => [
+      key,
+      { ...size, shopifyVariantId: getShopifyVariantId(key) }
+    ])
+  );
 
   const colorSchemes = {
     pastel: { color: '#2f7a36', name: 'Pastel Park', preview: '#b8ef9f' },
@@ -1108,15 +1148,6 @@ const ToyMatDesigner = () => {
     }
   };
 
-  const handleCheckoutFromConfirmation = async () => {
-    if (!cartConfirmation?.userId || checkoutLoading) return;
-    setCheckoutLoading(true);
-    setComingSoonItem(cartConfirmation);
-    setCartConfirmation(null);
-    setIsComingSoonOpen(true);
-    setCheckoutLoading(false);
-  };
-
   const handleUpdateQuantity = async (newQuantity) => {
     if (!currentUser || !currentCartItem) return;
     try {
@@ -1134,7 +1165,7 @@ const ToyMatDesigner = () => {
       <div className="editor-fullscreen">
 
         {/* Map fills the area left of the sidebar */}
-        <div className="editor-map-area">
+        <div className="editor-map-area" data-tour="map-frame">
           <MatMapView
             center={mapCenter}
             zoom={mapZoom}
@@ -1156,7 +1187,7 @@ const ToyMatDesigner = () => {
 
         {/* Floating address bar */}
         <div className="editor-top-bar">
-          <div className="address-search">
+          <div className="address-search" data-tour="address-search">
             <span className="address-icon" aria-hidden="true" />
             <div className="relative flex-1">
               <input
@@ -1319,26 +1350,22 @@ const ToyMatDesigner = () => {
       <CartConfirmationModal
         key={cartConfirmation?.designId || 'empty-cart-confirmation'}
         item={cartConfirmation}
-        onClose={() => {
-          if (!checkoutLoading) {
-            setCartConfirmation(null);
-          }
-        }}
-        onCheckout={handleCheckoutFromConfirmation}
-        checkoutLoading={checkoutLoading}
+        onClose={() => setCartConfirmation(null)}
       />
 
-      <ComingSoonCheckoutModal
-        open={isComingSoonOpen}
-        onClose={() => {
-          setIsComingSoonOpen(false);
-          setComingSoonItem(null);
-        }}
-        userId={comingSoonItem?.userId || currentUser?.uid || ''}
-        defaultEmail={currentUser?.email || ''}
-        source="designer-checkout"
-        selectedItem={comingSoonItem}
-      />
+      <ControlsPopover onReplayTour={handleReplayTour} />
+
+      {isTourActive && (
+        <TourOverlay
+          step={TOUR_STEPS[tourStepIndex]}
+          stepIndex={tourStepIndex}
+          stepCount={TOUR_STEPS.length}
+          onNext={() => setTourStepIndex((index) => Math.min(index + 1, TOUR_STEPS.length - 1))}
+          onBack={() => setTourStepIndex((index) => Math.max(index - 1, 0))}
+          onSkip={closeTour}
+          onFinish={closeTour}
+        />
+      )}
 
       {showSaveDialog && (
         <>
