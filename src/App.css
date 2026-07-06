@@ -885,7 +885,7 @@
   box-sizing: border-box;
   height: 56px;
   padding: 8px;
-  overflow: hidden;
+  overflow: visible;
   border: 1px solid var(--builder-line);
   border-radius: 16px;
   background: #fff;
