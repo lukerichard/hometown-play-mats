@@ -16,7 +16,6 @@ import MatMapView from './MatMapView';
 import MatPreview from './MatPreview';
 import CartConfirmationModal from './cart/CartConfirmationModal';
 import TourOverlay from './tour/TourOverlay';
-import ControlsPopover from './tour/ControlsPopover';
 import { TOUR_STEPS, TOUR_SEEN_STORAGE_KEY } from './tour/tourSteps';
 import schoolPinIconUrl from '../../icons/school.png';
 import parkPinIconUrl from '../../icons/park.png';
@@ -1181,6 +1180,7 @@ const ToyMatDesigner = () => {
             onMapReady={setMapInstance}
             onFrameChange={setFramePixels}
             onCameraChange={handleMapCameraChange}
+            onReplayTour={handleReplayTour}
             safeInsets={safeInsets}
           />
         </div>
@@ -1352,8 +1352,6 @@ const ToyMatDesigner = () => {
         item={cartConfirmation}
         onClose={() => setCartConfirmation(null)}
       />
-
-      <ControlsPopover onReplayTour={handleReplayTour} />
 
       {isTourActive && (
         <TourOverlay

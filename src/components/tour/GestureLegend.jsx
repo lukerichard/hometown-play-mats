@@ -24,6 +24,18 @@ const GESTURES = [
     )
   },
   {
+    id: 'trackpad-rotate',
+    label: 'Two-Finger Swipe to Rotate',
+    hint: 'Swipe left or right with two fingers on your trackpad',
+    icon: (
+      <svg viewBox="0 0 20 20" fill="none" aria-hidden="true">
+        <path d="M6 6v3M6 6 4 7.5M6 6l2 1.5" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" />
+        <path d="M14 6v3M14 6l-2 1.5M14 6l2 1.5" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" />
+        <path d="M4 14h4M4 14l2-1.6M4 14l2 1.6M16 14h-4M16 14l-2-1.6M16 14l-2 1.6" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" />
+      </svg>
+    )
+  },
+  {
     id: 'pan',
     label: 'Left-Click + Drag to Pan',
     hint: 'Hold the left mouse button and drag to move around',

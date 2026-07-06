@@ -876,6 +876,262 @@
   outline-offset: 3px;
 }
 
+.map-frame-controls-section {
+  position: absolute;
+  z-index: 9;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  box-sizing: border-box;
+  height: 56px;
+  padding: 8px;
+  overflow: hidden;
+  border: 1px solid var(--builder-line);
+  border-radius: 16px;
+  background: #fff;
+  box-shadow: 0 4px 14px var(--builder-shadow);
+  transform: translateX(-50%);
+}
+
+.map-frame-control-group {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+
+.map-frame-control-divider {
+  align-self: stretch;
+  width: 1px;
+  flex: 0 0 1px;
+  margin: -8px 0;
+  background: var(--builder-line);
+}
+
+.map-frame-control-button {
+  width: 40px;
+  height: 40px;
+  flex-shrink: 0;
+  display: grid;
+  place-items: center;
+  border-radius: 10px;
+  border: 1.5px solid var(--builder-line);
+  background: #fff;
+  color: var(--builder-ink);
+  box-shadow: 0 4px 10px var(--builder-shadow);
+  cursor: pointer;
+  font-family: var(--builder-font);
+  font-size: 20px;
+  font-weight: 700;
+  line-height: 1;
+  transition: background 0.15s, border-color 0.15s, transform 0.1s;
+}
+
+.map-frame-controls-section .map-frame-control-button {
+  border-color: transparent;
+  background: var(--builder-paper);
+  box-shadow: none;
+}
+
+.map-frame-control-button.is-end-button {
+  width: 40px;
+  height: 40px;
+  font-size: 19px;
+  border-radius: 8px;
+}
+
+.map-frame-control-button.is-reset-north {
+  margin-left: 4px;
+  padding-left: 4px;
+  border-left: 1.5px solid var(--builder-line);
+  border-radius: 0 8px 8px 0;
+}
+
+.map-frame-help-button {
+  z-index: 9;
+}
+
+.map-frame-control-button svg {
+  width: 18px;
+  height: 18px;
+}
+
+.map-frame-control-button.is-end-button svg {
+  width: 18px;
+  height: 18px;
+}
+
+.map-frame-control-button:hover:not(:disabled) {
+  border-color: var(--builder-road);
+  background: var(--builder-paper);
+}
+
+.map-frame-controls-section .map-frame-control-button:hover:not(:disabled) {
+  border-color: transparent;
+  background: var(--builder-green-soft);
+}
+
+.map-frame-control-button:active:not(:disabled) {
+  transform: scale(0.94);
+}
+
+.map-frame-control-button:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+
+.map-frame-control-button:focus-visible {
+  outline: 2px solid var(--builder-orange-edge);
+  outline-offset: 2px;
+}
+
+.map-frame-slider-wrap {
+  display: flex;
+  flex-shrink: 0;
+}
+
+.map-frame-slider-track {
+  position: relative;
+  flex-shrink: 0;
+  border-radius: 999px;
+  background: var(--builder-orange);
+  box-shadow: inset 0 0 0 1px var(--builder-orange-edge), 0 2px 6px var(--builder-shadow);
+  cursor: pointer;
+  touch-action: none;
+}
+
+.map-frame-slider-thumb {
+  position: absolute;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: #fff;
+  border: 2px solid var(--builder-orange-edge);
+  box-shadow: 0 2px 6px rgba(33, 43, 58, 0.35);
+  cursor: grab;
+  pointer-events: none;
+}
+
+.map-frame-slider-track-vertical .map-frame-slider-thumb {
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+
+.map-frame-slider-track-horizontal .map-frame-slider-thumb {
+  top: 50%;
+  transform: translate(-50%, -50%);
+}
+
+@media (max-width: 760px) {
+  .map-frame-controls-section {
+    gap: 6px;
+    padding: 8px 6px;
+  }
+
+  .map-frame-control-group {
+    gap: 6px;
+  }
+
+  .map-frame-slider-track-horizontal {
+    max-width: 112px;
+  }
+
+  .map-frame-degree-input {
+    width: 48px;
+  }
+}
+
+.map-frame-rotate-dial {
+  position: relative;
+  width: 40px;
+  height: 40px;
+  flex: 0 0 auto;
+  border: 1.5px solid var(--builder-line);
+  border-radius: 999px;
+  background:
+    radial-gradient(circle at 50% 50%, #fff 0 28%, transparent 29%),
+    conic-gradient(from 0deg, rgba(33, 43, 58, 0.18) 0 2deg, transparent 2deg 30deg);
+  box-shadow: inset 0 0 0 5px var(--builder-paper);
+  cursor: grab;
+  touch-action: none;
+}
+
+.map-frame-rotate-dial:active {
+  cursor: grabbing;
+}
+
+.map-frame-rotate-dial:focus-visible {
+  outline: 2px solid var(--builder-orange-edge);
+  outline-offset: 2px;
+}
+
+.map-frame-rotate-dial-needle {
+  position: absolute;
+  left: 50%;
+  top: 6px;
+  width: 3px;
+  height: 16px;
+  border-radius: 999px;
+  background: var(--builder-ink);
+  transform: translateX(-50%) rotate(var(--map-bearing));
+  transform-origin: 50% 14px;
+}
+
+.map-frame-rotate-dial::after {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 7px;
+  height: 7px;
+  content: "";
+  border-radius: 999px;
+  background: var(--builder-ink);
+  transform: translate(-50%, -50%);
+}
+
+.map-frame-degree-input-wrap {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  height: 40px;
+  padding: 0 8px;
+  border-radius: 8px;
+  background: var(--builder-paper);
+  color: var(--builder-muted);
+  font-family: var(--builder-font);
+  font-size: 11px;
+  font-weight: 900;
+}
+
+.map-frame-degree-input {
+  width: 58px;
+  border: 0;
+  outline: 0;
+  background: transparent;
+  color: var(--builder-ink);
+  font: inherit;
+  font-size: 13px;
+  text-align: right;
+}
+
+.map-frame-degree-input::-webkit-outer-spin-button,
+.map-frame-degree-input::-webkit-inner-spin-button {
+  margin: 0;
+  appearance: none;
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
 .size-options {
   display: flex;
   flex-direction: column;
@@ -2243,6 +2499,10 @@
   animation: tourRotateSweep 2.4s linear infinite;
 }
 
+.tour-gesture-icon[data-gesture="trackpad-rotate"] svg {
+  animation: tourRotateSweep 2.4s linear infinite;
+}
+
 .tour-gesture-icon[data-gesture="pan"] svg {
   animation: tourPanSlide 1.6s ease-in-out infinite;
 }
@@ -2280,6 +2540,13 @@
   padding: 16px 18px;
 }
 
+.tour-controls-popover.is-frame-anchored {
+  position: absolute;
+  right: auto;
+  bottom: auto;
+  z-index: 20;
+}
+
 .tour-controls-popover-title {
   margin: 0 0 12px;
   color: var(--builder-ink);
@@ -2313,6 +2580,7 @@
   .tour-pointer-cue,
   .tour-gesture-icon[data-gesture="zoom"] svg,
   .tour-gesture-icon[data-gesture="rotate"] svg,
+  .tour-gesture-icon[data-gesture="trackpad-rotate"] svg,
   .tour-gesture-icon[data-gesture="pan"] svg {
     animation: none;
   }

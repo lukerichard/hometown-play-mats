@@ -1106,6 +1106,16 @@
     max-width: 680px;
   }
 
+  /* Stacked layout: the copy panel covers almost the full height, so the map
+     is only ever seen as a thin strip above it. Sizing by height (like the
+     desktop crop) blows that strip up to a tight, zoomed-in close-up — size
+     by width instead and anchor to the top so the visible sliver reads as
+     the same zoomed-out neighbourhood view as desktop. */
+  .lp-map-hero {
+    --lp-map-base-y: 0%;
+    background-size: 130% auto;
+  }
+
   .lp-size-grid {
     grid-template-columns: 1fr;
   }

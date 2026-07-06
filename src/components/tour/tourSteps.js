@@ -21,7 +21,7 @@ export const TOUR_STEPS = [
     id: 'select-size',
     target: 'select-size',
     title: 'Choose your mat size',
-    body: 'Pick Small, Medium, or Large — this sets how much of your neighborhood gets printed.',
+    body: 'Pick The Neighbourhood or The Hometown — this sets how much of your neighbourhood gets printed.',
     placement: 'left',
     requiresMobileSheet: true
   },
@@ -29,7 +29,7 @@ export const TOUR_STEPS = [
     id: 'map-controls',
     target: 'map-frame',
     title: 'Move around the map',
-    body: 'Use your mouse to frame the perfect street for your mat.',
+    body: 'Use your mouse or trackpad to frame the perfect street for your mat.',
     placement: 'center',
     gestureLegend: true
   }

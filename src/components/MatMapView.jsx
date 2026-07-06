@@ -1,6 +1,7 @@
 import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import mapboxgl from 'mapbox-gl';
 import 'mapbox-gl/dist/mapbox-gl.css';
+import MatMapControls from './MatMapControls';
 import homePinIconUrl from '../../icons/home.png';
 import schoolPinIconUrl from '../../icons/school.png';
 import parkPinIconUrl from '../../icons/park.png';
@@ -9,11 +10,11 @@ import grandparentsPinIconUrl from '../../icons/grandparents.png';
 import treatPinIconUrl from '../../icons/treat.png';
 import customPinIconUrl from '../../icons/custom.png';
 
-// Physical mat dimensions in inches per size name
+// Physical mat dimensions in inches, keyed by the stable matSize.key (not the display name)
 const MAT_INCHES = {
-  Small:  { w: 36, h: 24 },
-  Medium: { w: 48, h: 36 },
-  Large:  { w: 60, h: 48 },
+  small:  { w: 36, h: 24 },
+  medium: { w: 48, h: 36 },
+  large:  { w: 60, h: 48 },
 };
 
 const MAT_FRAME_FILL = 0.8;
@@ -46,6 +47,13 @@ const ROAD_ZOOM_SCALE = {
 };
 
 const ROAD_CASING_SCALE = 1.34;
+
+// Trackpad two-finger horizontal swipe -> map rotation (wheel-event based, see mount effect below)
+const TRACKPAD_ROTATE_DOMINANCE_RATIO = 1.5;      // |deltaX| must exceed |deltaY| * this to count as "rotate"
+const TRACKPAD_ROTATE_MIN_DELTA_PX = 2;           // ignore |deltaX| below this as jitter
+const TRACKPAD_ROTATE_DEGREES_PER_PIXEL = 0.5;    // bearing degrees applied per unit of deltaX
+const TRACKPAD_ROTATE_MAX_DEGREES_PER_EVENT = 20; // clamp per-event bearing change (coalesced-event guard)
+
 const HOME_PIN_SOURCE_ID = 'pastel-home-pin';
 const HOME_PIN_LAYER_ID = 'pastel-home-pin-symbol';
 const LANDMARK_SOURCE_ID = 'pastel-landmarks';
@@ -166,6 +174,7 @@ const MatMapView = ({
   onMapReady,
   onFrameChange,
   onCameraChange,
+  onReplayTour,
   safeInsets = { top: 0, right: 0 },
 }) => {
   const wrapperRef = useRef(null);
@@ -214,8 +223,8 @@ const MatMapView = ({
     const { w: cw, h: ch } = containerSize;
     if (cw === 0 || ch === 0) return null;
 
-    const spec = MAT_INCHES[matSize.name] || MAT_INCHES.Medium;
-    const largeSpec = MAT_INCHES.Large;
+    const spec = MAT_INCHES[matSize.key] || MAT_INCHES.medium;
+    const largeSpec = MAT_INCHES.large;
 
     // Available viewport after subtracting address bar (top) and sidebar (right)
     const safeW = cw - safeInsets.right;
@@ -249,7 +258,7 @@ const MatMapView = ({
   // Calculate road width based on physical mat size
   const getRoadWidth = () => {
     if (!frame) return null;
-    const spec = MAT_INCHES[matSize.name] || MAT_INCHES.Medium;
+    const spec = MAT_INCHES[matSize.key] || MAT_INCHES.medium;
     const physicalWidthMeters = spec.w * 0.0254;
     const pixelsPerMeter = frame.fw / physicalWidthMeters;
     const totalRoadWidthPixels = 0.0508 * pixelsPerMeter; // 2 inches including sidewalk/casing
@@ -302,7 +311,7 @@ const MatMapView = ({
 
   const getPinIconScale = () => {
     if (!frame) return 38 / PIN_ICON_IMAGE_HEIGHT;
-    const spec = MAT_INCHES[matSize.name] || MAT_INCHES.Medium;
+    const spec = MAT_INCHES[matSize.key] || MAT_INCHES.medium;
     const pixelsPerInch = frame.fw / spec.w;
     const targetHeight = Math.min(Math.max(pixelsPerInch * 2.2, 34), 58);
     return targetHeight / PIN_ICON_IMAGE_HEIGHT;
@@ -1011,6 +1020,9 @@ const MatMapView = ({
   };
 
   useEffect(() => {
+    let wheelListenerTarget = null;
+    let handleTrackpadRotateWheel = null;
+
     if (!mapRef.current) {
       const token = import.meta.env.VITE_MAPBOX_TOKEN;
       if (token) mapboxgl.accessToken = token;
@@ -1057,11 +1069,6 @@ const MatMapView = ({
         queueMicrotask(() => setMapUnavailable(true));
         return;
       }
-
-      mapRef.current.addControl(
-        new mapboxgl.NavigationControl({ showCompass: true, showZoom: true }),
-        'bottom-left'
-      );
 
       mapRef.current.on('load', () => {
         mapRef.current.setCooperativeGestures(false);
@@ -1113,9 +1120,39 @@ const MatMapView = ({
         });
       });
 
+      // Two-finger trackpad horizontal swipe -> rotate. Vertical swipes and
+      // ctrlKey pinch-zoom are left untouched so Mapbox's own scrollZoom
+      // handler keeps zooming exactly as it does today. Capture phase so this
+      // runs before Mapbox's bubble-phase wheel listener on the canvas.
+      handleTrackpadRotateWheel = (event) => {
+        const map = mapRef.current;
+        if (!map) return;
+        if (event.ctrlKey) return;
+
+        const absX = Math.abs(event.deltaX);
+        const absY = Math.abs(event.deltaY);
+        if (absX < TRACKPAD_ROTATE_MIN_DELTA_PX) return;
+        if (absX <= absY * TRACKPAD_ROTATE_DOMINANCE_RATIO) return;
+
+        event.preventDefault();
+        event.stopImmediatePropagation();
+
+        const rawDegrees = event.deltaX * TRACKPAD_ROTATE_DEGREES_PER_PIXEL;
+        const clampedDegrees = Math.max(
+          -TRACKPAD_ROTATE_MAX_DEGREES_PER_EVENT,
+          Math.min(TRACKPAD_ROTATE_MAX_DEGREES_PER_EVENT, rawDegrees)
+        );
+        map.setBearing(map.getBearing() + clampedDegrees);
+      };
+
+      wheelListenerTarget = mapContainerRef.current;
+      wheelListenerTarget.addEventListener('wheel', handleTrackpadRotateWheel, { capture: true, passive: false });
     }
 
     return () => {
+      if (wheelListenerTarget && handleTrackpadRotateWheel) {
+        wheelListenerTarget.removeEventListener('wheel', handleTrackpadRotateWheel, true);
+      }
       if (mapRef.current) {
         mapRef.current.remove();
         mapRef.current = null;
@@ -1319,6 +1356,16 @@ const MatMapView = ({
           >
             {matSize.dimensions}
           </div>
+
+          {!mapUnavailable && (
+            <MatMapControls
+              mapRef={mapRef}
+              frame={frame}
+              containerSize={containerSize}
+              safeInsets={safeInsets}
+              onReplayTour={onReplayTour}
+            />
+          )}
         </>
       )}
     </div>

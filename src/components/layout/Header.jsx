@@ -55,11 +55,10 @@ const Header = () => {
         <Link to="/" className="no-underline">
           <Logo size={40} className="sm:gap-2.5">
             <span
-              className="brand-wordmark text-xl tracking-normal sm:text-3xl"
+              className="brand-wordmark whitespace-nowrap tracking-normal text-[clamp(0.75rem,4vw,1.875rem)]"
               style={{ color: '#00123a' }}
             >
-              <span className="hidden min-[361px]:inline">hometown play mats</span>
-              <span className="min-[361px]:hidden">hometown</span>
+              hometown play mats
             </span>
           </Logo>
         </Link>
