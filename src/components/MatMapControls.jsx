@@ -2,12 +2,17 @@ import { useEffect, useRef, useState } from 'react';
 import ControlsPopover from './tour/ControlsPopover';
 
 const CONTROL_HEIGHT = 56;     // px, shared outer height for help, zoom, and rotate controls
+const COMPACT_CONTROL_HEIGHT = 85;
+const COMPACT_TOGGLE_HEIGHT = 38;
 const END_BUTTON_SIZE = 40;    // px, buttons grouped inside a control card
 const GAP = 8;                 // px, gap between elements inside a card
 const EDGE_MARGIN = 10;        // px, min clearance from the container/safe-area bounds
+const COMPACT_BREAKPOINT = 760;
 
 const ZOOM_TRACK_LENGTH = 150;
 const ZOOM_TRACK_THICKNESS = 14;
+const COMPACT_ZOOM_TRACK_LENGTH = 86;
+const COMPACT_ZOOM_TRACK_THICKNESS = 10;
 const ROTATE_DIAL_SIZE = 40;
 const ROTATE_INPUT_WIDTH = 58;
 
@@ -165,6 +170,7 @@ const MatMapControls = ({ mapRef, frame, containerSize, safeInsets, onReplayTour
   const [zoomValue, setZoomValue] = useState(0);
   const [zoomLimits, setZoomLimits] = useState({ min: 0, max: 22 });
   const [bearingValue, setBearingValue] = useState(0);
+  const [isCompactControlsOpen, setIsCompactControlsOpen] = useState(false);
 
   useEffect(() => {
     const map = mapRef.current;
@@ -189,9 +195,17 @@ const MatMapControls = ({ mapRef, frame, containerSize, safeInsets, onReplayTour
 
   if (!frame || !containerSize.w || !containerSize.h) return null;
 
+  const isCompactControls = containerSize.w <= COMPACT_BREAKPOINT;
+  const controlHeight = isCompactControls ? COMPACT_CONTROL_HEIGHT : CONTROL_HEIGHT;
+  const zoomTrackLength = isCompactControls ? COMPACT_ZOOM_TRACK_LENGTH : ZOOM_TRACK_LENGTH;
+  const zoomTrackThickness = isCompactControls ? COMPACT_ZOOM_TRACK_THICKNESS : ZOOM_TRACK_THICKNESS;
+
   const safeW = containerSize.w - safeInsets.right;
   const controlsSectionCenter = clamp(frame.fl + frame.fw / 2, EDGE_MARGIN, safeW - EDGE_MARGIN);
-  const controlsSectionTop = Math.max(safeInsets.top + EDGE_MARGIN, frame.ft - CONTROL_HEIGHT - GAP);
+  const mobileBarTop = Math.max(safeInsets.top + EDGE_MARGIN, frame.ft - COMPACT_TOGGLE_HEIGHT - GAP);
+  const controlsSectionTop = isCompactControls
+    ? Math.max(safeInsets.top + EDGE_MARGIN, mobileBarTop - controlHeight - GAP)
+    : Math.max(safeInsets.top + EDGE_MARGIN, frame.ft - controlHeight - GAP);
   const controlsMaxWidth = Math.max(0, safeW - EDGE_MARGIN * 2);
 
   // Right-hand column: Help button, Zoom card, Pan card — all centered on one vertical axis.
@@ -215,69 +229,122 @@ const MatMapControls = ({ mapRef, frame, containerSize, safeInsets, onReplayTour
     setBearing(clamp(nextBearing, ROTATE_MIN, ROTATE_MAX));
   };
 
-  return (
+  const controlsPositionStyle = {
+    top: controlsSectionTop,
+    left: controlsSectionCenter,
+    maxWidth: controlsMaxWidth,
+  };
+
+  const mobileBar = isCompactControls ? (
     <div
-      className="map-frame-controls-section"
+      className="map-frame-mobile-controls-bar"
       style={{
-        top: controlsSectionTop,
+        top: mobileBarTop,
         left: controlsSectionCenter,
         maxWidth: controlsMaxWidth,
       }}
     >
+      {!isCompactControlsOpen && (
+        <button
+          type="button"
+          className="map-frame-controls-toggle"
+          onClick={() => setIsCompactControlsOpen(true)}
+          aria-expanded="false"
+          aria-controls="map-frame-controls-panel"
+        >
+          Controls
+        </button>
+      )}
       <ControlsPopover onReplayTour={onReplayTour} embedded />
-
-      <span className="map-frame-control-divider" aria-hidden="true" />
-
-      <div className="map-frame-control-group map-frame-zoom-group">
-        <ControlButton onClick={zoomOut} ariaLabel="Zoom out" className="is-end-button">
-          <ZoomOutIcon />
-        </ControlButton>
-        <div className="map-frame-slider-wrap">
-          <MapSlider
-            orientation="horizontal"
-            value={zoomValue}
-            min={zoomLimits.min}
-            max={zoomLimits.max}
-            onChange={setZoom}
-            length={ZOOM_TRACK_LENGTH}
-            thickness={ZOOM_TRACK_THICKNESS}
-            ariaLabel="Map zoom"
-          />
-        </div>
-        <ControlButton onClick={zoomIn} ariaLabel="Zoom in" className="is-end-button">
-          <ZoomInIcon />
-        </ControlButton>
-      </div>
-
-      <span className="map-frame-control-divider" aria-hidden="true" />
-
-      <div className="map-frame-control-group map-frame-rotate-group">
-        <RotateDial value={bearingValue} onChange={setBearing} />
-        <ControlButton onClick={() => rotateBy(-1)} ariaLabel="Rotate map left 15 degrees" className="is-end-button">
-          <span aria-hidden="true">&minus;</span>
-        </ControlButton>
-        <label className="map-frame-degree-input-wrap">
-          <span className="sr-only">Map rotation degrees</span>
-          <input
-            type="number"
-            className="map-frame-degree-input"
-            min={ROTATE_MIN}
-            max={ROTATE_MAX}
-            step="1"
-            value={displayBearing}
-            onChange={handleBearingInputChange}
-            aria-label="Map rotation degrees"
-          />
-          <span aria-hidden="true">deg</span>
-        </label>
-        <ControlButton onClick={() => rotateBy(1)} ariaLabel="Rotate map right 15 degrees" className="is-end-button">
-          <span aria-hidden="true">+</span>
-        </ControlButton>
-        <ControlButton onClick={resetNorth} ariaLabel="Reset map rotation to north" className="is-end-button is-reset-north">
-          <ResetNorthIcon />
-        </ControlButton>
-      </div>
     </div>
+  ) : null;
+
+  if (isCompactControls && !isCompactControlsOpen) {
+    return (
+      mobileBar
+    );
+  }
+
+  return (
+    <>
+      {mobileBar}
+
+      <div
+        id="map-frame-controls-panel"
+        className={`map-frame-controls-section${isCompactControls ? ' is-compact-open' : ''}`}
+        style={controlsPositionStyle}
+      >
+        {!isCompactControls && (
+          <ControlsPopover onReplayTour={onReplayTour} embedded />
+        )}
+
+        {!isCompactControls && (
+          <span className="map-frame-control-divider" aria-hidden="true" />
+        )}
+
+        {isCompactControls && (
+          <button
+            type="button"
+            className="map-frame-controls-toggle is-panel-hide"
+            onClick={() => setIsCompactControlsOpen(false)}
+            aria-expanded="true"
+            aria-controls="map-frame-controls-panel"
+          >
+            Hide
+          </button>
+        )}
+
+        <div className="map-frame-control-group map-frame-zoom-group">
+          <ControlButton onClick={zoomOut} ariaLabel="Zoom out" className="is-end-button">
+            <ZoomOutIcon />
+          </ControlButton>
+          <div className="map-frame-slider-wrap">
+            <MapSlider
+              orientation="horizontal"
+              value={zoomValue}
+              min={zoomLimits.min}
+              max={zoomLimits.max}
+              onChange={setZoom}
+              length={zoomTrackLength}
+              thickness={zoomTrackThickness}
+              ariaLabel="Map zoom"
+            />
+          </div>
+          <ControlButton onClick={zoomIn} ariaLabel="Zoom in" className="is-end-button">
+            <ZoomInIcon />
+          </ControlButton>
+        </div>
+
+        <span className="map-frame-control-divider" aria-hidden="true" />
+
+        <div className="map-frame-control-group map-frame-rotate-group">
+          <RotateDial value={bearingValue} onChange={setBearing} />
+          <ControlButton onClick={() => rotateBy(-1)} ariaLabel="Rotate map left 15 degrees" className="is-end-button">
+            <span aria-hidden="true">&minus;</span>
+          </ControlButton>
+          <label className="map-frame-degree-input-wrap">
+            <span className="sr-only">Map rotation degrees</span>
+            <input
+              type="number"
+              className="map-frame-degree-input"
+              min={ROTATE_MIN}
+              max={ROTATE_MAX}
+              step="1"
+              value={displayBearing}
+              onChange={handleBearingInputChange}
+              aria-label="Map rotation degrees"
+            />
+            <span aria-hidden="true">deg</span>
+          </label>
+          <ControlButton onClick={() => rotateBy(1)} ariaLabel="Rotate map right 15 degrees" className="is-end-button">
+            <span aria-hidden="true">+</span>
+          </ControlButton>
+          <ControlButton onClick={resetNorth} ariaLabel="Reset map rotation to north" className="is-end-button is-reset-north">
+            <ResetNorthIcon />
+          </ControlButton>
+        </div>
+      </div>
+    </>
   );
 };
 

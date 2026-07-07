@@ -52,7 +52,7 @@ const ControlsPopover = ({ onReplayTour, buttonPosition = null, embedded = false
         onClick={() => setIsOpen((open) => !open)}
         aria-haspopup="dialog"
         aria-expanded={isOpen}
-        aria-label="Map controls"
+        aria-label="Map help"
       >
         ?
       </button>
