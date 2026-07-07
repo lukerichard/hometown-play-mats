@@ -5,6 +5,7 @@ import { useFirestore } from '../../hooks/useFirestore';
 import { useCartMats } from '../../hooks/useCartMats';
 import { calculateCartTotal, buildCartSummaryItem } from '../../utils/cartUtils';
 import { MAT_SIZES, formatCurrency } from '../../utils/pricing';
+import { trackEvent } from '../../utils/analytics';
 import CartItem from './CartItem';
 import CartConfirmationModal from './CartConfirmationModal';
 
@@ -40,6 +41,11 @@ const Cart = () => {
   });
 
   const handleCheckout = () => {
+    trackEvent('Checkout Started', {
+      source: 'cart',
+      item_count: cartItems.length,
+      cart_total: total,
+    });
     navigate('/checkout');
   };
 

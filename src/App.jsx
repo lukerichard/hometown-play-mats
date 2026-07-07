@@ -1,4 +1,5 @@
 import { useEffect } from 'react';
+import { Analytics } from '@vercel/analytics/react';
 import { Routes, Route, useLocation } from 'react-router-dom';
 import ToyMatDesigner from './components/ToyMatDesigner';
 import LandingPage from './components/LandingPage';
@@ -74,6 +75,7 @@ function App() {
           element={<Checkout />}
         />
       </Routes>
+      <Analytics />
     </AppDialogProvider>
   );
 }

@@ -7,6 +7,7 @@ import MatPreview from '../MatPreview';
 import { addToCart, updateCartQuantity, removeFromCart } from '../../utils/cartUtils';
 import { isVerifiedAccount } from '../../utils/authStatus';
 import { joinLaunchWaitlistIfContactAvailable } from '../../utils/waitlist';
+import { trackEvent } from '../../utils/analytics';
 import { useAppDialog } from '../../hooks/useAppDialog';
 
 const SavedMats = () => {
@@ -92,6 +93,14 @@ const SavedMats = () => {
         previewImageUrlSnapshot: previewingMat.previewImageUrl,
         customPinsSnapshot: getCustomPinsForMat(previewingMat),
         existingCartItemId: previewingCartItem?.id
+      });
+      trackEvent('Added To Cart', {
+        source: 'saved_mats',
+        mat_size: previewingMat.matSize || '',
+        theme: previewingMat.colorScheme || '',
+        pin_count: getCustomPinsForMat(previewingMat).length,
+        price: pricePerUnit,
+        existing_cart_item: Boolean(previewingCartItem),
       });
       joinLaunchWaitlistIfContactAvailable({
         user: currentUser,

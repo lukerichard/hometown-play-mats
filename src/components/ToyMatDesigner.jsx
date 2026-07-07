@@ -9,6 +9,7 @@ import { isVerifiedAccount } from '../utils/authStatus';
 import { getShopifyVariantId } from '../config/shopify';
 import { MAT_SIZES } from '../utils/pricing';
 import { joinLaunchWaitlistIfContactAvailable } from '../utils/waitlist';
+import { trackEvent } from '../utils/analytics';
 import { useAppDialog } from '../hooks/useAppDialog';
 import { getPrintPreviewPixelSize } from '../utils/matDimensions';
 import MatSidebar from './MatSidebar';
@@ -167,6 +168,10 @@ const ToyMatDesigner = () => {
     setTourStepIndex(0);
     setIsTourActive(true);
   };
+
+  useEffect(() => {
+    trackEvent('Create Page Viewed');
+  }, []);
 
   useEffect(() => {
     let hasSeenTour = true;
@@ -426,6 +431,7 @@ const ToyMatDesigner = () => {
     setMapZoom(17);
     setSuggestions([]);
     setShowSuggestions(false);
+    trackEvent('Address Searched', { source: 'designer', method: 'autocomplete' });
   };
 
   const handleSelectCustomPinSuggestion = (suggestion) => {
@@ -442,7 +448,10 @@ const ToyMatDesigner = () => {
     setIsSearching(true);
     setShowSuggestions(false);
     try {
-      await geocodeAddress(address);
+      const foundAddress = await geocodeAddress(address);
+      if (foundAddress) {
+        trackEvent('Address Searched', { source: 'designer', method: 'manual' });
+      }
     } catch (error) {
       console.error('Geocoding error:', error);
       dialog.alert('Error searching for address. Please try again.', { title: 'Search failed' });
@@ -897,6 +906,12 @@ const ToyMatDesigner = () => {
     }
 
     commitCustomPinDraft();
+    trackEvent('Pin Added', {
+      source: 'designer',
+      method: customPinDraft.address ? 'address' : 'map_center',
+      icon: customPinDraft.iconId || DEFAULT_CUSTOM_PIN_ICON_ID,
+      pin_count: customPins.length + 1,
+    });
   };
 
   const handleUpdateCustomPin = (pinId, updates) => {
@@ -917,6 +932,12 @@ const ToyMatDesigner = () => {
       const capturedPreview = await captureMatPreview(getCustomPinsForSave());
       setPreviewImage(capturedPreview);
       setShowPreview(true);
+      trackEvent('Preview Generated', {
+        source: 'preview',
+        mat_size: matSize,
+        theme: colorScheme,
+        pin_count: getCustomPinsForSave().length,
+      });
     } catch (error) {
       console.error('Error capturing map:', error);
       dialog.alert(error.message || 'Error capturing map. Please try again.', { title: 'Preview failed' });
@@ -996,6 +1017,12 @@ const ToyMatDesigner = () => {
       try {
         previewImageUrl = await captureMatPreview(customPinsForSave);
         setPreviewImage(previewImageUrl);
+        trackEvent('Preview Generated', {
+          source: 'save',
+          mat_size: matSize,
+          theme: colorScheme,
+          pin_count: customPinsForSave.length,
+        });
       } catch (previewError) {
         console.warn('Preview capture failed; saving mat without preview image.', previewError);
       }
@@ -1063,6 +1090,12 @@ const ToyMatDesigner = () => {
       const currentCamera = getCurrentMapCamera();
       const customPinsForSave = getCustomPinsForSave();
       const capturedPreview = await captureMatPreview(customPinsForSave);
+      trackEvent('Preview Generated', {
+        source: 'add_to_cart',
+        mat_size: matSize,
+        theme: colorScheme,
+        pin_count: customPinsForSave.length,
+      });
       const matData = {
         name: normalizedName,
         matSize,
@@ -1139,6 +1172,14 @@ const ToyMatDesigner = () => {
       setCartConfirmation(confirmationItem);
       commitCustomPinDraft();
       setIsMobileCustomizeOpen(false);
+      trackEvent('Added To Cart', {
+        source: 'designer',
+        mat_size: matSize,
+        theme: colorScheme,
+        pin_count: customPinsForSave.length,
+        price: selectedSize.price,
+        existing_cart_item: Boolean(existingCartItem),
+      });
     } catch (error) {
       console.error('Error adding to cart:', error);
       dialog.alert(error.message || 'Failed to add to cart. Please try again.', { title: 'Cart update failed' });

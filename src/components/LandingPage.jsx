@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Logo from './Logo';
+import { trackEvent } from '../utils/analytics';
 import './LandingPage.css';
 import customPinIconUrl from '../../icons/custom.png';
 import schoolPinIconUrl from '../../icons/school.png';
@@ -232,6 +233,10 @@ const LandingPage = () => {
   const [ctaAddress, setCtaAddress] = useState('');
 
   useEffect(() => {
+    trackEvent('Home Page Viewed');
+  }, []);
+
+  useEffect(() => {
     const clamp = (value, min, max) => Math.min(Math.max(value, min), max);
     const entries = Array.from(document.querySelectorAll('.lp-map-section'))
       .map((section) => ({
@@ -339,9 +344,16 @@ const LandingPage = () => {
     const trimmedAddress = prefillAddress.trim();
 
     if (!trimmedAddress) {
+      trackEvent('Started Design', { source: 'landing', has_address: false });
       navigate('/create');
       return;
     }
+
+    trackEvent('Started Design', {
+      source: 'landing',
+      has_address: true,
+      selected_suggestion: Boolean(suggestion?.center),
+    });
 
     navigate('/create', {
       state: {

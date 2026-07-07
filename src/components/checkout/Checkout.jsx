@@ -15,6 +15,7 @@ import {
   getProvinceName
 } from '../../utils/pricing';
 import { joinLaunchWaitlist, validateWaitlistEmail } from '../../utils/waitlist';
+import { trackEvent } from '../../utils/analytics';
 import Logo from '../Logo';
 
 const font = "'DM Sans', 'Poppins', sans-serif";
@@ -158,6 +159,12 @@ const Checkout = () => {
       });
 
       setReservation({ email: savedEmail, shippingAddress, orderTotals });
+      trackEvent('Waitlist Joined', {
+        source: 'checkout',
+        item_count: cartItems.length,
+        cart_total: orderTotals.total,
+        province: provinceCode,
+      });
     } catch (submitError) {
       setError(submitError.message || 'Could not reserve your spot. Please try again.');
     } finally {
