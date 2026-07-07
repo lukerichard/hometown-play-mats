@@ -2527,6 +2527,15 @@
   gap: 8px;
 }
 
+.tour-tooltip-buttons .secondary-action,
+.tour-tooltip-buttons .primary-action {
+  min-width: 76px;
+  height: 40px;
+  padding: 0 18px;
+  line-height: 1;
+  white-space: nowrap;
+}
+
 .tour-tooltip-close {
   position: absolute;
   top: 10px;
@@ -2693,6 +2702,21 @@
 }
 
 @media (max-width: 720px) {
+  .tour-tooltip-actions {
+    gap: 10px;
+  }
+
+  .tour-tooltip-buttons {
+    flex: 1 1 auto;
+    justify-content: flex-end;
+  }
+
+  .tour-tooltip-buttons .secondary-action,
+  .tour-tooltip-buttons .primary-action {
+    min-width: 72px;
+    padding: 0 16px;
+  }
+
   .tour-controls-button {
     right: 16px;
     bottom: 104px;
