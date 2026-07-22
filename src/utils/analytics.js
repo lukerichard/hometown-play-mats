@@ -30,8 +30,14 @@ const sanitizeProperties = (properties = {}) => Object.fromEntries(
 );
 
 export const trackEvent = (name, properties = {}) => {
+  const sanitizedProperties = sanitizeProperties(properties);
+
   try {
-    track(name, sanitizeProperties(properties));
+    track(name, sanitizedProperties);
+
+    if (typeof window !== 'undefined' && typeof window.gtag === 'function') {
+      window.gtag('event', name, sanitizedProperties);
+    }
   } catch (error) {
     if (import.meta.env.DEV) {
       console.warn('Analytics event failed:', name, error);
